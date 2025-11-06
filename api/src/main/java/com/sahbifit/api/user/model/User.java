@@ -44,11 +44,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "users", indexes = { // <-- ADD THIS BLOCK
-    @Index(name = "idx_user_primary_gym", columnList = "primary_gym_id")
+@Table(name = "users", indexes = {
+        @Index(name = "idx_user_primary_gym", columnList = "primary_gym_id")
 })
 @SQLDelete(sql = "UPDATE users SET status = 'banned', updated_at = CURRENT_TIMESTAMP WHERE user_id = ?")
-@SQLRestriction("status = 'active'") // <-- 2. USE THIS (instead of @Where)
+@SQLRestriction("status != 'banned'")
 public class User {
 
     @Id
@@ -58,6 +58,21 @@ public class User {
 
     @Column(name = "phone_number", nullable = false, unique = true, length = 20)
     private String phoneNumber;
+
+    @Column(name = "password_hash", nullable = false)
+    private String password;
+
+    @Column(name = "is_phone_verified", nullable = false)
+    @ColumnDefault("false")
+    private boolean isPhoneVerified = false;
+
+    // --- HINZUGEFÜGTE FELDER FÜR SMS OTP ---
+    @Column(name = "sms_otp", length = 6)
+    private String smsOtp;
+
+    @Column(name = "sms_otp_expires_at")
+    private OffsetDateTime smsOtpExpiresAt;
+    // --- ENDE DER HINZUGEFÜGTEN FELDER ---
 
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;

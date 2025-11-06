@@ -40,7 +40,7 @@ import lombok.Setter;
     @Index(name = "idx_gym_submitted_by_user", columnList = "submitted_by_user_id")
 })
 @SQLDelete(sql = "UPDATE gyms SET status = 'rejected' WHERE gym_id = ?") // <-- 3. ADD THIS LINE
-@SQLRestriction("status = 'approved'") // <-- 2. USE THIS (instead of @Where)
+@SQLRestriction("status != 'rejected'")
 public class Gym {
 
     @Id

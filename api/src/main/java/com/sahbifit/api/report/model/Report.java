@@ -42,7 +42,7 @@ import lombok.Setter;
 })
 @Check(constraints = "reported_by_user_id != reported_user_id")
 @SQLDelete(sql = "UPDATE reports SET status = 'dismissed' WHERE report_id = ?")
-@SQLRestriction("status = 'pending'") // <-- 2. USE THIS (instead of @Where)
+@SQLRestriction("status != 'dismissed'")
 public class Report {
 
     @Id

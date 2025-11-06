@@ -10,19 +10,19 @@ CREATE EXTENSION IF NOT EXISTS "postgis";
 
 CREATE TYPE user_role AS ENUM (
     'member',
-    'ambassador',  -- For the "Founders' Circle"
+    'ambassador',   -- For the "Founders' Circle"
     'admin'
 );
 
 CREATE TYPE user_status AS ENUM (
     'active',
-    'suspended',   -- For "3-day suspension"
+    'suspended',    -- For "3-day suspension"
     'banned'
 );
 
 CREATE TYPE verification_status AS ENUM (
     'not_started',      -- User has not triggered the check
-    'pending_review',  -- User is in "Probationary Mode"
+    'pending_review',   -- User is in "Probationary Mode"
     'verified',
     'rejected_bad_video',
     'rejected_mismatch'
@@ -41,27 +41,27 @@ CREATE TYPE session_type AS ENUM (
 );
 
 CREATE TYPE session_status AS ENUM (
-    'active',      -- Session is upcoming
+    'active',       -- Session is upcoming
     'cancelled',
-    'completed'    -- Session has finished
+    'completed'     -- Session has finished
 );
 
 CREATE TYPE participant_status AS ENUM (
-    'joined',      -- User is registered for the session
-    'attended',    -- User successfully attended (for reputation)
-    'no_show',     -- User missed the session (for accountability)
-    'left'         -- User left the session before it started
+    'joined',       -- User is registered for the session
+    'attended',     -- User successfully attended (for reputation)
+    'no_show',      -- User missed the session (for accountability)
+    'left'          -- User left the session before it started
 );
 
 CREATE TYPE tag_type AS ENUM (
-    'goal',        -- e.g., 'weight_loss', 'muscle_gain'
-    'schedule'     -- e.g., 'mornings', 'weekends'
+    'goal',         -- e.g., 'weight_loss', 'muscle_gain'
+    'schedule'      -- e.g., 'mornings', 'weekends'
 );
 
 CREATE TYPE report_priority AS ENUM (
-    'low',         -- "All Other Reports"
-    'high',        -- "9 AM problem" (New User, Critical Report)
-    'critical'     -- "3 AM problem" (Trusted User, Critical Report)
+    'low',          -- "All Other Reports"
+    'high',         -- "9 AM problem" (New User, Critical Report)
+    'critical'      -- "3 AM problem" (Trusted User, Critical Report)
 );
 
 CREATE TYPE report_status AS ENUM (
@@ -71,7 +71,7 @@ CREATE TYPE report_status AS ENUM (
 );
 
 CREATE TYPE gym_status AS ENUM (
-    'pending',     -- For user-submitted gyms
+    'pending',      -- For user-submitted gyms
     'approved',
     'rejected'
 );
@@ -86,6 +86,15 @@ CREATE TYPE gym_status AS ENUM (
 CREATE TABLE users (
     user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     phone_number VARCHAR(20) NOT NULL UNIQUE,
+    
+    -- NEU HINZUGEFÜGT ENTSPRECHEND DER ENTITÄT
+    password_hash TEXT NOT NULL,
+    is_phone_verified BOOLEAN NOT NULL DEFAULT false,
+    
+    -- NEUE FELDER FÜR SMS OTP (basierend auf der Entität)
+    sms_otp VARCHAR(6),
+    sms_otp_expires_at TIMESTAMPTZ,
+    
     first_name VARCHAR(100) NOT NULL,
     -- Store date_of_birth to calculate age dynamically. This is better practice.
     date_of_birth DATE NOT NULL,
@@ -107,7 +116,7 @@ CREATE TABLE users (
     suspended_until TIMESTAMPTZ,
 
     -- Denormalized counters for performance (Reputation & Accountability)
-    -- These will be updated by triggers or application logic.
+    -- These will NOW be updated by the application layer.
     group_session_count INT NOT NULL DEFAULT 0, -- For "Reputation-Gated 1-on-1s"
     no_show_count INT NOT NULL DEFAULT 0,       -- For "Unreliable" badge
     
@@ -116,7 +125,6 @@ CREATE TABLE users (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
 -- Table: gyms
 -- Stores all gym locations, including user-submitted ones.
 CREATE TABLE gyms (
@@ -241,6 +249,7 @@ CREATE TABLE reports (
     session_id UUID REFERENCES sessions(session_id) ON DELETE SET NULL,
     
     reason TEXT NOT NULL,
+    -- This will now be set by the application layer, not a trigger.
     priority report_priority NOT NULL DEFAULT 'low',
     status report_status NOT NULL DEFAULT 'pending',
     
@@ -310,6 +319,7 @@ CREATE INDEX idx_user_tags_tag_id ON user_tags (tag_id);
 -- -----------------------------
 
 -- Function to automatically update the 'updated_at' timestamp
+-- This is a "good" trigger as it handles a simple, cross-cutting audit concern.
 CREATE OR REPLACE FUNCTION fn_set_updated_at_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -336,72 +346,16 @@ BEFORE UPDATE ON reports
 FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at_timestamp();
 
 
--- Function to auto-set report priority based on reporter's role (for "Sleep-Safe" triage)
-CREATE OR REPLACE FUNCTION fn_set_report_priority()
-RETURNS TRIGGER AS $$
-DECLARE
-    reporter_role user_role;
-BEGIN
-    -- Get the role of the user filing the report
-    SELECT role INTO reporter_role FROM users WHERE user_id = NEW.reported_by_user_id;
-    
-    -- "3 AM problem" - Critical report from a trusted user
-    IF reporter_role = 'ambassador' OR reporter_role = 'admin' THEN
-        NEW.priority = 'critical';
-    -- "9 AM problem" - Critical report from a new user
-    ELSIF reporter_role = 'member' THEN
-        NEW.priority = 'high';
-    ELSE
-        NEW.priority = 'low';
-    END IF;
-    
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Apply the report priority trigger
-CREATE TRIGGER trg_set_report_priority
-BEFORE INSERT ON reports
-FOR EACH ROW EXECUTE FUNCTION fn_set_report_priority();
+-- [REMOVED] Function fn_set_report_priority()
+-- [REMOVED] Trigger trg_set_report_priority
+-- This logic must now be handled in your Spring @Service layer.
+-- (e.g., ReportService.createReport(ReportDTO reportDTO))
 
 
--- Function to update user accountability counters
-CREATE OR REPLACE FUNCTION fn_update_user_accountability()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF (TG_OP = 'INSERT' OR TG_OP = 'UPDATE') AND NEW.status != OLD.status THEN
-        -- Handle 'attended' status for 'Reputation-Gated 1-on-1s'
-        IF NEW.status = 'attended' THEN
-            UPDATE users
-            SET group_session_count = group_session_count + 1
-            WHERE user_id = NEW.user_id
-            AND (SELECT session_type FROM sessions WHERE session_id = NEW.session_id) = 'group';
-        
-        -- Handle 'no_show' status for 'Unreliable' badge
-        ELSIF NEW.status = 'no_show' THEN
-            UPDATE users
-            SET no_show_count = no_show_count + 1
-            WHERE user_id = NEW.user_id;
-            
-            -- Optional: Auto-suspend user on 3rd no-show
-            -- IF (SELECT no_show_count FROM users WHERE user_id = NEW.user_id) >= 3 THEN
-            --     UPDATE users
-            --     SET status = 'suspended',
-            --         suspended_until = NOW() + INTERVAL '3 days'
-            --     WHERE user_id = NEW.user_id;
-            -- END IF;
-        END IF;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Apply the accountability trigger to session_participants
-CREATE TRIGGER trg_update_user_accountability
-AFTER UPDATE ON session_participants
-FOR EACH ROW
-WHEN (NEW.status IS DISTINCT FROM OLD.status)
-EXECUTE FUNCTION fn_update_user_accountability();
+-- [REMOVED] Function fn_update_user_accountability()
+-- [REMOVED] Trigger trg_update_user_accountability
+-- This logic must now be handled in your Spring @Service layer.
+-- (e.g., SessionService.updateParticipantStatus(UUID participantId, ParticipantStatus status))
 
 
 -- -----------------------------
