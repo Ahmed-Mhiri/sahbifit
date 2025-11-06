@@ -1,0 +1,15 @@
+# .dockerignore (in sahbifit/api/)
+
+# Git files
+.git
+.gitignore
+
+# Maven build directory
+target/
+
+# Local build logs
+*.log
+
+# IDE files
+.idea/
+*.iml

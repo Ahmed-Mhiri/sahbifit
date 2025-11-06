@@ -21,7 +21,7 @@ CREATE TYPE user_status AS ENUM (
 );
 
 CREATE TYPE verification_status AS ENUM (
-    'not_started',     -- User has not triggered the check
+    'not_started',      -- User has not triggered the check
     'pending_review',  -- User is in "Probationary Mode"
     'verified',
     'rejected_bad_video',
@@ -80,22 +80,9 @@ CREATE TYPE gym_status AS ENUM (
 -- | Core Tables               |
 -- -----------------------------
 
--- Table: gyms
--- Stores all gym locations, including user-submitted ones.
-CREATE TABLE gyms (
-    gym_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(255) NOT NULL,
-    address TEXT,
-    -- Using PostGIS 'geography' for accurate lat/long distance calculations
-    location geography(Point, 4326),
-    status gym_status NOT NULL DEFAULT 'pending',
-    submitted_by_user_id UUID REFERENCES users(user_id) ON DELETE SET NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
 -- Table: users
 -- The central table for all users.
+-- THIS MUST BE CREATED BEFORE 'gyms' and 'sessions'.
 CREATE TABLE users (
     user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     phone_number VARCHAR(20) NOT NULL UNIQUE,
@@ -110,7 +97,9 @@ CREATE TABLE users (
     verified_gender verified_gender NOT NULL DEFAULT 'not_verified',
     
     -- Foreign Keys
-    primary_gym_id UUID REFERENCES gyms(gym_id) ON DELETE SET NULL,
+    -- Note: primary_gym_id is moved here but references gyms(gym_id).
+    -- We will add this constraint AFTER the gyms table is created.
+    primary_gym_id UUID, 
     
     -- Role and Status (Accountability)
     role user_role NOT NULL DEFAULT 'member',
@@ -127,6 +116,31 @@ CREATE TABLE users (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Table: gyms
+-- Stores all gym locations, including user-submitted ones.
+CREATE TABLE gyms (
+    gym_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    address TEXT,
+    -- Using PostGIS 'geography' for accurate lat/long distance calculations
+    location geography(Point, 4326),
+    status gym_status NOT NULL DEFAULT 'pending',
+    
+    -- This foreign key will now work because the 'users' table exists.
+    submitted_by_user_id UUID REFERENCES users(user_id) ON DELETE SET NULL,
+    
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Now we can safely add the foreign key from users -> gyms
+ALTER TABLE users
+ADD CONSTRAINT fk_users_primary_gym
+FOREIGN KEY (primary_gym_id) 
+REFERENCES gyms(gym_id) 
+ON DELETE SET NULL;
+
 
 -- Table: sessions
 -- The core "product": workouts created by users.
@@ -244,7 +258,7 @@ CREATE TABLE reports (
 CREATE TABLE user_blocks (
     blocker_user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     blocked_user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    created_at TIMESTAMTz NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     
     PRIMARY KEY (blocker_user_id, blocked_user_id),
     CONSTRAINT no_self_block CHECK (blocker_user_id != blocked_user_id)
@@ -371,10 +385,10 @@ BEGIN
             
             -- Optional: Auto-suspend user on 3rd no-show
             -- IF (SELECT no_show_count FROM users WHERE user_id = NEW.user_id) >= 3 THEN
-            --    UPDATE users
-            --    SET status = 'suspended',
-            --        suspended_until = NOW() + INTERVAL '3 days'
-            --    WHERE user_id = NEW.user_id;
+            --     UPDATE users
+            --     SET status = 'suspended',
+            --         suspended_until = NOW() + INTERVAL '3 days'
+            --     WHERE user_id = NEW.user_id;
             -- END IF;
         END IF;
     END IF;
