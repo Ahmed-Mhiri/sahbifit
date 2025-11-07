@@ -3,7 +3,6 @@ package com.sahbifit.api.auth;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Random;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.sahbifit.api.auth.dto.AuthResponse;
 import com.sahbifit.api.auth.dto.LoginRequest;
 import com.sahbifit.api.auth.dto.RegisterRequest;
+import com.sahbifit.api.auth.dto.ResendOtpRequest;
 import com.sahbifit.api.auth.dto.VerifySmsRequest;
+import com.sahbifit.api.exception.InvalidOtpException;
+import com.sahbifit.api.exception.OtpExpiredException;
+import com.sahbifit.api.exception.PhoneNumberAlreadyExistsException;
 import com.sahbifit.api.exception.ResourceNotFoundException;
 import com.sahbifit.api.external.recaptcha.ReCaptchaService;
 import com.sahbifit.api.external.sms.SmsService;
@@ -30,6 +33,7 @@ import com.sahbifit.api.model.enums.VerificationStatus;
 import com.sahbifit.api.model.enums.VerifiedGender;
 import com.sahbifit.api.security.JwtTokenProvider;
 import com.sahbifit.api.tag.model.Tag;
+import com.sahbifit.api.tag.model.UserTag;
 import com.sahbifit.api.tag.repository.TagRepository;
 import com.sahbifit.api.user.model.User;
 import com.sahbifit.api.user.repository.UserRepository;
@@ -73,7 +77,7 @@ public class AuthService {
 
         // 3. Prüfen, ob der Benutzer bereits existiert
         if (userRepository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
-            throw new IllegalArgumentException("Telefonnummer ist bereits vergeben.");
+            throw new PhoneNumberAlreadyExistsException("Telefonnummer ist bereits vergeben.");
         }
 
         // 4. Benutzerobjekt erstellen
@@ -91,21 +95,66 @@ public class AuthService {
         }
 
         // 6. Profil-Tags (Goals, Schedule) verarbeiten und speichern
+        java.util.Set<UserTag> allUserTags = new java.util.HashSet<>();
+
+        // --- Verarbeitung der GOAL Tags (1 DB-Abfrage) ---
         if (request.getGoalTagIds() != null && !request.getGoalTagIds().isEmpty()) {
-            Set<Tag> goalTags = request.getGoalTagIds().stream()
-                    .map(tagId -> tagRepository.findById(tagId)
-                            .orElseThrow(() -> new ResourceNotFoundException("Tag nicht gefunden mit ID: " + tagId)))
-                    .collect(Collectors.toSet());
-            user.setGoals(goalTags);
+            
+            // 1. Hole ALLE Goal-Tags mit EINER einzigen Datenbankabfrage
+            java.util.List<Tag> goalTags = tagRepository.findAllById(request.getGoalTagIds());
+            
+            // 2. Validierung: Sicherstellen, dass alle angeforderten IDs auch gefunden wurden
+            if (goalTags.size() != request.getGoalTagIds().size()) {
+                throw new ResourceNotFoundException("Ein oder mehrere 'Goal' Tags wurden nicht gefunden.");
+            }
+
+            // 3. Mappe die Tags im Speicher (keine weiteren DB-Aufrufe)
+            java.util.Set<UserTag> goalUserTags = goalTags.stream()
+                .map(tag -> {
+                    // Optionale, aber empfohlene Validierung des Tag-Typs
+                    if (tag.getTagType() != com.sahbifit.api.model.enums.TagType.goal) {
+                         throw new IllegalArgumentException("Tag " + tag.getTagName() + " ist kein 'Goal' Tag.");
+                    }
+                    UserTag userTag = new UserTag();
+                    userTag.setUser(user); // Verknüpft mit dem neuen User
+                    userTag.setTag(tag);   // Verknüpft mit dem gefundenen Tag
+                    return userTag;
+                })
+                .collect(Collectors.toSet());
+            
+            allUserTags.addAll(goalUserTags);
         }
 
+        // --- Verarbeitung der SCHEDULE Tags (1 DB-Abfrage) ---
         if (request.getScheduleTagIds() != null && !request.getScheduleTagIds().isEmpty()) {
-            Set<Tag> scheduleTags = request.getScheduleTagIds().stream()
-                    .map(tagId -> tagRepository.findById(tagId)
-                            .orElseThrow(() -> new ResourceNotFoundException("Tag nicht gefunden mit ID: " + tagId)))
-                    .collect(Collectors.toSet());
-            user.setSchedule(scheduleTags);
+
+            // 1. Hole ALLE Schedule-Tags mit EINER einzigen Datenbankabfrage
+            java.util.List<Tag> scheduleTags = tagRepository.findAllById(request.getScheduleTagIds());
+            
+            // 2. Validierung
+            if (scheduleTags.size() != request.getScheduleTagIds().size()) {
+                throw new ResourceNotFoundException("Ein oder mehrere 'Schedule' Tags wurden nicht gefunden.");
+            }
+
+            // 3. Mappe die Tags im Speicher (keine weiteren DB-Aufrufe)
+            java.util.Set<UserTag> scheduleUserTags = scheduleTags.stream()
+                .map(tag -> {
+                    // Validierung des Tag-Typs
+                    if (tag.getTagType() != com.sahbifit.api.model.enums.TagType.schedule) {
+                         throw new IllegalArgumentException("Tag " + tag.getTagName() + " ist kein 'Schedule' Tag.");
+                    }
+                    UserTag userTag = new UserTag();
+                    userTag.setUser(user);
+                    userTag.setTag(tag);
+                    return userTag;
+                })
+                .collect(Collectors.toSet());
+
+            allUserTags.addAll(scheduleUserTags);
         }
+
+        // Hier rufen wir die EINE korrekte Set-Methode von User.java auf
+        user.setUserTags(allUserTags);
 
         // 7. Standardwerte setzen (gemäß Ihrer Spezifikation)
         user.setRole(UserRole.member);
@@ -129,9 +178,10 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest loginRequest) {
-        // 1. Authentifizieren
-        // Dies löst UserDetailsServiceImpl.loadUserByUsername aus
-        // und prüft, ob isPhoneVerified = true ist.
+        // REMOVED: The manual user check and phone verification check
+        // All validation will now happen in UserDetailsServiceImpl
+        
+        // 1. Authenticate (this will call UserDetailsServiceImpl.loadUserByUsername)
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getPhoneNumber(),
@@ -173,12 +223,12 @@ public class AuthService {
             user.setSmsOtp(null);
             user.setSmsOtpExpiresAt(null);
             userRepository.save(user);
-            throw new IllegalStateException("OTP ist abgelaufen. Bitte einen neuen Code anfordern.");
+            throw new OtpExpiredException("OTP ist abgelaufen. Bitte einen neuen Code anfordern.");
         }
 
         // 5. Prüfen, ob der OTP-Code korrekt ist
         if (!user.getSmsOtp().equals(request.getOtp())) {
-            throw new IllegalArgumentException("Ungültiger OTP-Code.");
+            throw new InvalidOtpException("Ungültiger OTP-Code.");
         }
 
         // 6. Erfolg! Benutzer als verifiziert markieren
@@ -189,6 +239,43 @@ public class AuthService {
         user.setSmsOtpExpiresAt(null);
 
         userRepository.save(user);
+    }
+
+    /**
+     * Sendet einen neuen OTP-Code an eine nicht verifizierte Telefonnummer.
+     * Wird verwendet, wenn der ursprüngliche OTP abgelaufen ist.
+     */
+    @Transactional
+    public void resendOtp(ResendOtpRequest request) {
+        // 1. reCAPTCHA validieren
+        reCaptchaService.validate(request.getRecaptchaToken());
+
+        // 2. Tunesische Nummernvalidierung
+        if (!isTunisianNumber(request.getPhoneNumber())) {
+            throw new IllegalArgumentException("Ungültiges tunesisches Telefonnummernformat.");
+        }
+
+        // 3. Benutzer anhand der Telefonnummer finden
+        User user = userRepository.findByPhoneNumber(request.getPhoneNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("Benutzer nicht gefunden."));
+
+        // 4. Prüfen, ob bereits verifiziert
+        if (user.isPhoneVerified()) {
+            throw new IllegalArgumentException("Konto ist bereits verifiziert. Bitte einloggen.");
+        }
+
+        // 5. Neuen OTP generieren
+        String newOtp = generateOtp();
+        
+        // 6. Neuen OTP und Ablaufdatum setzen
+        user.setSmsOtp(newOtp);
+        user.setSmsOtpExpiresAt(OffsetDateTime.now().plusMinutes(10)); // 10 Minuten Gültigkeit
+        
+        // 7. Benutzer speichern
+        userRepository.save(user);
+
+        // 8. SMS mit neuem OTP senden
+        smsService.sendVerificationSms(user.getPhoneNumber(), newOtp);
     }
 
     // --- Private Hilfsmethoden ---

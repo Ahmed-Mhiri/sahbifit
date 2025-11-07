@@ -1,5 +1,7 @@
 package com.sahbifit.api.security;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +14,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -20,39 +25,50 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    // (Optional) Fügen Sie hier Ihre CorsConfig-Bean ein, wenn Sie sie verwenden möchten
-    // @Autowired
-    // private CorsConfig corsConfig;
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors() // Aktiviert CORS (vorausgesetzt, Sie haben eine @Bean CorsConfigurationSource)
-            .and()
-            .csrf().disable() // Deaktiviert CSRF für stateless API
-            .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Keine Sessions
-            .and()
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                // Hier geben wir die Auth-Endpunkte frei
+                // Öffentliche Endpunkte
                 .requestMatchers("/api/auth/**").permitAll()
+                
+                // --- ADMIN ENDPUNKTE ---
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                
+                // --- VERIFICATION ENDPUNKTE - für alle authentifizierten Benutzer ---
+                .requestMatchers("/api/verification/**").authenticated()
+                
                 // Alle anderen Anfragen erfordern Authentifizierung
                 .anyRequest().authenticated()
             );
 
-        // Fügt unseren JWT-Filter *vor* dem Standard-Spring-Security-Filter ein
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

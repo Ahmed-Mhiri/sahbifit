@@ -1,0 +1,3091 @@
+﻿==================================================
+Path: ApiApplication.java
+==================================================
+package com.sahbifit.api;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class ApiApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(ApiApplication.class, args);
+	}
+
+}
+
+
+==================================================
+Path: AdminController.java
+==================================================
+package com.sahbifit.api.admin;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.sahbifit.api.admin.dto.ApproveVerificationRequest;
+import com.sahbifit.api.admin.dto.RejectVerificationRequest;
+import com.sahbifit.api.admin.dto.VerificationQueueDto;
+
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/admin/verification")
+public class AdminController {
+
+    @Autowired
+    private AdminService adminService;
+
+    /**
+     * (FÃ¼r Appsmith) Holt die Warteschlange der zu verifizierenden Benutzer.
+     */
+    @GetMapping("/queue")
+    public ResponseEntity<List<VerificationQueueDto>> getQueue() {
+        log.info("Admin abfrage Verifikations-Warteschlange");
+        List<VerificationQueueDto> queue = adminService.getVerificationQueue();
+        log.info("Gefunden {} Benutzer in der Warteschlange", queue.size());
+        return ResponseEntity.ok(queue);
+    }
+
+    /**
+     * (FÃ¼r Appsmith) Genehmigt einen Benutzer.
+     */
+    @PutMapping("/approve")
+    public ResponseEntity<?> approveUser(@Valid @RequestBody ApproveVerificationRequest request) {
+        log.info("Admin genehmigt Benutzer: {}, Geschlecht: {}", 
+                request.getUserId(), request.getVerifiedGender());
+        
+        adminService.approveVerification(request.getUserId(), request.getVerifiedGender());
+        return ResponseEntity.ok("Benutzer genehmigt.");
+    }
+
+    /**
+     * (FÃ¼r Appsmith) Lehnt einen Benutzer ab.
+     */
+    @PutMapping("/reject")
+    public ResponseEntity<?> rejectUser(@Valid @RequestBody RejectVerificationRequest request) {
+        log.info("Admin lehnt Benutzer ab: {}, Grund: {}", 
+                request.getUserId(), request.getReason());
+        
+        adminService.rejectVerification(request.getUserId(), request.getReason());
+        return ResponseEntity.ok("Benutzer abgelehnt.");
+    }
+}
+
+
+==================================================
+Path: AdminService.java
+==================================================
+package com.sahbifit.api.admin;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sahbifit.api.admin.dto.VerificationQueueDto;
+import com.sahbifit.api.external.storage.StorageService;
+import com.sahbifit.api.model.enums.VerificationStatus;
+import com.sahbifit.api.model.enums.VerifiedGender;
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.repository.UserRepository;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+public class AdminService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private StorageService storageService; // For file deletion
+
+    // Optional: FÃ¼r spÃ¤tere Push-Benachrichtigungen
+    // @Autowired
+    // private PushNotificationService pushNotificationService;
+
+    /**
+     * Holt alle Benutzer, die auf Verifizierung warten.
+     */
+    public List<VerificationQueueDto> getVerificationQueue() {
+        List<User> pendingUsers = userRepository.findByVerificationStatus(VerificationStatus.pending_review);
+
+        return pendingUsers.stream().map(user -> {
+            VerificationQueueDto dto = new VerificationQueueDto();
+            dto.setUserId(user.getUserId());
+            dto.setFirstName(user.getFirstName());
+            dto.setProfilePhotoUrl(user.getProfilePhotoUrl());
+            dto.setVerificationVideoUrl(user.getVerificationVideoUrl());
+            
+            // FIX: Remove the atOffset() call since updatedAt is already OffsetDateTime
+            dto.setSubmittedAt(user.getUpdatedAt());
+            
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Genehmigt einen Benutzer und setzt sein Geschlecht.
+     */
+    @Transactional
+    public void approveVerification(UUID userId, VerifiedGender gender) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden."));
+
+        if (user.getVerificationStatus() != VerificationStatus.pending_review) {
+            throw new IllegalStateException("Benutzer wartet nicht auf Genehmigung.");
+        }
+
+        // âœ… Store old video URL before clearing it
+        String oldVideoUrl = user.getVerificationVideoUrl();
+
+        user.setVerificationStatus(VerificationStatus.verified);
+        user.setVerifiedGender(gender);
+        
+        // âœ… UNCOMMENTED: Delete video URL for data protection
+        user.setVerificationVideoUrl(null); 
+
+        userRepository.save(user);
+
+        // âœ… NEW: Delete the actual file from storage
+        if (oldVideoUrl != null) {
+            try {
+                storageService.deleteFile(oldVideoUrl);
+                log.info("Verifizierungsvideo gelÃ¶scht fÃ¼r Benutzer: {}", userId);
+            } catch (IOException e) {
+                log.error("Fehler beim LÃ¶schen des Verifizierungsvideos fÃ¼r Benutzer {}: {}", userId, e.getMessage());
+                // Don't throw exception - the user is still approved, just log the error
+            }
+        }
+
+        log.info("Benutzer {} wurde verifiziert. Geschlecht: {}", userId, gender);
+
+        // Der "Magic Moment" (Push-Benachrichtigung) - spÃ¤ter implementieren
+        // pushNotificationService.sendVerificationApproved(user);
+    }
+
+    /**
+     * Lehnt einen Benutzer aus einem bestimmten Grund ab.
+     */
+    @Transactional
+    public void rejectVerification(UUID userId, VerificationStatus reason) {
+        if (reason != VerificationStatus.rejected_bad_video && reason != VerificationStatus.rejected_mismatch) {
+            throw new IllegalArgumentException("UngÃ¼ltiger Ablehnungsgrund.");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden."));
+
+        if (user.getVerificationStatus() != VerificationStatus.pending_review) {
+            throw new IllegalStateException("Benutzer wartet nicht auf Genehmigung.");
+        }
+
+        // âœ… Store old video URL before clearing it
+        String oldVideoUrl = user.getVerificationVideoUrl();
+
+        user.setVerificationStatus(reason);
+        user.setVerificationVideoUrl(null); // Delete reference
+
+        userRepository.save(user);
+
+        // âœ… NEW: Delete the actual file from storage
+        if (oldVideoUrl != null) {
+            try {
+                storageService.deleteFile(oldVideoUrl);
+                log.info("Verifizierungsvideo gelÃ¶scht fÃ¼r abgelehnten Benutzer: {}", userId);
+            } catch (IOException e) {
+                log.error("Fehler beim LÃ¶schen des Verifizierungsvideos fÃ¼r abgelehnten Benutzer {}: {}", userId, e.getMessage());
+                // Don't throw exception - the rejection still proceeds
+            }
+        }
+
+        log.info("Benutzer {} wurde abgelehnt. Grund: {}", userId, reason);
+
+        // (Optional) Sende Push-Benachrichtigung Ã¼ber Ablehnung
+        // pushNotificationService.sendVerificationRejected(user, reason);
+    }
+}
+
+
+==================================================
+Path: ApproveVerificationRequest.java
+==================================================
+package com.sahbifit.api.admin.dto;
+
+import java.util.UUID;
+
+import com.sahbifit.api.model.enums.VerifiedGender;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class ApproveVerificationRequest {
+    @NotNull
+    private UUID userId;
+    
+    @NotNull
+    private VerifiedGender verifiedGender;
+}
+
+
+==================================================
+Path: RejectVerificationRequest.java
+==================================================
+package com.sahbifit.api.admin.dto;
+
+import java.util.UUID;
+
+import com.sahbifit.api.model.enums.VerificationStatus;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class RejectVerificationRequest {
+    @NotNull
+    private UUID userId;
+    
+    @NotNull
+    private VerificationStatus reason;
+}
+
+
+==================================================
+Path: VerificationQueueDto.java
+==================================================
+package com.sahbifit.api.admin.dto;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class VerificationQueueDto {
+    private UUID userId;
+    private String firstName;
+    private String profilePhotoUrl;
+    private String verificationVideoUrl;
+    private OffsetDateTime submittedAt;
+}
+
+
+==================================================
+Path: AuthController.java
+==================================================
+package com.sahbifit.api.auth;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.sahbifit.api.auth.dto.AuthResponse;
+import com.sahbifit.api.auth.dto.LoginRequest;
+import com.sahbifit.api.auth.dto.RegisterRequest;
+import com.sahbifit.api.auth.dto.ResendOtpRequest; // NEUER IMPORT
+import com.sahbifit.api.auth.dto.VerifySmsRequest;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+
+    @Autowired
+    private AuthService authService;
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        AuthResponse authResponse = authService.login(loginRequest);
+        return ResponseEntity.ok(authResponse);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
+        authService.register(registerRequest);
+        // Aktualisierte deutsche Antwort
+        return ResponseEntity.ok("Registrierung erfolgreich! Bitte prÃ¼fen Sie Ihre SMS, um Ihr Konto zu verifizieren.");
+    }
+
+    /**
+     * BestÃ¤tigt die Telefonnummer eines Benutzers mit dem per SMS gesendeten OTP.
+     */
+    @PostMapping("/verify-sms")
+    public ResponseEntity<?> verifySms(@Valid @RequestBody VerifySmsRequest verifyRequest) {
+        authService.verifySmsOtp(verifyRequest);
+        return ResponseEntity.ok("Telefonnummer erfolgreich verifiziert. Sie kÃ¶nnen sich jetzt einloggen.");
+    }
+
+    // --- NEUER ENDPUNKT ---
+
+    /**
+     * Sendet einen neuen OTP-Code an eine nicht verifizierte Telefonnummer.
+     * Wird verwendet, wenn der ursprÃ¼ngliche OTP abgelaufen ist.
+     */
+    @PostMapping("/resend-otp")
+    public ResponseEntity<?> resendOtp(@Valid @RequestBody ResendOtpRequest resendRequest) {
+        authService.resendOtp(resendRequest);
+        return ResponseEntity.ok("Neuer BestÃ¤tigungscode wurde per SMS gesendet.");
+    }
+}
+
+
+==================================================
+Path: AuthService.java
+==================================================
+package com.sahbifit.api.auth;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.Random;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sahbifit.api.auth.dto.AuthResponse;
+import com.sahbifit.api.auth.dto.LoginRequest;
+import com.sahbifit.api.auth.dto.RegisterRequest;
+import com.sahbifit.api.auth.dto.ResendOtpRequest;
+import com.sahbifit.api.auth.dto.VerifySmsRequest;
+import com.sahbifit.api.exception.InvalidOtpException;
+import com.sahbifit.api.exception.OtpExpiredException;
+import com.sahbifit.api.exception.PhoneNumberAlreadyExistsException;
+import com.sahbifit.api.exception.ResourceNotFoundException;
+import com.sahbifit.api.external.recaptcha.ReCaptchaService;
+import com.sahbifit.api.external.sms.SmsService;
+import com.sahbifit.api.gym.model.Gym;
+import com.sahbifit.api.gym.repository.GymRepository;
+import com.sahbifit.api.model.enums.UserRole;
+import com.sahbifit.api.model.enums.UserStatus;
+import com.sahbifit.api.model.enums.VerificationStatus;
+import com.sahbifit.api.model.enums.VerifiedGender;
+import com.sahbifit.api.security.JwtTokenProvider;
+import com.sahbifit.api.tag.model.Tag;
+import com.sahbifit.api.tag.model.UserTag;
+import com.sahbifit.api.tag.repository.TagRepository;
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.repository.UserRepository;
+
+@Service
+public class AuthService {
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtTokenProvider tokenProvider;
+
+    @Autowired
+    private SmsService smsService;
+
+    @Autowired
+    private ReCaptchaService reCaptchaService;
+
+    @Autowired
+    private GymRepository gymRepository;
+
+    @Autowired
+    private TagRepository tagRepository;
+
+    @Transactional
+    public void register(RegisterRequest request) {
+        // 1. reCAPTCHA v3 Validierung
+        reCaptchaService.validate(request.getRecaptchaToken());
+
+        // 2. Tunesische Nummernvalidierung
+        if (!isTunisianNumber(request.getPhoneNumber())) {
+            throw new IllegalArgumentException("UngÃ¼ltiges tunesisches Telefonnummernformat.");
+        }
+
+        // 3. PrÃ¼fen, ob der Benutzer bereits existiert
+        if (userRepository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
+            throw new PhoneNumberAlreadyExistsException("Telefonnummer ist bereits vergeben.");
+        }
+
+        // 4. Benutzerobjekt erstellen
+        User user = new User();
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setFirstName(request.getFirstName());
+        user.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
+
+        // 5. Primary Gym setzen
+        if (request.getPrimaryGymId() != null) {
+            Gym primaryGym = gymRepository.findById(request.getPrimaryGymId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Gym nicht gefunden mit ID: " + request.getPrimaryGymId()));
+            user.setPrimaryGym(primaryGym);
+        }
+
+        // 6. Profil-Tags (Goals, Schedule) verarbeiten und speichern
+        java.util.Set<UserTag> allUserTags = new java.util.HashSet<>();
+
+        // --- Verarbeitung der GOAL Tags (1 DB-Abfrage) ---
+        if (request.getGoalTagIds() != null && !request.getGoalTagIds().isEmpty()) {
+            
+            // 1. Hole ALLE Goal-Tags mit EINER einzigen Datenbankabfrage
+            java.util.List<Tag> goalTags = tagRepository.findAllById(request.getGoalTagIds());
+            
+            // 2. Validierung: Sicherstellen, dass alle angeforderten IDs auch gefunden wurden
+            if (goalTags.size() != request.getGoalTagIds().size()) {
+                throw new ResourceNotFoundException("Ein oder mehrere 'Goal' Tags wurden nicht gefunden.");
+            }
+
+            // 3. Mappe die Tags im Speicher (keine weiteren DB-Aufrufe)
+            java.util.Set<UserTag> goalUserTags = goalTags.stream()
+                .map(tag -> {
+                    // Optionale, aber empfohlene Validierung des Tag-Typs
+                    if (tag.getTagType() != com.sahbifit.api.model.enums.TagType.goal) {
+                         throw new IllegalArgumentException("Tag " + tag.getTagName() + " ist kein 'Goal' Tag.");
+                    }
+                    UserTag userTag = new UserTag();
+                    userTag.setUser(user); // VerknÃ¼pft mit dem neuen User
+                    userTag.setTag(tag);   // VerknÃ¼pft mit dem gefundenen Tag
+                    return userTag;
+                })
+                .collect(Collectors.toSet());
+            
+            allUserTags.addAll(goalUserTags);
+        }
+
+        // --- Verarbeitung der SCHEDULE Tags (1 DB-Abfrage) ---
+        if (request.getScheduleTagIds() != null && !request.getScheduleTagIds().isEmpty()) {
+
+            // 1. Hole ALLE Schedule-Tags mit EINER einzigen Datenbankabfrage
+            java.util.List<Tag> scheduleTags = tagRepository.findAllById(request.getScheduleTagIds());
+            
+            // 2. Validierung
+            if (scheduleTags.size() != request.getScheduleTagIds().size()) {
+                throw new ResourceNotFoundException("Ein oder mehrere 'Schedule' Tags wurden nicht gefunden.");
+            }
+
+            // 3. Mappe die Tags im Speicher (keine weiteren DB-Aufrufe)
+            java.util.Set<UserTag> scheduleUserTags = scheduleTags.stream()
+                .map(tag -> {
+                    // Validierung des Tag-Typs
+                    if (tag.getTagType() != com.sahbifit.api.model.enums.TagType.schedule) {
+                         throw new IllegalArgumentException("Tag " + tag.getTagName() + " ist kein 'Schedule' Tag.");
+                    }
+                    UserTag userTag = new UserTag();
+                    userTag.setUser(user);
+                    userTag.setTag(tag);
+                    return userTag;
+                })
+                .collect(Collectors.toSet());
+
+            allUserTags.addAll(scheduleUserTags);
+        }
+
+        // Hier rufen wir die EINE korrekte Set-Methode von User.java auf
+        user.setUserTags(allUserTags);
+
+        // 7. Standardwerte setzen (gemÃ¤ÃŸ Ihrer Spezifikation)
+        user.setRole(UserRole.member);
+        user.setStatus(UserStatus.active);
+        user.setVerificationStatus(VerificationStatus.not_started);
+        user.setVerifiedGender(VerifiedGender.not_verified);
+        user.setPhoneVerified(false);
+
+        // 8. OTP (One-Time Password) fÃ¼r SMS generieren
+        String otp = generateOtp();
+        
+        // 9. OTP und Ablaufdatum in der DB speichern
+        user.setSmsOtp(otp);
+        user.setSmsOtpExpiresAt(OffsetDateTime.now().plusMinutes(10)); // 10 Minuten GÃ¼ltigkeit
+        
+        // 10. Benutzer speichern
+        userRepository.save(user);
+
+        // 11. SMS senden
+        smsService.sendVerificationSms(user.getPhoneNumber(), otp);
+    }
+
+    public AuthResponse login(LoginRequest loginRequest) {
+        // REMOVED: The manual user check and phone verification check
+        // All validation will now happen in UserDetailsServiceImpl
+        
+        // 1. Authenticate (this will call UserDetailsServiceImpl.loadUserByUsername)
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getPhoneNumber(),
+                        loginRequest.getPassword()
+                )
+        );
+
+        // 2. Security Context setzen
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // 3. JWT generieren
+        String jwt = tokenProvider.generateToken(authentication);
+        return new AuthResponse(jwt);
+    }
+
+    /**
+     * Verifiziert den SMS-OTP-Code eines Benutzers.
+     */
+    @Transactional
+    public void verifySmsOtp(VerifySmsRequest request) {
+        // 1. Benutzer anhand der Telefonnummer finden
+        User user = userRepository.findByPhoneNumber(request.getPhoneNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("Benutzer nicht gefunden."));
+
+        // 2. PrÃ¼fen, ob bereits verifiziert
+        if (user.isPhoneVerified()) {
+            // Kein Fehler, aber auch keine Aktion nÃ¶tig.
+            return; 
+        }
+
+        // 3. PrÃ¼fen, ob ein OTP gespeichert ist
+        if (user.getSmsOtp() == null || user.getSmsOtpExpiresAt() == null) {
+            throw new IllegalStateException("Kein ausstehender OTP gefunden. Bitte erneut anfordern.");
+        }
+
+        // 4. PrÃ¼fen, ob der OTP abgelaufen ist
+        if (OffsetDateTime.now().isAfter(user.getSmsOtpExpiresAt())) {
+            // OTP lÃ¶schen, um Wiederverwendung zu verhindern
+            user.setSmsOtp(null);
+            user.setSmsOtpExpiresAt(null);
+            userRepository.save(user);
+            throw new OtpExpiredException("OTP ist abgelaufen. Bitte einen neuen Code anfordern.");
+        }
+
+        // 5. PrÃ¼fen, ob der OTP-Code korrekt ist
+        if (!user.getSmsOtp().equals(request.getOtp())) {
+            throw new InvalidOtpException("UngÃ¼ltiger OTP-Code.");
+        }
+
+        // 6. Erfolg! Benutzer als verifiziert markieren
+        user.setPhoneVerified(true);
+        
+        // 7. OTP-Felder aus SicherheitsgrÃ¼nden lÃ¶schen
+        user.setSmsOtp(null);
+        user.setSmsOtpExpiresAt(null);
+
+        userRepository.save(user);
+    }
+
+    /**
+     * Sendet einen neuen OTP-Code an eine nicht verifizierte Telefonnummer.
+     * Wird verwendet, wenn der ursprÃ¼ngliche OTP abgelaufen ist.
+     */
+    @Transactional
+    public void resendOtp(ResendOtpRequest request) {
+        // 1. reCAPTCHA validieren
+        reCaptchaService.validate(request.getRecaptchaToken());
+
+        // 2. Tunesische Nummernvalidierung
+        if (!isTunisianNumber(request.getPhoneNumber())) {
+            throw new IllegalArgumentException("UngÃ¼ltiges tunesisches Telefonnummernformat.");
+        }
+
+        // 3. Benutzer anhand der Telefonnummer finden
+        User user = userRepository.findByPhoneNumber(request.getPhoneNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("Benutzer nicht gefunden."));
+
+        // 4. PrÃ¼fen, ob bereits verifiziert
+        if (user.isPhoneVerified()) {
+            throw new IllegalArgumentException("Konto ist bereits verifiziert. Bitte einloggen.");
+        }
+
+        // 5. Neuen OTP generieren
+        String newOtp = generateOtp();
+        
+        // 6. Neuen OTP und Ablaufdatum setzen
+        user.setSmsOtp(newOtp);
+        user.setSmsOtpExpiresAt(OffsetDateTime.now().plusMinutes(10)); // 10 Minuten GÃ¼ltigkeit
+        
+        // 7. Benutzer speichern
+        userRepository.save(user);
+
+        // 8. SMS mit neuem OTP senden
+        smsService.sendVerificationSms(user.getPhoneNumber(), newOtp);
+    }
+
+    // --- Private Hilfsmethoden ---
+
+    private boolean isTunisianNumber(String phone) {
+        // Implementieren Sie hier Ihre Validierungslogik
+        // z.B. Regex fÃ¼r (2, 3, 4, 5, 7, 9) + 7 Ziffern
+        return phone != null && phone.matches("^(2|3|4|5|7|9)\\d{7}$");
+    }
+
+    private String generateOtp() {
+        // Erzeugt einen 6-stelligen Code
+        return String.format("%06d", new Random().nextInt(999999));
+    }
+}
+
+
+==================================================
+Path: AuthResponse.java
+==================================================
+package com.sahbifit.api.auth.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor // Erstellt einen Konstruktor, der den Token annimmt
+public class AuthResponse {
+
+    private String jwtToken;
+
+    // Optional: Sie kÃ¶nnten hier auch eine "gÃ¼ltig bis" Zeit hinzufÃ¼gen
+    // private String tokenType = "Bearer";
+}
+
+
+==================================================
+Path: LoginRequest.java
+==================================================
+package com.sahbifit.api.auth.dto;
+
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class LoginRequest {
+
+    @NotBlank(message = "Telefonnummer darf nicht leer sein.")
+    private String phoneNumber;
+
+    @NotBlank(message = "Passwort darf nicht leer sein.")
+    private String password;
+}
+
+
+==================================================
+Path: RegisterRequest.java
+==================================================
+package com.sahbifit.api.auth.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
+import java.util.UUID;
+
+@Getter
+@Setter
+public class RegisterRequest {
+
+    // --- Kern-Authentifizierung ---
+
+    @NotBlank(message = "Telefonnummer darf nicht leer sein.")
+    @Pattern(regexp = "^(2|3|4|5|7|9)\\d{7}$", message = "UngÃ¼ltige tunesische Telefonnummer. (Erwartet: 8 Ziffern ohne +216)")
+    private String phoneNumber;
+
+    @NotBlank(message = "Passwort darf nicht leer sein.")
+    @Size(min = 8, message = "Passwort muss mindestens 8 Zeichen lang sein.")
+    private String password;
+
+    @NotBlank(message = "reCAPTCHA Token darf nicht leer sein.")
+    private String recaptchaToken;
+
+    // --- Profilfelder (wie im PRD definiert) ---
+
+    @NotBlank(message = "Vorname darf nicht leer sein.")
+    @Size(max = 100, message = "Vorname darf maximal 100 Zeichen lang sein.")
+    private String firstName;
+
+    @NotBlank(message = "Geburtsdatum darf nicht leer sein.")
+    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Geburtsdatum muss im Format YYYY-MM-DD sein.")
+    private String dateOfBirth; // Wird im Service zu LocalDate geparst
+
+    @NotNull(message = "PrimÃ¤res Fitnessstudio muss ausgewÃ¤hlt werden.")
+    private UUID primaryGymId;
+
+    // Optional: Die URL kann beim Erstellen des Profils oder spÃ¤ter hinzugefÃ¼gt werden.
+    private String profilePhotoUrl; 
+
+    // --- Profil-Tagging-System ---
+
+    // Liste von Tag-IDs (Integer), die der Benutzer fÃ¼r seine Ziele ausgewÃ¤hlt hat
+    private List<Integer> goalTagIds; 
+
+    // Liste von Tag-IDs (Integer), die der Benutzer fÃ¼r seine VerfÃ¼gbarkeit ausgewÃ¤hlt hat
+    private List<Integer> scheduleTagIds;
+
+}
+
+
+==================================================
+Path: ResendOtpRequest.java
+==================================================
+package com.sahbifit.api.auth.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class ResendOtpRequest {
+
+    @NotBlank(message = "Telefonnummer darf nicht leer sein.")
+    @Pattern(regexp = "^(2|3|4|5|7|9)\\d{7}$", message = "UngÃ¼ltige tunesische Telefonnummer. (Erwartet: 8 Ziffern ohne +216)")
+    private String phoneNumber;
+
+    @NotBlank(message = "reCAPTCHA Token darf nicht leer sein.")
+    private String recaptchaToken;
+}
+
+
+==================================================
+Path: VerifySmsRequest.java
+==================================================
+package com.sahbifit.api.auth.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class VerifySmsRequest {
+
+    @NotBlank(message = "Telefonnummer darf nicht leer sein.")
+    @Pattern(regexp = "^(2|3|4|5|7|9)\\d{7}$", message = "UngÃ¼ltige tunesische Telefonnummer.")
+    private String phoneNumber;
+
+    @NotBlank(message = "OTP darf nicht leer sein.")
+    @Size(min = 6, max = 6, message = "OTP muss 6 Ziffern lang sein.")
+    private String otp;
+}
+
+
+==================================================
+Path: CloudflareConfig.java
+==================================================
+package com.sahbifit.api.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Configuration
+@ConfigurationProperties(prefix = "cloudflare.r2")
+public class CloudflareConfig {
+    private String accessKeyId;
+    private String secretAccessKey;
+    private String bucketName;
+    private String accountId;
+    private String publicUrl;
+    private String endpoint;
+    
+    public String getEndpoint() {
+        return String.format("https://%s.r2.cloudflarestorage.com", accountId);
+    }
+    
+    public String getPublicUrl() {
+        return String.format("https://pub-%s.r2.dev", accountId);
+    }
+}
+
+
+==================================================
+Path: CorsConfig.java
+==================================================
+
+
+==================================================
+Path: FirebaseConfig.java
+==================================================
+
+
+==================================================
+Path: PostGisConfig.java
+==================================================
+
+
+==================================================
+Path: ReCaptchaConfig.java
+==================================================
+package com.sahbifit.api.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Configuration
+@ConfigurationProperties(prefix = "recaptcha") // Bindet an recaptcha.*
+@Getter
+@Setter
+public class ReCaptchaConfig {
+
+    private String secretKey;
+    private String verifyUrl;
+    private double scoreThreshold; // Wichtig fÃ¼r die Validierung
+}
+
+
+==================================================
+Path: S3ClientConfig.java
+==================================================
+package com.sahbifit.api.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
+
+import java.net.URI;
+
+@Configuration
+public class S3ClientConfig {
+
+    @Autowired
+    private CloudflareConfig cloudflareConfig;
+
+    @Bean
+    public S3Client s3Client() {
+        AwsBasicCredentials awsCreds = AwsBasicCredentials.create(
+            cloudflareConfig.getAccessKeyId(),
+            cloudflareConfig.getSecretAccessKey()
+        );
+
+        return S3Client.builder()
+                .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
+                .endpointOverride(URI.create(cloudflareConfig.getEndpoint()))
+                .region(Region.of("auto")) // R2 benÃ¶tigt "auto" als Region
+                .serviceConfiguration(S3Configuration.builder()
+                        .chunkedEncodingEnabled(false) // Wichtig fÃ¼r R2 KompatibilitÃ¤t
+                        .pathStyleAccessEnabled(true) // R2 benÃ¶tigt Path-Style
+                        .build())
+                .build();
+    }
+}
+
+
+==================================================
+Path: WinSmsConfig.java
+==================================================
+package com.sahbifit.api.config;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.Duration;
+
+@Configuration
+@ConfigurationProperties(prefix = "winsms") // Bindet an winsms.api-key & winsms.base-url
+@Getter
+@Setter
+public class WinSmsConfig {
+
+    // Diese Felder werden automatisch aus application.properties befÃ¼llt
+    private String apiKey;
+    private String baseUrl;
+
+    /**
+     * Stellt ein RestTemplate-Bean fÃ¼r die Anwendung bereit.
+     * RestTemplate ist der moderne Spring-Weg, um HTTP-Anfragen zu senden.
+     */
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        // Setzt Timeouts, genau wie in Ihrem Beispiel (1000ms)
+        return builder
+                .setConnectTimeout(Duration.ofMillis(1000))
+                .setReadTimeout(Duration.ofMillis(1000))
+                .build();
+    }
+}
+
+
+==================================================
+Path: AccessDeniedException.java
+==================================================
+
+
+==================================================
+Path: GlobalExceptionHandler.java
+==================================================
+
+
+==================================================
+Path: InvalidOtpException.java
+==================================================
+package com.sahbifit.api.exception;
+
+/**
+ * Exception die ausgelÃ¶st wird, wenn ein ungÃ¼ltiger OTP-Code eingegeben wurde.
+ */
+public class InvalidOtpException extends RuntimeException {
+
+    public InvalidOtpException() {
+        super();
+    }
+
+    public InvalidOtpException(String message) {
+        super(message);
+    }
+
+    public InvalidOtpException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public InvalidOtpException(Throwable cause) {
+        super(cause);
+    }
+}
+
+
+==================================================
+Path: OtpExpiredException.java
+==================================================
+package com.sahbifit.api.exception;
+
+/**
+ * Exception die ausgelÃ¶st wird, wenn ein OTP-Code abgelaufen ist.
+ */
+public class OtpExpiredException extends RuntimeException {
+
+    public OtpExpiredException() {
+        super();
+    }
+
+    public OtpExpiredException(String message) {
+        super(message);
+    }
+
+    public OtpExpiredException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public OtpExpiredException(Throwable cause) {
+        super(cause);
+    }
+}
+
+
+==================================================
+Path: PhoneNumberAlreadyExistsException.java
+==================================================
+package com.sahbifit.api.exception;
+
+/**
+ * Exception die ausgelÃ¶st wird, wenn versucht wird einen Benutzer mit einer bereits existierenden Telefonnummer zu registrieren.
+ */
+public class PhoneNumberAlreadyExistsException extends RuntimeException {
+
+    public PhoneNumberAlreadyExistsException() {
+        super();
+    }
+
+    public PhoneNumberAlreadyExistsException(String message) {
+        super(message);
+    }
+
+    public PhoneNumberAlreadyExistsException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public PhoneNumberAlreadyExistsException(Throwable cause) {
+        super(cause);
+    }
+}
+
+
+==================================================
+Path: ResourceNotFoundException.java
+==================================================
+package com.sahbifit.api.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+/**
+ * Eine benutzerdefinierte Exception, die ausgelÃ¶st wird, wenn eine Ressource
+ * (z. B. ein Benutzer) nicht gefunden werden konnte.
+ * * Die @ResponseStatus-Annotation sorgt dafÃ¼r, dass Spring Boot automatisch
+ * einen 404 NOT FOUND HTTP-Statuscode zurÃ¼ckgibt, wenn diese Exception 
+ * von einem Controller geworfen wird.
+ */
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class ResourceNotFoundException extends RuntimeException {
+
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
+
+    public ResourceNotFoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
+
+==================================================
+Path: ChatService.java
+==================================================
+
+
+==================================================
+Path: FirebaseChatService.java
+==================================================
+
+
+==================================================
+Path: PushNotificationService.java
+==================================================
+
+
+==================================================
+Path: GoogleReCaptchaService.java
+==================================================
+package com.sahbifit.api.external.recaptcha;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+
+import com.sahbifit.api.config.ReCaptchaConfig;
+
+@Service
+public class GoogleReCaptchaService implements ReCaptchaService {
+
+    private static final Logger logger = LoggerFactory.getLogger(GoogleReCaptchaService.class);
+
+    private final ReCaptchaConfig reCaptchaConfig;
+    private final RestTemplate restTemplate;
+
+    @Autowired
+    public GoogleReCaptchaService(ReCaptchaConfig reCaptchaConfig, RestTemplate restTemplate) {
+        this.reCaptchaConfig = reCaptchaConfig;
+        // Wir verwenden das RestTemplate-Bean wieder, das in WinSmsConfig erstellt wurde!
+        this.restTemplate = restTemplate; 
+    }
+
+    @Override
+    public void validate(String token) {
+        // Google erwartet eine POST-Anfrage mit 'x-www-form-urlencoded' Daten
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("secret", reCaptchaConfig.getSecretKey());
+        body.add("response", token);
+        // Optional kÃ¶nnen Sie auch die IP des Benutzers mitsenden:
+        // body.add("remoteip", userIp);
+
+        ReCaptchaResponse response;
+        try {
+            response = restTemplate.postForObject(
+                    reCaptchaConfig.getVerifyUrl(),
+                    body,
+                    ReCaptchaResponse.class
+            );
+        } catch (Exception e) {
+            logger.error("Fehler bei der Kommunikation mit der Google reCAPTCHA API: {}", e.getMessage());
+            // Wir werfen eine Exception, um die Registrierung zu stoppen
+            throw new RuntimeException("reCAPTCHA-Dienst nicht erreichbar.");
+        }
+
+        // 1. PrÃ¼fen, ob die Anfrage selbst erfolgreich war
+        if (response == null || !response.isSuccess()) {
+            logger.warn("reCAPTCHA-Validierung fehlgeschlagen. Fehler: {}", 
+                (response != null ? response.getErrorCodes() : "Keine Antwort"));
+            throw new RuntimeException("reCAPTCHA-Validierung fehlgeschlagen.");
+        }
+
+        // 2. PrÃ¼fen, ob der Score (Bot-Wahrscheinlichkeit) ausreichend ist
+        if (response.getScore() < reCaptchaConfig.getScoreThreshold()) {
+            logger.warn("Potenzieller Bot blockiert. reCAPTCHA Score: {}", response.getScore());
+            throw new RuntimeException("Validierung fehlgeschlagen (niedriger Score).");
+        }
+        
+        // 3. (Optional) Sie kÃ¶nnen auch die 'action' prÃ¼fen, 
+        //    um sicherzustellen, dass das Token von Ihrer Registrierungsseite stammt.
+        //    z.B. if (!"register".equals(response.getAction())) { ... }
+
+        logger.info("reCAPTCHA-Validierung erfolgreich (Score: {}).", response.getScore());
+    }
+}
+
+
+==================================================
+Path: ReCaptchaResponse.java
+==================================================
+package com.sahbifit.api.external.recaptcha;
+
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class ReCaptchaResponse {
+
+    private boolean success;
+    private double score;
+    private String action;
+    
+    @JsonProperty("challenge_ts") // Maps JSON "challenge_ts" to this field
+    private String challengeTs;
+    
+    private String hostname;
+    
+    @JsonProperty("error-codes") // Maps JSON "error-codes" to this field
+    private List<String> errorCodes;
+}
+
+
+==================================================
+Path: ReCaptchaService.java
+==================================================
+package com.sahbifit.api.external.recaptcha;
+
+public interface ReCaptchaService {
+
+    /**
+     * Validiert ein vom Client gesendetes reCAPTCHA v3 Token.
+     * LÃ¶st eine Ausnahme aus, wenn die Validierung fehlschlÃ¤gt (Bot oder Fehler).
+     *
+     * @param token Das 'response' Token von der reCAPTCHA v3 Client-Seite.
+     */
+    void validate(String token);
+}
+
+
+==================================================
+Path: SmsService.java
+==================================================
+package com.sahbifit.api.external.sms;
+
+public interface SmsService {
+    void sendVerificationSms(String phoneNumber, String otp);
+}
+
+
+==================================================
+Path: WinSmsService.java
+==================================================
+package com.sahbifit.api.external.sms;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.sahbifit.api.config.WinSmsConfig; // Import aus Ihrem Beispiel
+
+@Service // Wichtig: Markiert dies als Spring-Implementierung von SmsService
+public class WinSmsService implements SmsService {
+
+    private static final Logger logger = LoggerFactory.getLogger(WinSmsService.class);
+
+    private final WinSmsConfig winSmsConfig;
+    private final RestTemplate restTemplate;
+
+    @Autowired
+    public WinSmsService(WinSmsConfig winSmsConfig, RestTemplate restTemplate) {
+        this.winSmsConfig = winSmsConfig;
+        this.restTemplate = restTemplate;
+    }
+
+    @Override
+    public void sendVerificationSms(String phoneNumber, String otp) {
+        
+        // ðŸš¨ WICHTIG: WinSMS erwartet '216' als PrÃ¤fix.
+        // Ihre Validierung speichert die Nummer ohne PrÃ¤fix.
+        String fullPhoneNumber = "216" + phoneNumber;
+        
+        String message = String.format("Ihr SahbiFit-Verifizierungscode lautet: %s", otp);
+
+        try {
+            // Wir bauen die URL genau wie in Ihrem Beispiel, 
+            // da WinSMS mÃ¶glicherweise eine spezielle URL-Kodierung erwartet.
+            String params = String.format("action=send-sms&api_key=%s&to=%s&sms=%s",
+                    URLEncoder.encode(winSmsConfig.getApiKey(), StandardCharsets.UTF_8),
+                    URLEncoder.encode(fullPhoneNumber, StandardCharsets.UTF_8),
+                    URLEncoder.encode(message, StandardCharsets.UTF_8));
+            
+            String fullUrl = winSmsConfig.getBaseUrl() + "?" + params;
+
+            // Senden Sie die GET-Anfrage
+            // Wir verwenden getForObject, da wir eine String-Antwort erwarten (z.B. "OK")
+            String response = restTemplate.getForObject(fullUrl, String.class);
+
+            // Antwort von WinSMS prÃ¼fen.
+            if (response != null && response.contains("OK")) {
+                logger.info("SMS an {} erfolgreich gesendet. (OTP: {})", fullPhoneNumber, otp);
+            } else {
+                // Wenn "OK" nicht in der Antwort enthalten ist, loggen wir den Fehler
+                logger.warn("Fehler beim Senden der SMS an {}. API-Antwort: {}", fullPhoneNumber, response);
+            }
+
+        } catch (Exception e) {
+            // FÃ¤ngt alle Fehler ab (z.B. java.io.UnsupportedEncodingException oder RestClientException)
+            logger.error("Fehler bei der Verbindung zur WinSMS-API: {}", e.getMessage(), e);
+        }
+    }
+}
+
+
+==================================================
+Path: CloudflareR2Service.java
+==================================================
+package com.sahbifit.api.external.storage;
+
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+
+import java.io.IOException;
+import java.util.UUID;
+
+import com.sahbifit.api.config.CloudflareConfig;
+
+@Slf4j
+@Service
+public class CloudflareR2Service implements StorageService {
+
+    @Autowired
+    private S3Client s3Client;
+    
+    @Autowired
+    private CloudflareConfig cloudflareConfig;
+
+    @Override
+    public String uploadFile(MultipartFile file, String folder, String fileName) throws IOException {
+        try {
+            // Validierung der Datei
+            if (file.isEmpty()) {
+                throw new IllegalArgumentException("Datei ist leer");
+            }
+
+            // Generiere den vollstÃ¤ndigen S3 Key (Pfad im Bucket)
+            String key = generateFileKey(folder, fileName);
+            
+            log.info("Lade Datei hoch: {} -> {}/{}", file.getOriginalFilename(), 
+                    cloudflareConfig.getBucketName(), key);
+
+            // Metadaten fÃ¼r das Video
+            var metadata = new java.util.HashMap<String, String>();
+            metadata.put("Content-Type", file.getContentType());
+            metadata.put("Original-Filename", file.getOriginalFilename());
+            metadata.put("Upload-Timestamp", String.valueOf(System.currentTimeMillis()));
+
+            // Erstelle PutObjectRequest
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(cloudflareConfig.getBucketName())
+                    .key(key)
+                    .contentType(file.getContentType())
+                    .contentLength(file.getSize())
+                    .metadata(metadata)
+                    .build();
+
+            // Datei hochladen
+            s3Client.putObject(putObjectRequest, 
+                    RequestBody.fromBytes(file.getBytes()));
+
+            // Generiere die Ã¶ffentliche URL
+            String publicUrl = generatePublicUrl(key);
+            
+            log.info("Datei erfolgreich hochgeladen: {}", publicUrl);
+            return publicUrl;
+
+        } catch (S3Exception e) {
+            log.error("S3 Fehler beim Hochladen der Datei: {}", e.awsErrorDetails().errorMessage(), e);
+            throw new IOException("Fehler beim Hochladen der Datei: " + e.awsErrorDetails().errorMessage(), e);
+        } catch (Exception e) {
+            log.error("Unerwarteter Fehler beim Hochladen der Datei", e);
+            throw new IOException("Unerwarteter Fehler beim Hochladen: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void deleteFile(String fileUrl) throws IOException {
+        try {
+            // Extrahiere den Key aus der URL
+            String key = extractKeyFromUrl(fileUrl);
+            
+            log.info("LÃ¶sche Datei: {}", key);
+            
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(cloudflareConfig.getBucketName())
+                    .key(key)
+                    .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
+            
+            log.info("Datei erfolgreich gelÃ¶scht: {}", key);
+
+        } catch (S3Exception e) {
+            log.error("S3 Fehler beim LÃ¶schen der Datei: {}", e.awsErrorDetails().errorMessage(), e);
+            throw new IOException("Fehler beim LÃ¶schen der Datei: " + e.awsErrorDetails().errorMessage(), e);
+        }
+    }
+
+    /**
+     * Generiert den S3 Key fÃ¼r die Datei
+     */
+    private String generateFileKey(String folder, String fileName) {
+        // Entferne fÃ¼hrende und nachfolgende SchrÃ¤gstriche
+        String cleanFolder = folder.replaceAll("^/|/$", "");
+        return String.format("%s/%s", cleanFolder, fileName);
+    }
+
+    /**
+     * Generiert die Ã¶ffentliche URL fÃ¼r die Datei
+     */
+    private String generatePublicUrl(String key) {
+        return String.format("%s/%s", cloudflareConfig.getPublicUrl(), key);
+    }
+
+    /**
+     * Extrahiert den S3 Key aus der Ã¶ffentlichen URL
+     */
+    private String extractKeyFromUrl(String fileUrl) {
+        String baseUrl = cloudflareConfig.getPublicUrl() + "/";
+        if (fileUrl.startsWith(baseUrl)) {
+            return fileUrl.substring(baseUrl.length());
+        }
+        throw new IllegalArgumentException("UngÃ¼ltige R2 URL: " + fileUrl);
+    }
+    
+    /**
+     * Hilfsmethode zum Generieren eines eindeutigen Dateinamens
+     */
+    public String generateUniqueFileName(String originalFileName) {
+        String extension = "";
+        if (originalFileName != null && originalFileName.contains(".")) {
+            extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+        }
+        return UUID.randomUUID().toString() + extension;
+    }
+}
+
+
+==================================================
+Path: StorageService.java
+==================================================
+package com.sahbifit.api.external.storage;
+
+import java.io.IOException;
+
+import org.springframework.web.multipart.MultipartFile;
+
+public interface StorageService {
+    /**
+     * LÃ¤dt eine Datei in den Cloud-Speicher hoch.
+     * @param file Die hochzuladende Datei.
+     * @param folder Der Zielordner im Bucket (z.B. "verification-videos").
+     * @param fileName Der gewÃ¼nschte Dateiname (sollte eindeutig sein).
+     * @return Die Ã¶ffentliche URL der hochgeladenen Datei.
+     */
+    String uploadFile(MultipartFile file, String folder, String fileName) throws IOException;
+    
+    /**
+     * LÃ¶scht eine Datei aus dem Cloud-Speicher.
+     * @param fileUrl Die URL der zu lÃ¶schenden Datei.
+     */
+    void deleteFile(String fileUrl) throws IOException;
+}
+
+
+==================================================
+Path: GymController.java
+==================================================
+
+
+==================================================
+Path: GymService.java
+==================================================
+
+
+==================================================
+Path: Gym.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/gym/model/Gym.java
+package com.sahbifit.api.gym.model;
+
+import java.time.OffsetDateTime;
+import java.util.Set;
+import java.util.UUID;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
+import org.locationtech.jts.geom.Point;
+
+import com.sahbifit.api.model.enums.GymStatus;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.user.model.User;
+
+import jakarta.persistence.Column; // Wichtig fÃ¼r PostGIS
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "gyms", indexes = { // <-- ADD "indexes" ATTRIBUTE
+    @Index(name = "idx_gym_submitted_by_user", columnList = "submitted_by_user_id")
+})
+@SQLDelete(sql = "UPDATE gyms SET status = 'rejected' WHERE gym_id = ?") // <-- 3. ADD THIS LINE
+@SQLRestriction("status != 'rejected'")
+public class Gym {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "gym_id")
+    private UUID gymId;
+
+    @Column(name = "name", nullable = false, length = 255)
+    private String name;
+
+    @Column(name = "address")
+    private String address;
+
+    @Column(name = "location", columnDefinition = "geography(Point, 4326)")
+    private Point location; // BenÃ¶tigt hibernate-spatial
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, columnDefinition = "gym_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private GymStatus status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "submitted_by_user_id")
+    private User submittedByUser;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
+    // Beziehungen zu anderen Tabellen
+    @OneToMany(mappedBy = "primaryGym")
+    private Set<User> users;
+
+    @OneToMany(mappedBy = "gym")
+    private Set<Session> sessions;
+}
+
+
+==================================================
+Path: GymRepository.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/gym/repository/GymRepository.java
+package com.sahbifit.api.gym.repository;
+
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.sahbifit.api.gym.model.Gym;
+
+@Repository
+public interface GymRepository extends JpaRepository<Gym, UUID> {
+    // Spring Data JPA automatically provides the findById(UUID id) method
+    // which is used in your AuthService.
+}
+
+
+==================================================
+Path: GymStatus.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/model/enums/GymStatus.java
+package com.sahbifit.api.model.enums;
+
+public enum GymStatus {
+    pending,
+    approved,
+    rejected
+}
+
+
+==================================================
+Path: ParticipantStatus.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/model/enums/ParticipantStatus.java
+package com.sahbifit.api.model.enums;
+
+public enum ParticipantStatus {
+    joined,
+    attended,
+    no_show,
+    left
+}
+
+
+==================================================
+Path: ReportPriority.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/model/enums/ReportPriority.java
+package com.sahbifit.api.model.enums;
+
+public enum ReportPriority {
+    low,
+    high,
+    critical
+}
+
+
+==================================================
+Path: ReportStatus.java
+==================================================
+// HINWEIS: Diese ENUM war in Ihrer SQL-Datei (report_status), aber nicht in Ihrem Baum.
+// Sie wird fÃ¼r das Report-Modell benÃ¶tigt.
+// Pfad: src/main/java/com/sahbifit/api/model/enums/ReportStatus.java
+package com.sahbifit.api.model.enums;
+
+public enum ReportStatus {
+    pending,
+    resolved,
+    dismissed
+}
+
+
+==================================================
+Path: SessionStatus.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/model/enums/SessionStatus.java
+package com.sahbifit.api.model.enums;
+
+public enum SessionStatus {
+    active,
+    cancelled,
+    completed
+}
+
+
+==================================================
+Path: SessionType.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/model/enums/SessionType.java
+package com.sahbifit.api.model.enums;
+
+public enum SessionType {
+    group,
+    one_on_one
+}
+
+
+==================================================
+Path: TagType.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/model/enums/TagType.java
+package com.sahbifit.api.model.enums;
+
+public enum TagType {
+    goal,
+    schedule
+}
+
+
+==================================================
+Path: UserRole.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/model/enums/UserRole.java
+package com.sahbifit.api.model.enums;
+
+public enum UserRole {
+    member,
+    ambassador,
+    admin
+}
+
+
+==================================================
+Path: UserStatus.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/model/enums/UserStatus.java
+package com.sahbifit.api.model.enums;
+
+public enum UserStatus {
+    active,
+    suspended,
+    banned
+}
+
+
+==================================================
+Path: VerificationStatus.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/model/enums/VerificationStatus.java
+package com.sahbifit.api.model.enums;
+
+public enum VerificationStatus {
+    not_started,
+    pending_review,
+    verified,
+    rejected_bad_video,
+    rejected_mismatch
+}
+
+
+==================================================
+Path: VerifiedGender.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/model/enums/VerifiedGender.java
+package com.sahbifit.api.model.enums;
+
+public enum VerifiedGender {
+    not_verified,
+    male,
+    female,
+    other
+}
+
+
+==================================================
+Path: RatingController.java
+==================================================
+
+
+==================================================
+Path: RatingService.java
+==================================================
+
+
+==================================================
+Path: Rating.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/rating/model/Rating.java
+package com.sahbifit.api.rating.model;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+import org.hibernate.annotations.Check;
+import org.hibernate.annotations.CreationTimestamp;
+
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.user.model.User;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "ratings", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"session_id", "rating_by_user_id", "rating_for_user_id"})
+}, indexes = { // <-- ADD THIS BLOCK
+    @Index(name = "idx_rating_session", columnList = "session_id"),
+    @Index(name = "idx_rating_rating_by", columnList = "rating_by_user_id"),
+    @Index(name = "idx_rating_rating_for", columnList = "rating_for_user_id")
+})
+@Check(constraints = "rating_by_user_id != rating_for_user_id")
+public class Rating {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "rating_id")
+    private UUID ratingId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_id", nullable = false)
+    private Session session;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rating_by_user_id", nullable = false)
+    private User ratingBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rating_for_user_id", nullable = false)
+    private User ratingFor;
+
+    @Column(name = "rating_value", nullable = false)
+    private Short ratingValue; // SMALLINT entspricht Short
+
+    @Column(name = "comment")
+    private String comment;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+}
+
+
+==================================================
+Path: RatingRepository.java
+==================================================
+
+
+==================================================
+Path: ReportController.java
+==================================================
+
+
+==================================================
+Path: ReportService.java
+==================================================
+
+
+==================================================
+Path: Report.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/report/model/Report.java
+package com.sahbifit.api.report.model;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+import org.hibernate.annotations.Check;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
+
+import com.sahbifit.api.model.enums.ReportPriority;
+import com.sahbifit.api.model.enums.ReportStatus;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.user.model.User;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "reports", indexes = { // <-- ADD THIS BLOCK
+    @Index(name = "idx_report_reported_by", columnList = "reported_by_user_id"),
+    @Index(name = "idx_report_reported_user", columnList = "reported_user_id"),
+    @Index(name = "idx_report_session", columnList = "session_id")
+})
+@Check(constraints = "reported_by_user_id != reported_user_id")
+@SQLDelete(sql = "UPDATE reports SET status = 'dismissed' WHERE report_id = ?")
+@SQLRestriction("status != 'dismissed'")
+public class Report {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "report_id")
+    private UUID reportId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reported_by_user_id", nullable = false)
+    private User reportedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reported_user_id", nullable = false)
+    private User reportedUser;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_id") // Nullable
+    private Session session;
+
+    @Column(name = "reason", nullable = false)
+    private String reason;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "priority", nullable = false, columnDefinition = "report_priority")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private ReportPriority priority;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, columnDefinition = "report_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private ReportStatus status;
+
+    @Column(name = "resolution_notes")
+    private String resolutionNotes;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+}
+
+
+==================================================
+Path: ReportRepository.java
+==================================================
+
+
+==================================================
+Path: JwtAuthenticationFilter.java
+==================================================
+package com.sahbifit.api.security;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    @Autowired
+    private JwtTokenProvider tokenProvider;
+
+    @Autowired
+    private UserDetailsServiceImpl userDetailsServiceImpl;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        try {
+            String jwt = getJwtFromRequest(request);
+
+            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+                String username = tokenProvider.getUsernameFromJWT(jwt); // Dies ist die Telefonnummer
+
+                // ðŸ†• OPTION 1: Rollen direkt aus Token lesen (schneller, keine DB-Abfrage)
+                List<String> roles = tokenProvider.getRolesFromJWT(jwt);
+                List<GrantedAuthority> authorities = roles.stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList());
+                
+                UsernamePasswordAuthenticationToken authentication = 
+                    new UsernamePasswordAuthenticationToken(username, null, authorities);
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                
+                // ðŸ†• OPTION 2: Original-Logik (mit DB-Abfrage fÃ¼r aktuelle User-Daten)
+                // UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
+                // UsernamePasswordAuthenticationToken authentication = 
+                //     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                // authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                // SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+        } catch (Exception ex) {
+            logger.error("Could not set user authentication in security context", ex);
+        }
+
+        filterChain.doFilter(request, response);
+    }
+
+    private String getJwtFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7, bearerToken.length());
+        }
+        return null;
+    }
+}
+
+
+==================================================
+Path: JwtTokenProvider.java
+==================================================
+package com.sahbifit.api.security;
+
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.crypto.SecretKey;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.Keys;
+
+@Component
+public class JwtTokenProvider {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
+
+    @Value("${app.jwtSecret}")
+    private String jwtSecret;
+
+    @Value("${app.jwtExpirationInMs}")
+    private int jwtExpirationInMs;
+
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
+
+    // Erstellt ein JWT fÃ¼r einen authentifizierten Benutzer MIT ROLEN
+    public String generateToken(Authentication authentication) {
+        UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
+
+        // Rollen aus den Authorities extrahieren
+        List<String> roles = userPrincipal.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
+
+        return Jwts.builder()
+                .setSubject(userPrincipal.getUsername()) // Telefonnummer
+                .claim("roles", roles) // ðŸ†• Rollen im Token speichern
+                .setIssuedAt(new Date())
+                .setExpiration(expiryDate)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    // Extrahiert die Telefonnummer aus dem JWT
+    public String getUsernameFromJWT(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.getSubject();
+    }
+
+    // ðŸ†• Extrahiert Rollen aus dem JWT Token
+    public List<String> getRolesFromJWT(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("roles", List.class);
+    }
+
+    // Validiert ein JWT
+    public boolean validateToken(String authToken) {
+        try {
+            Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(authToken);
+            return true;
+        } catch (SignatureException ex) {
+            logger.error("Invalid JWT signature");
+        } catch (MalformedJwtException ex) {
+            logger.error("Invalid JWT token");
+        } catch (ExpiredJwtException ex) {
+            logger.error("Expired JWT token");
+        } catch (UnsupportedJwtException ex) {
+            logger.error("Unsupported JWT token");
+        } catch (IllegalArgumentException ex) {
+            logger.error("JWT claims string is empty.");
+        }
+        return false;
+    }
+}
+
+
+==================================================
+Path: SecurityConfig.java
+==================================================
+package com.sahbifit.api.security;
+
+import java.util.Arrays;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authorize -> authorize
+                // Ã–ffentliche Endpunkte
+                .requestMatchers("/api/auth/**").permitAll()
+                
+                // --- ADMIN ENDPUNKTE ---
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                
+                // --- VERIFICATION ENDPUNKTE - fÃ¼r alle authentifizierten Benutzer ---
+                .requestMatchers("/api/verification/**").authenticated()
+                
+                // Alle anderen Anfragen erfordern Authentifizierung
+                .anyRequest().authenticated()
+            );
+
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+
+
+==================================================
+Path: UserDetailsServiceImpl.java
+==================================================
+package com.sahbifit.api.security;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.repository.UserRepository;
+
+@Service
+public class UserDetailsServiceImpl implements UserDetailsService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String phoneNumber) throws UsernameNotFoundException {
+        User user = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with phone number: " + phoneNumber));
+
+        // âœ… Moved phone verification check here from AuthService
+        if (!user.isPhoneVerified()) {
+            throw new UsernameNotFoundException("User phone not verified."); 
+        }
+
+        // Convert UserRole to Spring Security Role
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        String roleName = "ROLE_" + user.getRole().name().toUpperCase();
+        authorities.add(new SimpleGrantedAuthority(roleName));
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getPhoneNumber(),
+                user.getPassword(),
+                authorities
+        );
+    }
+}
+
+
+==================================================
+Path: SessionController.java
+==================================================
+
+
+==================================================
+Path: SessionService.java
+==================================================
+
+
+==================================================
+Path: Session.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/session/model/Session.java
+package com.sahbifit.api.session.model;
+
+import java.time.OffsetDateTime;
+import java.util.Set;
+import java.util.UUID;
+
+import org.hibernate.annotations.Check;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
+
+import com.sahbifit.api.gym.model.Gym;
+import com.sahbifit.api.model.enums.SessionStatus;
+import com.sahbifit.api.model.enums.SessionType;
+import com.sahbifit.api.rating.model.Rating;
+import com.sahbifit.api.report.model.Report;
+import com.sahbifit.api.user.model.User;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "sessions", indexes = { // <-- ADD THIS BLOCK
+    @Index(name = "idx_session_creator_user", columnList = "creator_user_id"),
+    @Index(name = "idx_session_gym", columnList = "gym_id")
+})
+@Check(constraints = "(session_type = 'one_on_one' AND max_participants = 2) OR (session_type = 'group' AND max_participants >= 3)")
+@SQLDelete(sql = "UPDATE sessions SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE session_id = ?")
+@SQLRestriction("status = 'active'") // <-- 2. USE THIS (instead of @Where)
+public class Session {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "session_id")
+    private UUID sessionId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "creator_user_id", nullable = false)
+    private User creator;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gym_id", nullable = false)
+    private Gym gym;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "session_type", nullable = false, columnDefinition = "session_type")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private SessionType sessionType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, columnDefinition = "session_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private SessionStatus status;
+
+    @Column(name = "title", nullable = false, length = 255)
+    private String title;
+
+    @Column(name = "start_time", nullable = false)
+    private OffsetDateTime startTime;
+
+    @Column(name = "end_time", nullable = false)
+    private OffsetDateTime endTime;
+
+    @Column(name = "max_participants", nullable = false)
+    private Integer maxParticipants;
+
+    @Column(name = "firestore_chat_id", length = 100)
+    private String firestoreChatId;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
+    // --- Beziehungen ---
+
+    @OneToMany(mappedBy = "session")
+    private Set<SessionParticipant> participants;
+
+    @OneToMany(mappedBy = "session")
+    private Set<Rating> ratings;
+
+    @OneToMany(mappedBy = "session")
+    private Set<Report> reports;
+}
+
+
+==================================================
+Path: SessionParticipant.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/session/model/SessionParticipant.java
+package com.sahbifit.api.session.model;
+
+import java.time.OffsetDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import com.sahbifit.api.model.enums.ParticipantStatus;
+import com.sahbifit.api.user.model.User;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "session_participants", indexes = { // <-- ADD THIS BLOCK
+    // We already have a PK on (session_id, user_id)
+    // but separate indexes are good for queries that only use one side
+    @Index(name = "idx_sessionparticipant_session", columnList = "session_id"),
+    @Index(name = "idx_sessionparticipant_user", columnList = "user_id")
+})
+public class SessionParticipant {
+
+    @EmbeddedId
+    private SessionParticipantId id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("sessionId")
+    @JoinColumn(name = "session_id")
+    private Session session;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("userId")
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, columnDefinition = "participant_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private ParticipantStatus status;
+
+    @CreationTimestamp
+    @Column(name = "joined_at", nullable = false, updatable = false)
+    private OffsetDateTime joinedAt;
+}
+
+
+==================================================
+Path: SessionParticipantId.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/session/model/SessionParticipantId.java
+package com.sahbifit.api.session.model;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.UUID;
+
+@Data
+@Embeddable
+public class SessionParticipantId implements Serializable {
+
+    @Column(name = "session_id")
+    private UUID sessionId;
+
+    @Column(name = "user_id")
+    private UUID userId;
+}
+
+
+==================================================
+Path: SessionParticipantRepository.java
+==================================================
+
+
+==================================================
+Path: SessionRepository.java
+==================================================
+
+
+==================================================
+Path: TagController.java
+==================================================
+
+
+==================================================
+Path: TagService.java
+==================================================
+
+
+==================================================
+Path: Tag.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/tag/model/Tag.java
+package com.sahbifit.api.tag.model;
+
+import com.sahbifit.api.model.enums.TagType;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.util.Set;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "tags")
+public class Tag {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "tag_id")
+    private Integer tagId;
+
+    @Column(name = "tag_name", nullable = false, unique = true, length = 100)
+    private String tagName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tag_type", nullable = false, columnDefinition = "tag_type")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM) // Wichtig fÃ¼r PostgreSQL ENUMs
+    private TagType tagType;
+
+    @OneToMany(mappedBy = "tag")
+    private Set<UserTag> userTags;
+}
+
+
+==================================================
+Path: UserTag.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/tag/model/UserTag.java
+package com.sahbifit.api.tag.model;
+
+import com.sahbifit.api.user.model.User;
+
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "user_tags", indexes = { // <-- ADD THIS BLOCK
+    @Index(name = "idx_usertag_user", columnList = "user_id"),
+    @Index(name = "idx_usertag_tag", columnList = "tag_id")
+})
+public class UserTag {
+
+    @EmbeddedId
+    private UserTagId id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("userId")
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("tagId")
+    @JoinColumn(name = "tag_id")
+    private Tag tag;
+}
+
+
+==================================================
+Path: UserTagId.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/tag/model/UserTagId.java
+package com.sahbifit.api.tag.model;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.UUID;
+
+@Data
+@Embeddable
+public class UserTagId implements Serializable {
+
+    @Column(name = "user_id")
+    private UUID userId;
+
+    @Column(name = "tag_id")
+    private Integer tagId;
+}
+
+
+==================================================
+Path: TagRepository.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/tag/repository/TagRepository.java
+package com.sahbifit.api.tag.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.sahbifit.api.tag.model.Tag;
+
+@Repository
+public interface TagRepository extends JpaRepository<Tag, Integer> {
+    // Spring Data JPA automatically provides the findById(Integer id) method
+    // which is used in your AuthService.
+}
+
+
+==================================================
+Path: UserTagRepository.java
+==================================================
+
+
+==================================================
+Path: UserController.java
+==================================================
+
+
+==================================================
+Path: UserService.java
+==================================================
+
+
+==================================================
+Path: User.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/user/model/User.java
+package com.sahbifit.api.user.model;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.Set;
+import java.util.UUID;
+
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
+
+import com.sahbifit.api.gym.model.Gym;
+import com.sahbifit.api.model.enums.UserRole;
+import com.sahbifit.api.model.enums.UserStatus;
+import com.sahbifit.api.model.enums.VerificationStatus;
+import com.sahbifit.api.model.enums.VerifiedGender;
+import com.sahbifit.api.rating.model.Rating;
+import com.sahbifit.api.report.model.Report;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.session.model.SessionParticipant;
+import com.sahbifit.api.tag.model.UserTag;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "users", indexes = {
+        @Index(name = "idx_user_primary_gym", columnList = "primary_gym_id")
+})
+@SQLDelete(sql = "UPDATE users SET status = 'banned', updated_at = CURRENT_TIMESTAMP WHERE user_id = ?")
+@SQLRestriction("status != 'banned'")
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "user_id")
+    private UUID userId;
+
+    @Column(name = "phone_number", nullable = false, unique = true, length = 20)
+    private String phoneNumber;
+
+    @Column(name = "password_hash", nullable = false)
+    private String password;
+
+    @Column(name = "is_phone_verified", nullable = false)
+    @ColumnDefault("false")
+    private boolean isPhoneVerified = false;
+
+    // --- HINZUGEFÃœGTE FELDER FÃœR SMS OTP ---
+    @Column(name = "sms_otp", length = 6)
+    private String smsOtp;
+
+    @Column(name = "sms_otp_expires_at")
+    private OffsetDateTime smsOtpExpiresAt;
+    // --- ENDE DER HINZUGEFÃœGTEN FELDER ---
+
+    @Column(name = "first_name", nullable = false, length = 100)
+    private String firstName;
+
+    @Column(name = "date_of_birth", nullable = false)
+    private LocalDate dateOfBirth;
+
+    @Column(name = "profile_photo_url")
+    private String profilePhotoUrl;
+
+    @Column(name = "verification_video_url")
+    private String verificationVideoUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "verification_status", nullable = false, columnDefinition = "verification_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerificationStatus verificationStatus = VerificationStatus.not_started;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "verified_gender", nullable = false, columnDefinition = "verified_gender")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerifiedGender verifiedGender = VerifiedGender.not_verified;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "primary_gym_id")
+    private Gym primaryGym;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, columnDefinition = "user_role")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private UserRole role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, columnDefinition = "user_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private UserStatus status;
+
+    @Column(name = "suspended_until")
+    private OffsetDateTime suspendedUntil;
+
+    @Column(name = "group_session_count", nullable = false)
+    @ColumnDefault("0")
+    private Integer groupSessionCount = 0;
+
+    @Column(name = "no_show_count", nullable = false)
+    @ColumnDefault("0")
+    private Integer noShowCount = 0;
+
+    @Column(name = "push_notification_token")
+    private String pushNotificationToken;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
+    // --- Beziehungen ---
+
+    @OneToMany(mappedBy = "submittedByUser")
+    private Set<Gym> submittedGyms;
+
+    @OneToMany(mappedBy = "creator")
+    private Set<Session> createdSessions;
+
+    @OneToMany(mappedBy = "user")
+    private Set<SessionParticipant> sessionParticipations;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    private Set<UserTag> userTags;
+
+    @OneToMany(mappedBy = "ratingBy")
+    private Set<Rating> givenRatings;
+
+    @OneToMany(mappedBy = "ratingFor")
+    private Set<Rating> receivedRatings;
+
+    @OneToMany(mappedBy = "reportedBy")
+    private Set<Report> filedReports;
+
+    @OneToMany(mappedBy = "reportedUser")
+    private Set<Report> receivedReports;
+
+    @OneToMany(mappedBy = "blocker")
+    private Set<UserBlock> blockedUsers;
+
+    @OneToMany(mappedBy = "blocked")
+    private Set<UserBlock> blockedByUsers;
+}
+
+
+==================================================
+Path: UserBlock.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/user/model/UserBlock.java
+package com.sahbifit.api.user.model;
+
+import java.time.OffsetDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "user_blocks", indexes = { // <-- ADD THIS BLOCK
+    @Index(name = "idx_userblock_blocker", columnList = "blocker_user_id"),
+    @Index(name = "idx_userblock_blocked", columnList = "blocked_user_id")
+})
+public class UserBlock {
+
+    @EmbeddedId
+    private UserBlockId id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("blockerUserId")
+    @JoinColumn(name = "blocker_user_id")
+    private User blocker;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("blockedUserId")
+    @JoinColumn(name = "blocked_user_id")
+    private User blocked;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+}
+
+
+==================================================
+Path: UserBlockId.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/user/model/UserBlockId.java
+package com.sahbifit.api.user.model;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.UUID;
+
+@Data
+@Embeddable
+public class UserBlockId implements Serializable {
+    
+    @Column(name = "blocker_user_id")
+    private UUID blockerUserId;
+
+    @Column(name = "blocked_user_id")
+    private UUID blockedUserId;
+}
+
+
+==================================================
+Path: UserRepository.java
+==================================================
+package com.sahbifit.api.user.repository;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.sahbifit.api.model.enums.VerificationStatus;
+import com.sahbifit.api.user.model.User;
+
+public interface UserRepository extends JpaRepository<User, UUID> {
+    
+    // Diese Methode ist entscheidend fÃ¼r den Login
+    Optional<User> findByPhoneNumber(String phoneNumber);
+    
+    // Add this method to fix the first error
+    List<User> findByVerificationStatus(VerificationStatus verificationStatus);
+}
+
+
+==================================================
+Path: VerificationController.java
+==================================================
+package com.sahbifit.api.verification;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.sahbifit.api.verification.dto.VerificationStatusDto;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/verification")
+public class VerificationController {
+
+    @Autowired
+    private VerificationService verificationService;
+
+    /**
+     * Endpunkt zum Einreichen des Verifizierungsvideos.
+     */
+    @PostMapping("/submit")
+    public ResponseEntity<?> submitVideo(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam("video") MultipartFile videoFile) {
+
+        String userPhoneNumber = userDetails.getUsername();
+        log.info("Video-Upload-Anfrage von Benutzer: {}", userPhoneNumber);
+
+        try {
+            // 1. Validierung: Datei ist nicht leer
+            if (videoFile.isEmpty()) {
+                log.warn("Leere Datei von Benutzer: {}", userPhoneNumber);
+                return ResponseEntity.badRequest().body("Die Videodatei ist leer.");
+            }
+
+            // âœ… IMPROVED: Allow multiple video types for better UX
+            String contentType = videoFile.getContentType();
+            if (contentType == null || !contentType.startsWith("video/")) {
+                log.warn("UngÃ¼ltiger Dateityp von Benutzer: {}, Typ: {}", userPhoneNumber, contentType);
+                return ResponseEntity.badRequest().body("Nur Videodateien sind erlaubt.");
+            }
+
+            // âœ… OPTIONAL: More specific validation if needed
+            List<String> allowedTypes = Arrays.asList("video/mp4", "video/quicktime", "video/webm", "video/x-msvideo");
+            if (!allowedTypes.contains(contentType)) {
+                log.warn("Nicht unterstÃ¼tzter Videotyp von Benutzer: {}, Typ: {}", userPhoneNumber, contentType);
+                return ResponseEntity.badRequest().body("Nur MP4, MOV, WebM und AVI Videodateien sind erlaubt.");
+            }
+
+            // 3. Validierung: DateigrÃ¶ÃŸe (max. 100MB)
+            if (videoFile.getSize() > 100 * 1024 * 1024) {
+                log.warn("Datei zu groÃŸ von Benutzer: {}, GrÃ¶ÃŸe: {} bytes", userPhoneNumber, videoFile.getSize());
+                return ResponseEntity.badRequest().body("Die Videodatei darf maximal 100MB groÃŸ sein.");
+            }
+
+            // 4. Verarbeitung
+            verificationService.submitVerificationVideo(userPhoneNumber, videoFile);
+            
+            log.info("Video erfolgreich verarbeitet fÃ¼r Benutzer: {}", userPhoneNumber);
+            return ResponseEntity.ok("Video erfolgreich eingereicht. Die ÃœberprÃ¼fung steht aus.");
+
+        } catch (IllegalStateException e) {
+            log.warn("UngÃ¼ltiger Status fÃ¼r Video-Upload von Benutzer: {}, Fehler: {}", userPhoneNumber, e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            log.error("Fehler beim Video-Upload fÃ¼r Benutzer: {}", userPhoneNumber, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Fehler beim Upload: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Endpunkt fÃ¼r die App, um den Status des Benutzers abzufragen
+     * (z.B. um den "Probationary Mode" UI anzuzeigen).
+     */
+    @GetMapping("/status")
+    public ResponseEntity<VerificationStatusDto> getStatus(@AuthenticationPrincipal UserDetails userDetails) {
+        String userPhoneNumber = userDetails.getUsername();
+        
+        try {
+            VerificationStatusDto statusDto = verificationService.getVerificationStatus(userPhoneNumber);
+            log.debug("Statusabfrage fÃ¼r Benutzer: {}, Status: {}", userPhoneNumber, statusDto.getStatus());
+            return ResponseEntity.ok(statusDto);
+        } catch (Exception e) {
+            log.error("Fehler bei Statusabfrage fÃ¼r Benutzer: {}", userPhoneNumber, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+}
+
+
+==================================================
+Path: VerificationService.java
+==================================================
+package com.sahbifit.api.verification;
+
+import java.io.IOException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.sahbifit.api.external.storage.StorageService;
+import com.sahbifit.api.model.enums.VerificationStatus;
+import com.sahbifit.api.model.enums.VerifiedGender;
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.repository.UserRepository;
+import com.sahbifit.api.verification.dto.VerificationStatusDto;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+public class VerificationService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private StorageService storageService; // CloudflareR2Service wird injiziert
+
+    /**
+     * Verarbeitet das hochgeladene Verifizierungsvideo eines Benutzers.
+     */
+    @Transactional
+    public void submitVerificationVideo(String userPhoneNumber, MultipartFile videoFile) throws IOException {
+        User user = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden."));
+
+        // 1. Validierung: Verhindert doppelte Uploads
+        if (user.getVerificationStatus() == VerificationStatus.pending_review || 
+            user.getVerificationStatus() == VerificationStatus.verified) {
+            throw new IllegalStateException("ÃœberprÃ¼fung bereits abgeschlossen oder ausstehend.");
+        }
+
+        // 2. Eindeutigen Dateinamen generieren
+        String fileName = user.getUserId().toString() + "_" + System.currentTimeMillis() + ".mp4";
+        String folder = "verification-videos";
+
+        log.info("Starte Video-Upload fÃ¼r Benutzer: {}, Dateiname: {}", userPhoneNumber, fileName);
+
+        // 3. Datei hochladen
+        String fileUrl = storageService.uploadFile(videoFile, folder, fileName);
+
+        // 4. Benutzerstatus auf "pending_review" setzen
+        user.setVerificationVideoUrl(fileUrl);
+        user.setVerificationStatus(VerificationStatus.pending_review);
+
+        // 5. Wichtig: Geschlecht zurÃ¼cksetzen, falls es zuvor abgelehnt wurde
+        user.setVerifiedGender(VerifiedGender.not_verified);
+
+        userRepository.save(user);
+        
+        log.info("Video erfolgreich hochgeladen fÃ¼r Benutzer: {}, URL: {}", userPhoneNumber, fileUrl);
+    }
+
+    /**
+     * Ruft den aktuellen Verifizierungsstatus des Benutzers ab.
+     */
+    public VerificationStatusDto getVerificationStatus(String userPhoneNumber) {
+        User user = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden."));
+
+        return new VerificationStatusDto(user.getVerificationStatus(), user.getVerifiedGender());
+    }
+}
+
+
+==================================================
+Path: VerificationStatusDto.java
+==================================================
+package com.sahbifit.api.verification.dto;
+
+import com.sahbifit.api.model.enums.VerificationStatus;
+import com.sahbifit.api.model.enums.VerifiedGender;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class VerificationStatusDto {
+    private VerificationStatus status;
+    private VerifiedGender gender;
+    
+    // Standard-Konstruktor
+    public VerificationStatusDto() {}
+    
+    // All-Args-Konstruktor
+    public VerificationStatusDto(VerificationStatus status, VerifiedGender gender) {
+        this.status = status;
+        this.gender = gender;
+    }
+}
+
+

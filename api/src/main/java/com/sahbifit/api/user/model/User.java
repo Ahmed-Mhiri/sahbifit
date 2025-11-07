@@ -25,6 +25,7 @@ import com.sahbifit.api.session.model.Session;
 import com.sahbifit.api.session.model.SessionParticipant;
 import com.sahbifit.api.tag.model.UserTag;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -89,12 +90,12 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "verification_status", nullable = false, columnDefinition = "verification_status")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerificationStatus verificationStatus;
+    private VerificationStatus verificationStatus = VerificationStatus.not_started;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "verified_gender", nullable = false, columnDefinition = "verified_gender")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerifiedGender verifiedGender;
+    private VerifiedGender verifiedGender = VerifiedGender.not_verified;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "primary_gym_id")
@@ -143,7 +144,7 @@ public class User {
     @OneToMany(mappedBy = "user")
     private Set<SessionParticipant> sessionParticipations;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private Set<UserTag> userTags;
 
     @OneToMany(mappedBy = "ratingBy")
