@@ -46,11 +46,11 @@ public class VerificationService {
 
         log.info("Starting video upload for user: {}, filename: {}", userPhoneNumber, fileName);
 
-        // 3. Upload file
-        String fileUrl = storageService.uploadFile(videoFile, folder, fileName);
+        // 3. Upload file - now returns the key instead of public URL
+        String fileKey = storageService.uploadFile(videoFile, folder, fileName);
 
-        // 4. Set user status to "pending_review"
-        user.setVerificationVideoUrl(fileUrl);
+        // 4. Set user status to "pending_review" - store the key directly
+        user.setVerificationVideoUrl(fileKey);
         user.setVerificationStatus(VerificationStatus.pending_review);
 
         // 5. Important: Reset gender if it was previously rejected
@@ -58,7 +58,7 @@ public class VerificationService {
 
         userRepository.save(user);
         
-        log.info("Video successfully uploaded for user: {}, URL: {}", userPhoneNumber, fileUrl);
+        log.info("Video successfully uploaded for user: {}, Key: {}", userPhoneNumber, fileKey);
     }
 
     /**

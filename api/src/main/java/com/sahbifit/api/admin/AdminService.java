@@ -9,12 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sahbifit.api.admin.dto.RejectionReason;
 import com.sahbifit.api.admin.dto.VerificationQueueDto;
+import com.sahbifit.api.exception.ResourceNotFoundException;
 import com.sahbifit.api.external.push.PushNotificationService;
 import com.sahbifit.api.external.storage.StorageService;
-import com.sahbifit.api.gym.model.Gym;
-import com.sahbifit.api.gym.model.GymStatus;
-import com.sahbifit.api.gym.repository.GymRepository;
 import com.sahbifit.api.report.model.Report;
 import com.sahbifit.api.report.model.ReportStatus;
 import com.sahbifit.api.report.repository.ReportRepository;
@@ -40,9 +39,6 @@ public class AdminService {
     private ReportRepository reportRepository;
 
     @Autowired
-    private GymRepository gymRepository;
-
-    @Autowired
     private PushNotificationService pushNotificationService;
 
     /**
@@ -56,7 +52,10 @@ public class AdminService {
             dto.setUserId(user.getUserId());
             dto.setFirstName(user.getFirstName());
             dto.setProfilePhotoUrl(user.getProfilePhotoUrl());
-            dto.setVerificationVideoUrl(user.getVerificationVideoUrl());
+            
+            // Construct public URL from the stored key for admin dashboard
+            String publicUrl = storageService.generatePublicUrl(user.getVerificationVideoUrl());
+            dto.setVerificationVideoUrl(publicUrl);
             
             // FIX: Remove the atOffset() call since updatedAt is already OffsetDateTime
             dto.setSubmittedAt(user.getUpdatedAt());
@@ -71,14 +70,14 @@ public class AdminService {
     @Transactional
     public void approveVerification(UUID userId, VerifiedGender gender) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
         if (user.getVerificationStatus() != VerificationStatus.pending_review) {
             throw new IllegalStateException("User is not waiting for approval.");
         }
 
-        // ✅ Store old video URL before clearing it
-        String oldVideoUrl = user.getVerificationVideoUrl();
+        // ✅ Store old video key before clearing it
+        String oldVideoKey = user.getVerificationVideoUrl();
 
         user.setVerificationStatus(VerificationStatus.verified);
         user.setVerifiedGender(gender);
@@ -88,10 +87,10 @@ public class AdminService {
 
         userRepository.save(user);
 
-        // ✅ NEW: Delete the actual file from storage
-        if (oldVideoUrl != null) {
+        // ✅ Delete the actual file from storage using the key
+        if (oldVideoKey != null) {
             try {
-                storageService.deleteFile(oldVideoUrl);
+                storageService.deleteFile(oldVideoKey);
                 log.info("Verification video deleted for user: {}", userId);
             } catch (IOException e) {
                 log.error("Error deleting verification video for user {}: {}", userId, e.getMessage());
@@ -109,30 +108,40 @@ public class AdminService {
      * Rejects a user for a specific reason.
      */
     @Transactional
-    public void rejectVerification(UUID userId, VerificationStatus reason) {
-        if (reason != VerificationStatus.rejected_bad_video && reason != VerificationStatus.rejected_mismatch) {
-            throw new IllegalArgumentException("Invalid rejection reason.");
+    public void rejectVerification(UUID userId, RejectionReason reason) {
+        // Map the safe DTO enum to the persistent enum
+        VerificationStatus verificationStatus;
+        switch (reason) {
+            case BAD_VIDEO:
+                verificationStatus = VerificationStatus.rejected_bad_video;
+                break;
+            case MISMATCH:
+                verificationStatus = VerificationStatus.rejected_mismatch;
+                break;
+            default:
+                // This case should be impossible due to @NotNull
+                throw new IllegalArgumentException("Invalid rejection reason.");
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
         if (user.getVerificationStatus() != VerificationStatus.pending_review) {
             throw new IllegalStateException("User is not waiting for approval.");
         }
 
-        // ✅ Store old video URL before clearing it
-        String oldVideoUrl = user.getVerificationVideoUrl();
+        // ✅ Store old video key before clearing it
+        String oldVideoKey = user.getVerificationVideoUrl();
 
-        user.setVerificationStatus(reason);
+        user.setVerificationStatus(verificationStatus); // Use the mapped variable
         user.setVerificationVideoUrl(null); // Delete reference
 
         userRepository.save(user);
 
-        // ✅ NEW: Delete the actual file from storage
-        if (oldVideoUrl != null) {
+        // ✅ Delete the actual file from storage using the key
+        if (oldVideoKey != null) {
             try {
-                storageService.deleteFile(oldVideoUrl);
+                storageService.deleteFile(oldVideoKey);
                 log.info("Verification video deleted for rejected user: {}", userId);
             } catch (IOException e) {
                 log.error("Error deleting verification video for rejected user {}: {}", userId, e.getMessage());
@@ -140,10 +149,10 @@ public class AdminService {
             }
         }
 
-        log.info("User {} has been rejected. Reason: {}", userId, reason);
+        log.info("User {} has been rejected. Reason: {}", userId, verificationStatus);
 
         // Send push notification about rejection
-        pushNotificationService.sendVerificationRejected(user, reason);
+        pushNotificationService.sendVerificationRejected(user, verificationStatus);
     }
 
     /**
@@ -152,7 +161,7 @@ public class AdminService {
     @Transactional
     public void banUser(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
         user.setStatus(UserStatus.banned);
         userRepository.save(user);
@@ -165,13 +174,5 @@ public class AdminService {
      */
     public List<Report> getPendingReports() {
         return reportRepository.findByStatusOrderByPriorityDesc(ReportStatus.pending);
-    }
-
-    /**
-     * (For Appsmith) Retrieves the queue of gyms submitted by users.
-     */
-    public List<Gym> getPendingGyms() {
-        // This method already exists in GymRepository
-        return gymRepository.findByStatus(GymStatus.pending);
     }
 }

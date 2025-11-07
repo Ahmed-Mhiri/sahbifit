@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; // <- NEW
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; // <- Ensures @PreAuthorize works
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -21,7 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // <- THIS LINE ADDED
+@EnableMethodSecurity // <- This annotation enables method-level security
 public class SecurityConfig {
 
     @Autowired
@@ -37,14 +37,9 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 
-                // --- ADMIN ENDPOINTS ---
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                
-                // --- VERIFICATION ENDPOINTS - for all authenticated users ---
-                .requestMatchers("/api/verification/**").authenticated()
-                
                 // All other requests require authentication
-                .anyRequest().authenticated()
+                // Specific rules are now defined in controllers with @PreAuthorize
+                .anyRequest().authenticated() 
             );
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -55,9 +50,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(Arrays.asList(
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "https://your-production-domain.com"
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "https://your-production-domain.com"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));

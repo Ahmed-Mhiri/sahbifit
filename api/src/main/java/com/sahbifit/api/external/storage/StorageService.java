@@ -10,13 +10,20 @@ public interface StorageService {
      * @param file The file to upload.
      * @param folder The target folder in the bucket (e.g., "verification-videos").
      * @param fileName The desired filename (should be unique).
-     * @return The public URL of the uploaded file.
+     * @return The object key of the uploaded file.
      */
     String uploadFile(MultipartFile file, String folder, String fileName) throws IOException;
     
     /**
      * Deletes a file from cloud storage.
-     * @param fileUrl The URL of the file to delete.
+     * @param fileKey The object key of the file to delete.
      */
-    void deleteFile(String fileUrl) throws IOException;
+    void deleteFile(String fileKey) throws IOException;
+    
+    /**
+     * Generates a public URL for the given object key.
+     * @param key The object key stored in the database.
+     * @return The public URL that can be used to access the file.
+     */
+    String generatePublicUrl(String key);
 }

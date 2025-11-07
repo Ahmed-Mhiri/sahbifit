@@ -4,12 +4,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sahbifit.api.exception.ResourceNotFoundException;
-import com.sahbifit.api.external.chat.ChatService;
 import com.sahbifit.api.gym.model.Gym;
 import com.sahbifit.api.gym.repository.GymRepository;
 import com.sahbifit.api.session.dto.CreateSessionDto;
@@ -31,7 +31,9 @@ import com.sahbifit.api.verification.model.VerificationStatus;
 import com.sahbifit.api.verification.model.VerifiedGender;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -42,14 +44,14 @@ public class SessionService {
     private final GymRepository gymRepository;
     private final SessionParticipantRepository sessionParticipantRepository;
     private final UserService userService;
-    private final ChatService chatService;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * (Method 1) Create a new session, applying all "Create" gates.
      */
     public Session createSession(CreateSessionDto dto, String userPhoneNumber) {
         User user = userRepository.findByPhoneNumber(userPhoneNumber)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
 
         // Gate 1 (Verification)
         if (user.getVerificationStatus() != VerificationStatus.verified) {
@@ -62,7 +64,7 @@ public class SessionService {
         }
 
         Gym gym = gymRepository.findById(dto.getGymId())
-                .orElseThrow(() -> new ResourceNotFoundException("Gym not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Gym", "gymId", dto.getGymId()));
 
         // Create the session (don't save yet)
         Session session = new Session();
@@ -75,11 +77,7 @@ public class SessionService {
         session.setEndTime(dto.getEndTime());
         session.setMaxParticipants(dto.getMaxParticipants());
 
-        // Chat Integration (MVP 3.6)
-        String chatId = chatService.createChatForSession(session.getSessionId());
-        session.setFirestoreChatId(chatId);
-
-        // Save the session
+        // Save the session (This is where the session.sessionId is generated)
         Session savedSession = sessionRepository.save(session);
 
         // Add the creator as the first participant
@@ -94,6 +92,15 @@ public class SessionService {
         creatorEntry.setStatus(ParticipantStatus.joined);
         sessionParticipantRepository.save(creatorEntry);
 
+        // PUBLISH THE EVENT for the async listener
+        try {
+            // We pass 'savedSession', which now has a non-null ID
+            eventPublisher.publishEvent(new SessionCreatedEvent(this, savedSession));
+        } catch (Exception e) {
+            log.error("Failed to publish SessionCreatedEvent for session {}: {}", savedSession.getSessionId(), e.getMessage());
+            // Log error, but don't fail the transaction
+        }
+
         return savedSession;
     }
 
@@ -102,10 +109,10 @@ public class SessionService {
      */
     public void joinSession(UUID sessionId, String userPhoneNumber) {
         User user = userRepository.findByPhoneNumber(userPhoneNumber)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
         
         Session session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Session not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", sessionId));
 
         // Gate 1 (Probationary Mode - MVP 2.6)
         if (user.getVerificationStatus() == VerificationStatus.pending_review) {
@@ -154,7 +161,7 @@ public class SessionService {
         
         // 1. Get the user who is VIEWING the feed
         User viewer = userRepository.findByPhoneNumber(userPhoneNumber)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
 
         List<Session> sessions;
 

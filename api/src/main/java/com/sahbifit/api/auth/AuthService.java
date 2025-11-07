@@ -90,7 +90,7 @@ public class AuthService {
         // 5. Set primary gym
         if (request.getPrimaryGymId() != null) {
             Gym primaryGym = gymRepository.findById(request.getPrimaryGymId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Gym not found with ID: " + request.getPrimaryGymId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Gym", "gymId", request.getPrimaryGymId()));
             user.setPrimaryGym(primaryGym);
         }
 
@@ -204,7 +204,7 @@ public class AuthService {
     public void verifySmsOtp(VerifySmsRequest request) {
         // 1. Find user by phone number
         User user = userRepository.findByPhoneNumber(request.getPhoneNumber())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", request.getPhoneNumber()));
 
         // 2. Check if already verified
         if (user.isPhoneVerified()) {
@@ -214,7 +214,7 @@ public class AuthService {
 
         // 3. Check if OTP is stored
         if (user.getSmsOtp() == null || user.getSmsOtpExpiresAt() == null) {
-            throw new IllegalStateException("No pending OTP found. Please request a new one.");
+            throw new InvalidOtpException("No pending OTP found. Please request a new one.");
         }
 
         // 4. Check if OTP has expired
@@ -257,7 +257,7 @@ public class AuthService {
 
         // 3. Find user by phone number
         User user = userRepository.findByPhoneNumber(request.getPhoneNumber())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", request.getPhoneNumber()));
 
         // 4. Check if already verified
         if (user.isPhoneVerified()) {

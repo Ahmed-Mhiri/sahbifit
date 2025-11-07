@@ -59,12 +59,9 @@ public class CloudflareR2Service implements StorageService {
             // Upload file
             s3Client.putObject(putObjectRequest, 
                     RequestBody.fromBytes(file.getBytes()));
-
-            // Generate public URL
-            String publicUrl = generatePublicUrl(key);
             
-            log.info("File successfully uploaded: {}", publicUrl);
-            return publicUrl;
+            log.info("File successfully uploaded: {}/{}", cloudflareConfig.getBucketName(), key);
+            return key; // RETURN THE KEY INSTEAD OF PUBLIC URL
 
         } catch (S3Exception e) {
             log.error("S3 error uploading file: {}", e.awsErrorDetails().errorMessage(), e);
@@ -76,26 +73,33 @@ public class CloudflareR2Service implements StorageService {
     }
 
     @Override
-    public void deleteFile(String fileUrl) throws IOException {
+    public void deleteFile(String fileKey) throws IOException {
         try {
-            // Extract key from URL
-            String key = extractKeyFromUrl(fileUrl);
-            
-            log.info("Deleting file: {}", key);
+            log.info("Deleting file: {}", fileKey);
             
             DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                     .bucket(cloudflareConfig.getBucketName())
-                    .key(key)
+                    .key(fileKey) // USE THE KEY DIRECTLY
                     .build();
 
             s3Client.deleteObject(deleteObjectRequest);
             
-            log.info("File successfully deleted: {}", key);
+            log.info("File successfully deleted: {}", fileKey);
 
         } catch (S3Exception e) {
             log.error("S3 error deleting file: {}", e.awsErrorDetails().errorMessage(), e);
             throw new IOException("Error deleting file: " + e.awsErrorDetails().errorMessage(), e);
         }
+    }
+
+    /**
+     * Generates the public URL for the file
+     * Now public so AdminService can use it
+     */
+    @Override
+    public String generatePublicUrl(String key) {
+        if (key == null) return null;
+        return String.format("%s/%s", cloudflareConfig.getPublicUrl(), key);
     }
 
     /**
@@ -107,24 +111,6 @@ public class CloudflareR2Service implements StorageService {
         return String.format("%s/%s", cleanFolder, fileName);
     }
 
-    /**
-     * Generates the public URL for the file
-     */
-    private String generatePublicUrl(String key) {
-        return String.format("%s/%s", cloudflareConfig.getPublicUrl(), key);
-    }
-
-    /**
-     * Extracts the S3 key from the public URL
-     */
-    private String extractKeyFromUrl(String fileUrl) {
-        String baseUrl = cloudflareConfig.getPublicUrl() + "/";
-        if (fileUrl.startsWith(baseUrl)) {
-            return fileUrl.substring(baseUrl.length());
-        }
-        throw new IllegalArgumentException("Invalid R2 URL: " + fileUrl);
-    }
-    
     /**
      * Helper method to generate a unique filename
      */

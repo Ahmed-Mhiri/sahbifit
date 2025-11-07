@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sahbifit.api.admin.dto.ApproveVerificationRequest;
 import com.sahbifit.api.admin.dto.RejectVerificationRequest;
 import com.sahbifit.api.admin.dto.VerificationQueueDto;
-import com.sahbifit.api.gym.model.Gym;
 import com.sahbifit.api.report.model.Report;
 
 import jakarta.validation.Valid;
@@ -45,67 +44,54 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/admin") // <-- NOTE: I changed this path to be more general
+@RequestMapping("/api/admin")
 public class AdminController {
 
     @Autowired
     private AdminService adminService;
 
     // --- SECTION 1: VERIFICATION (Existing Endpoints) ---
-    // Change the path to be relative to /api/admin
     @GetMapping("/verification/queue")
     public ResponseEntity<List<VerificationQueueDto>> getQueue() {
-        log.info("Admin abfrage Verifikations-Warteschlange");
+        log.info("Admin fetching verification queue");
         List<VerificationQueueDto> queue = adminService.getVerificationQueue();
-        log.info("Gefunden {} Benutzer in der Warteschlange", queue.size());
+        log.info("Found {} users in queue", queue.size());
         return ResponseEntity.ok(queue);
     }
 
-    // Change the path
     @PutMapping("/verification/approve")
     public ResponseEntity<?> approveUser(@Valid @RequestBody ApproveVerificationRequest request) {
-        log.info("Admin genehmigt Benutzer: {}, Geschlecht: {}", 
+        log.info("Admin approving user: {}, gender: {}", 
                 request.getUserId(), request.getVerifiedGender());
         
         adminService.approveVerification(request.getUserId(), request.getVerifiedGender());
-        return ResponseEntity.ok("Benutzer genehmigt.");
+        return ResponseEntity.ok("User approved.");
     }
 
-    // Change the path
     @PutMapping("/verification/reject")
     public ResponseEntity<?> rejectUser(@Valid @RequestBody RejectVerificationRequest request) {
-        log.info("Admin lehnt Benutzer ab: {}, Grund: {}", 
+        log.info("Admin rejecting user: {}, reason: {}", 
                 request.getUserId(), request.getReason());
         
         adminService.rejectVerification(request.getUserId(), request.getReason());
-        return ResponseEntity.ok("Benutzer abgelehnt.");
+        return ResponseEntity.ok("User rejected.");
     }
 
     // --- SECTION 2: REPORTS (New Endpoints) ---
     @GetMapping("/reports/pending")
     public ResponseEntity<List<Report>> getPendingReports() {
-        log.info("Admin abfrage Report-Warteschlange");
+        log.info("Admin fetching report queue");
         List<Report> reports = adminService.getPendingReports();
-        log.info("Gefunden {} Reports in der Warteschlange", reports.size());
+        log.info("Found {} reports in queue", reports.size());
         return ResponseEntity.ok(reports);
     }
-    
 
-    // --- SECTION 3: GYM SUBMISSIONS (New Endpoints) ---
-    @GetMapping("/gyms/pending")
-    public ResponseEntity<List<Gym>> getPendingGyms() {
-        log.info("Admin abfrage Gym-Warteschlange");
-        List<Gym> gyms = adminService.getPendingGyms();
-        log.info("Gefunden {} Gyms in der Warteschlange", gyms.size());
-        return ResponseEntity.ok(gyms);
-    }
-
-    // --- SECTION 4: USER MANAGEMENT (New Endpoints) ---
+    // --- SECTION 3: USER MANAGEMENT (New Endpoints) ---
     @PostMapping("/users/{userId}/ban")
     public ResponseEntity<?> banUser(@PathVariable UUID userId) {
-        log.info("Admin bannt Benutzer: {}", userId);
+        log.info("Admin banning user: {}", userId);
         adminService.banUser(userId);
-        return ResponseEntity.ok("Benutzer gesperrt.");
+        return ResponseEntity.ok("User banned.");
     }
 }
 
@@ -127,9 +113,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.sahbifit.api.admin.dto.VerificationQueueDto;
 import com.sahbifit.api.external.push.PushNotificationService;
 import com.sahbifit.api.external.storage.StorageService;
-import com.sahbifit.api.gym.model.Gym;
-import com.sahbifit.api.gym.model.GymStatus;
-import com.sahbifit.api.gym.repository.GymRepository;
 import com.sahbifit.api.report.model.Report;
 import com.sahbifit.api.report.model.ReportStatus;
 import com.sahbifit.api.report.repository.ReportRepository;
@@ -153,9 +136,6 @@ public class AdminService {
 
     @Autowired
     private ReportRepository reportRepository;
-
-    @Autowired
-    private GymRepository gymRepository;
 
     @Autowired
     private PushNotificationService pushNotificationService;
@@ -280,14 +260,6 @@ public class AdminService {
      */
     public List<Report> getPendingReports() {
         return reportRepository.findByStatusOrderByPriorityDesc(ReportStatus.pending);
-    }
-
-    /**
-     * (For Appsmith) Retrieves the queue of gyms submitted by users.
-     */
-    public List<Gym> getPendingGyms() {
-        // This method already exists in GymRepository
-        return gymRepository.findByStatus(GymStatus.pending);
     }
 }
 
@@ -747,7 +719,6 @@ Path: LoginRequest.java
 ==================================================
 package com.sahbifit.api.auth.dto;
 
-
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
@@ -756,10 +727,10 @@ import lombok.Setter;
 @Setter
 public class LoginRequest {
 
-    @NotBlank(message = "Telefonnummer darf nicht leer sein.")
+    @NotBlank(message = "Phone number cannot be empty.")
     private String phoneNumber;
 
-    @NotBlank(message = "Passwort darf nicht leer sein.")
+    @NotBlank(message = "Password cannot be empty.")
     private String password;
 }
 
@@ -1709,7 +1680,6 @@ public interface StorageService {
 ==================================================
 Path: GymController.java
 ==================================================
-// Pfad: src/main/java/com/sahbifit/api/gym/GymController.java
 package com.sahbifit.api.gym;
 
 import java.security.Principal;
@@ -1787,6 +1757,15 @@ public class GymController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Gym>> adminGetAllGyms() {
         return ResponseEntity.ok(gymService.adminGetAllGyms());
+    }
+
+    /**
+     * (Admin Dashboard) Get all PENDING gyms for review.
+     */
+    @GetMapping("/admin/gyms/pending")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Gym>> adminGetPendingGyms() {
+        return ResponseEntity.ok(gymService.getPendingGyms());
     }
 
     /**
@@ -1924,6 +1903,14 @@ public class GymService {
         // This will find the gym and trigger the @SQLDelete annotation,
         // which sets the status to 'rejected' instead of a hard delete.
         gymRepository.deleteById(gymId);
+    }
+
+    /**
+     * (Method 8) For Admins: Get all gyms waiting for approval.
+     */
+    @Transactional(readOnly = true)
+    public List<Gym> getPendingGyms() {
+        return gymRepository.findByStatus(GymStatus.pending);
     }
 }
 
@@ -2611,10 +2598,10 @@ import lombok.Setter;
 @Setter
 public class CreateReportDto {
 
-    @NotNull(message = "reportedUserId darf nicht null sein")
+    @NotNull(message = "reportedUserId cannot be null")
     private UUID reportedUserId;
 
-    @NotBlank(message = "Grund darf nicht leer sein")
+    @NotBlank(message = "Reason cannot be empty")
     private String reason;
 
     private UUID sessionId;
@@ -2951,7 +2938,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; // <- NEW
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; // <- Ensures @PreAuthorize works
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -2965,7 +2952,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // <- THIS LINE ADDED
+@EnableMethodSecurity // <- This annotation enables method-level security
 public class SecurityConfig {
 
     @Autowired
@@ -2981,14 +2968,9 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 
-                // --- ADMIN ENDPOINTS ---
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                
-                // --- VERIFICATION ENDPOINTS - for all authenticated users ---
-                .requestMatchers("/api/verification/**").authenticated()
-                
                 // All other requests require authentication
-                .anyRequest().authenticated()
+                // Specific rules are now defined in controllers with @PreAuthorize
+                .anyRequest().authenticated() 
             );
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -2999,9 +2981,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(Arrays.asList(
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "https://your-production-domain.com"
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "https://your-production-domain.com"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
@@ -3351,23 +3333,23 @@ public class SessionService {
     @Transactional
     public void markAttendance(MarkAttendanceDto dto, String markerPhoneNumber) {
         
-        // 1. Benutzer finden, der die Markierung vornimmt
+        // 1. Find user who is marking attendance
         User markerUser = userRepository.findByPhoneNumber(markerPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", markerPhoneNumber));
 
-        // 2. Session finden
+        // 2. Find session
         Session session = sessionRepository.findById(dto.getSessionId())
                 .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", dto.getSessionId()));
 
-        // 3. BerechtigungsprÃ¼fung
+        // 3. Permission check
         boolean isCreator = session.getCreator().getUserId().equals(markerUser.getUserId());
         boolean isAdmin = markerUser.getRole() == UserRole.admin;
 
         if (!isCreator && !isAdmin) {
-            throw new AccessDeniedException("Nur der Ersteller der Session oder ein Admin kann die Anwesenheit markieren.");
+            throw new AccessDeniedException("Only the session creator or an admin can mark attendance.");
         }
 
-        // 4. SessionParticipant (das Ziel-Objekt) finden
+        // 4. Find SessionParticipant (the target object)
         SessionParticipantId participantId = new SessionParticipantId();
         participantId.setSessionId(dto.getSessionId());
         participantId.setUserId(dto.getParticipantUserId());
@@ -3375,17 +3357,17 @@ public class SessionService {
         SessionParticipant participant = sessionParticipantRepository.findById(participantId)
                 .orElseThrow(() -> new ResourceNotFoundException("SessionParticipant", "Id", participantId));
 
-        // 5. Status aktualisieren
+        // 5. Update status
         participant.setStatus(dto.getNewStatus());
         sessionParticipantRepository.save(participant);
 
-        // 6. Kette auslÃ¶sen (MVP 5.4)
+        // 6. Trigger chain (MVP 5.4)
         if (dto.getNewStatus() == ParticipantStatus.no_show) {
-            // Ruft die Logik in UserService auf
+            // Calls logic in UserService
             userService.incrementNoShowCount(dto.getParticipantUserId());
         } 
         else if (dto.getNewStatus() == ParticipantStatus.attended) {
-            // PrÃ¼fen, ob es eine Gruppensitzung war (MVP 3.5)
+            // Check if it was a group session (MVP 3.5)
             if (session.getSessionType() == SessionType.group) {
                 userService.incrementGroupSessionCount(dto.getParticipantUserId());
             }
@@ -3962,22 +3944,23 @@ public class UserController {
 
     private final UserService userService;
 
-    // ... (Hier kÃ¶nnten andere User-Endpunkte stehen, z.B. GET /api/users/me)
+    // ... (Other user endpoints could be here, e.g., GET /api/users/me)
 
     /**
-     * Endpunkt zum Blockieren eines anderen Benutzers.
-     * Der blockierende Benutzer wird Ã¼ber das JWT (Principal) identifiziert.
+     * Endpoint to block another user.
+     * The blocking user is identified via JWT (Principal).
      */
     @PostMapping("/{userId}/block")
     public ResponseEntity<Void> blockUser(
             @PathVariable UUID userId,
             Principal principal) {
         
-        // principal.getName() enthÃ¤lt die Telefonnummer des authentifizierten Benutzers
+        // principal.getName() contains the phone number of the authenticated user
         userService.blockUser(principal.getName(), userId);
         
         return ResponseEntity.ok().build();
     }
+
     /**
      * Updates the FCM push notification token for the currently authenticated user.
      */
@@ -4037,12 +4020,12 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserBlockRepository userBlockRepository;
 
-    // Definiert das Limit fÃ¼r "No-Shows"
+    // Defines the limit for "No-Shows"
     private static final int NO_SHOW_LIMIT = 3;
 
     /**
-     * ErhÃ¶ht den ZÃ¤hler fÃ¼r absolvierte Gruppensitzungen eines Benutzers.
-     * (MVP 3.5 Logik)
+     * Increases the counter for completed group sessions of a user.
+     * (MVP 3.5 Logic)
      */
     @Transactional
     public void incrementGroupSessionCount(UUID userId) {
@@ -4057,61 +4040,61 @@ public class UserService {
     }
 
     /**
-     * ErhÃ¶ht den "No-Show"-ZÃ¤hler fÃ¼r einen Benutzer und wendet bei Bedarf eine Sperre an.
-     * (MVP 5.4 & 5.5 Logik)
+     * Increases the "No-Show" counter for a user and applies a block if necessary.
+     * (MVP 5.4 & 5.5 Logic)
      */
     @Transactional
     public void incrementNoShowCount(UUID userId) {
-        // 1. Benutzer finden
+        // 1. Find user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
-        // 2. ZÃ¤hler erhÃ¶hen
+        // 2. Increase counter
         int newNoShowCount = user.getNoShowCount() + 1;
         user.setNoShowCount(newNoShowCount);
 
-        // 3. SperrprÃ¼fung (MVP 5.5)
+        // 3. Block check (MVP 5.5)
         if (newNoShowCount >= NO_SHOW_LIMIT) {
-            // Benutzer sperren
+            // Block user
             user.setStatus(UserStatus.suspended);
-            user.setSuspendedUntil(OffsetDateTime.now().plusDays(3)); // 3-Tage-Sperre
+            user.setSuspendedUntil(OffsetDateTime.now().plusDays(3)); // 3-day block
             
-            // ZÃ¤hler zurÃ¼cksetzen, nachdem die Sperre angewendet wurde
+            // Reset counter after applying the block
             user.setNoShowCount(0); 
 
             log.warn("User {} suspended for 3 days due to {} no-shows.", userId, newNoShowCount);
             
-            // (Optional: Hier einen Event fÃ¼r eine Push-Benachrichtigung auslÃ¶sen)
-            // z.B. eventPublisher.publishEvent(new UserSuspendedEvent(this, user, "3 days"));
+            // (Optional: Trigger an event for a push notification here)
+            // e.g. eventPublisher.publishEvent(new UserSuspendedEvent(this, user, "3 days"));
 
         } else {
             log.info("User {} 'no-show' count incremented to {}.", userId, newNoShowCount);
         }
 
-        // 4. Benutzer speichern
+        // 4. Save user
         userRepository.save(user);
     }
 
     /**
-     * ErmÃ¶glicht einem Benutzer, einen anderen Benutzer zu blockieren.
-     * (MVP 4.2 Logik)
+     * Allows a user to block another user.
+     * (MVP 4.2 Logic)
      */
     @Transactional
     public void blockUser(String blockerPhoneNumber, UUID blockedUserId) {
-        // 1. Blocker (blocker) finden
+        // 1. Find blocker user
         User blockerUser = userRepository.findByPhoneNumber(blockerPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", blockerPhoneNumber));
 
-        // 2. Zu blockierenden (blocked) finden
+        // 2. Find user to be blocked
         User blockedUser = userRepository.findById(blockedUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "userId", blockedUserId));
 
-        // 3. Selbstblockierung verhindern
+        // 3. Prevent self-blocking
         if (blockerUser.getUserId().equals(blockedUser.getUserId())) {
-            throw new IllegalArgumentException("Ein Benutzer kann sich nicht selbst blockieren.");
+            throw new IllegalArgumentException("A user cannot block themselves.");
         }
 
-        // 4. PrÃ¼fen, ob bereits blockiert
+        // 4. Check if already blocked
         boolean alreadyBlocked = userBlockRepository.existsByBlockerUserIdAndBlockedUserId(
                 blockerUser.getUserId(), blockedUser.getUserId());
 
@@ -4119,7 +4102,7 @@ public class UserService {
             return;
         }
 
-        // 5. UserBlock-EntitÃ¤t erstellen
+        // 5. Create UserBlock entity
         UserBlockId blockId = new UserBlockId();
         blockId.setBlockerUserId(blockerUser.getUserId());
         blockId.setBlockedUserId(blockedUser.getUserId());
@@ -4129,9 +4112,10 @@ public class UserService {
         newBlock.setBlocker(blockerUser);
         newBlock.setBlocked(blockedUser);
 
-        // 6. Blockierung speichern
+        // 6. Save block
         userBlockRepository.save(newBlock);
     }
+
     @Transactional
     public void updateFcmToken(String userPhoneNumber, String fcmToken) {
         User user = userRepository.findByPhoneNumber(userPhoneNumber)
@@ -4141,7 +4125,6 @@ public class UserService {
         userRepository.save(user);
         log.info("Updated FCM token for user: {}", user.getUserId());
     }
-
 
     @Transactional
     public void updateProfileVisibility(String userPhoneNumber, ProfileVisibility newVisibility) {

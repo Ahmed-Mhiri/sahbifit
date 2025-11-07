@@ -109,4 +109,12 @@ public class GymService {
         // which sets the status to 'rejected' instead of a hard delete.
         gymRepository.deleteById(gymId);
     }
+
+    /**
+     * (Method 8) For Admins: Get all gyms waiting for approval.
+     */
+    @Transactional(readOnly = true)
+    public List<Gym> getPendingGyms() {
+        return gymRepository.findByStatus(GymStatus.pending);
+    }
 }

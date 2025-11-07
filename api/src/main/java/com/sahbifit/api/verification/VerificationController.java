@@ -59,11 +59,10 @@ public class VerificationController {
                 return ResponseEntity.badRequest().body("Only MP4, MOV, WebM and AVI video files are allowed.");
             }
 
-            // 3. Validation: File size (max. 100MB)
-            if (videoFile.getSize() > 100 * 1024 * 1024) {
-                log.warn("File too large from user: {}, Size: {} bytes", userPhoneNumber, videoFile.getSize());
-                return ResponseEntity.badRequest().body("The video file must not exceed 100MB.");
-            }
+            // ✅ REMOVED: File size validation (now handled by Spring configuration)
+            // File size validation is now centralized via application.properties
+            // spring.servlet.multipart.max-file-size=100MB
+            // spring.servlet.multipart.max-request-size=100MB
 
             // 4. Processing
             verificationService.submitVerificationVideo(userPhoneNumber, videoFile);
