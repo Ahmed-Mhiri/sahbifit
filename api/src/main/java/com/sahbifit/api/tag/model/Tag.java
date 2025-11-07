@@ -1,14 +1,21 @@
-// Pfad: src/main/java/com/sahbifit/api/tag/model/Tag.java
 package com.sahbifit.api.tag.model;
 
-import com.sahbifit.api.model.enums.TagType;
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.Set;
+
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import java.util.Set;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -26,7 +33,7 @@ public class Tag {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tag_type", nullable = false, columnDefinition = "tag_type")
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM) // Wichtig für PostgreSQL ENUMs
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM) 
     private TagType tagType;
 
     @OneToMany(mappedBy = "tag")

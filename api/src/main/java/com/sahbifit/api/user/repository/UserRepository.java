@@ -6,8 +6,8 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.sahbifit.api.model.enums.VerificationStatus;
 import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.verification.model.VerificationStatus;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
     
@@ -16,4 +16,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     
     // Add this method to fix the first error
     List<User> findByVerificationStatus(VerificationStatus verificationStatus);
+
+    // Add to UserRepository.java
+    boolean existsByPhoneNumber(String phoneNumber);
 }

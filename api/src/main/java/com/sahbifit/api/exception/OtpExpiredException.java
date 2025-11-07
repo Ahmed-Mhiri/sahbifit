@@ -1,8 +1,6 @@
 package com.sahbifit.api.exception;
 
-/**
- * Exception die ausgelöst wird, wenn ein OTP-Code abgelaufen ist.
- */
+
 public class OtpExpiredException extends RuntimeException {
 
     public OtpExpiredException() {

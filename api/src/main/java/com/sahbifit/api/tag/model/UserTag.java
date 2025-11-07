@@ -1,4 +1,3 @@
-// Pfad: src/main/java/com/sahbifit/api/tag/model/UserTag.java
 package com.sahbifit.api.tag.model;
 
 import com.sahbifit.api.user.model.User;

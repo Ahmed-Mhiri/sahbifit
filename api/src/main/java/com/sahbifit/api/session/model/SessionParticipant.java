@@ -1,4 +1,3 @@
-// Pfad: src/main/java/com/sahbifit/api/session/model/SessionParticipant.java
 package com.sahbifit.api.session.model;
 
 import java.time.OffsetDateTime;
@@ -7,7 +6,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import com.sahbifit.api.model.enums.ParticipantStatus;
 import com.sahbifit.api.user.model.User;
 
 import jakarta.persistence.Column;

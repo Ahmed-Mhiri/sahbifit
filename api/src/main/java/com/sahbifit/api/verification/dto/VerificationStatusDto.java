@@ -1,7 +1,7 @@
 package com.sahbifit.api.verification.dto;
 
-import com.sahbifit.api.model.enums.VerificationStatus;
-import com.sahbifit.api.model.enums.VerifiedGender;
+import com.sahbifit.api.verification.model.VerificationStatus;
+import com.sahbifit.api.verification.model.VerifiedGender;
 
 import lombok.Getter;
 import lombok.Setter;

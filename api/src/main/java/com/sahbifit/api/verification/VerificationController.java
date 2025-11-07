@@ -28,7 +28,7 @@ public class VerificationController {
     private VerificationService verificationService;
 
     /**
-     * Endpunkt zum Einreichen des Verifizierungsvideos.
+     * Endpoint for submitting verification video.
      */
     @PostMapping("/submit")
     public ResponseEntity<?> submitVideo(
@@ -36,54 +36,54 @@ public class VerificationController {
             @RequestParam("video") MultipartFile videoFile) {
 
         String userPhoneNumber = userDetails.getUsername();
-        log.info("Video-Upload-Anfrage von Benutzer: {}", userPhoneNumber);
+        log.info("Video upload request from user: {}", userPhoneNumber);
 
         try {
-            // 1. Validierung: Datei ist nicht leer
+            // 1. Validation: File is not empty
             if (videoFile.isEmpty()) {
-                log.warn("Leere Datei von Benutzer: {}", userPhoneNumber);
-                return ResponseEntity.badRequest().body("Die Videodatei ist leer.");
+                log.warn("Empty file from user: {}", userPhoneNumber);
+                return ResponseEntity.badRequest().body("The video file is empty.");
             }
 
             // ✅ IMPROVED: Allow multiple video types for better UX
             String contentType = videoFile.getContentType();
             if (contentType == null || !contentType.startsWith("video/")) {
-                log.warn("Ungültiger Dateityp von Benutzer: {}, Typ: {}", userPhoneNumber, contentType);
-                return ResponseEntity.badRequest().body("Nur Videodateien sind erlaubt.");
+                log.warn("Invalid file type from user: {}, Type: {}", userPhoneNumber, contentType);
+                return ResponseEntity.badRequest().body("Only video files are allowed.");
             }
 
             // ✅ OPTIONAL: More specific validation if needed
             List<String> allowedTypes = Arrays.asList("video/mp4", "video/quicktime", "video/webm", "video/x-msvideo");
             if (!allowedTypes.contains(contentType)) {
-                log.warn("Nicht unterstützter Videotyp von Benutzer: {}, Typ: {}", userPhoneNumber, contentType);
-                return ResponseEntity.badRequest().body("Nur MP4, MOV, WebM und AVI Videodateien sind erlaubt.");
+                log.warn("Unsupported video type from user: {}, Type: {}", userPhoneNumber, contentType);
+                return ResponseEntity.badRequest().body("Only MP4, MOV, WebM and AVI video files are allowed.");
             }
 
-            // 3. Validierung: Dateigröße (max. 100MB)
+            // 3. Validation: File size (max. 100MB)
             if (videoFile.getSize() > 100 * 1024 * 1024) {
-                log.warn("Datei zu groß von Benutzer: {}, Größe: {} bytes", userPhoneNumber, videoFile.getSize());
-                return ResponseEntity.badRequest().body("Die Videodatei darf maximal 100MB groß sein.");
+                log.warn("File too large from user: {}, Size: {} bytes", userPhoneNumber, videoFile.getSize());
+                return ResponseEntity.badRequest().body("The video file must not exceed 100MB.");
             }
 
-            // 4. Verarbeitung
+            // 4. Processing
             verificationService.submitVerificationVideo(userPhoneNumber, videoFile);
             
-            log.info("Video erfolgreich verarbeitet für Benutzer: {}", userPhoneNumber);
-            return ResponseEntity.ok("Video erfolgreich eingereicht. Die Überprüfung steht aus.");
+            log.info("Video successfully processed for user: {}", userPhoneNumber);
+            return ResponseEntity.ok("Video successfully submitted. Verification is pending.");
 
         } catch (IllegalStateException e) {
-            log.warn("Ungültiger Status für Video-Upload von Benutzer: {}, Fehler: {}", userPhoneNumber, e.getMessage());
+            log.warn("Invalid status for video upload from user: {}, Error: {}", userPhoneNumber, e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            log.error("Fehler beim Video-Upload für Benutzer: {}", userPhoneNumber, e);
+            log.error("Error during video upload for user: {}", userPhoneNumber, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Fehler beim Upload: " + e.getMessage());
+                    .body("Upload error: " + e.getMessage());
         }
     }
 
     /**
-     * Endpunkt für die App, um den Status des Benutzers abzufragen
-     * (z.B. um den "Probationary Mode" UI anzuzeigen).
+     * Endpoint for the app to query user status
+     * (e.g., to display the "Probationary Mode" UI).
      */
     @GetMapping("/status")
     public ResponseEntity<VerificationStatusDto> getStatus(@AuthenticationPrincipal UserDetails userDetails) {
@@ -91,10 +91,10 @@ public class VerificationController {
         
         try {
             VerificationStatusDto statusDto = verificationService.getVerificationStatus(userPhoneNumber);
-            log.debug("Statusabfrage für Benutzer: {}, Status: {}", userPhoneNumber, statusDto.getStatus());
+            log.debug("Status query for user: {}, Status: {}", userPhoneNumber, statusDto.getStatus());
             return ResponseEntity.ok(statusDto);
         } catch (Exception e) {
-            log.error("Fehler bei Statusabfrage für Benutzer: {}", userPhoneNumber, e);
+            log.error("Error during status query for user: {}", userPhoneNumber, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

@@ -2,7 +2,7 @@ package com.sahbifit.api.admin.dto;
 
 import java.util.UUID;
 
-import com.sahbifit.api.model.enums.VerificationStatus;
+import com.sahbifit.api.verification.model.VerificationStatus;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

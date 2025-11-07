@@ -1,4 +1,3 @@
-// Pfad: src/main/java/com/sahbifit/api/session/model/SessionParticipantId.java
 package com.sahbifit.api.session.model;
 
 import jakarta.persistence.Column;

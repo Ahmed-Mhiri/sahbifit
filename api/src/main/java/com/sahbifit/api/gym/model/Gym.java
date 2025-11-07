@@ -1,4 +1,3 @@
-// Pfad: src/main/java/com/sahbifit/api/gym/model/Gym.java
 package com.sahbifit.api.gym.model;
 
 import java.time.OffsetDateTime;
@@ -13,11 +12,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import org.locationtech.jts.geom.Point;
 
-import com.sahbifit.api.model.enums.GymStatus;
 import com.sahbifit.api.session.model.Session;
 import com.sahbifit.api.user.model.User;
 
-import jakarta.persistence.Column; // Wichtig für PostGIS
+import jakarta.persistence.Column; 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -55,8 +53,8 @@ public class Gym {
     private String address;
 
     @Column(name = "location", columnDefinition = "geography(Point, 4326)")
-    private Point location; // Benötigt hibernate-spatial
-
+    private Point location; 
+    
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, columnDefinition = "gym_status")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

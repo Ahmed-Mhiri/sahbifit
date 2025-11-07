@@ -1,5 +1,8 @@
 package com.sahbifit.api.auth.dto;
 
+import java.util.List;
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -7,48 +10,45 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-import java.util.UUID;
-
 @Getter
 @Setter
 public class RegisterRequest {
 
-    // --- Kern-Authentifizierung ---
+    // --- Core Authentication ---
 
-    @NotBlank(message = "Telefonnummer darf nicht leer sein.")
-    @Pattern(regexp = "^(2|3|4|5|7|9)\\d{7}$", message = "Ungültige tunesische Telefonnummer. (Erwartet: 8 Ziffern ohne +216)")
+    @NotBlank(message = "Phone number cannot be empty.")
+    @Pattern(regexp = "^(2|3|4|5|7|9)\\d{7}$", message = "Invalid Tunisian phone number. (Expected: 8 digits without +216)")
     private String phoneNumber;
 
-    @NotBlank(message = "Passwort darf nicht leer sein.")
-    @Size(min = 8, message = "Passwort muss mindestens 8 Zeichen lang sein.")
+    @NotBlank(message = "Password cannot be empty.")
+    @Size(min = 8, message = "Password must be at least 8 characters long.")
     private String password;
 
-    @NotBlank(message = "reCAPTCHA Token darf nicht leer sein.")
+    @NotBlank(message = "reCAPTCHA token cannot be empty.")
     private String recaptchaToken;
 
-    // --- Profilfelder (wie im PRD definiert) ---
+    // --- Profile fields (as defined in PRD) ---
 
-    @NotBlank(message = "Vorname darf nicht leer sein.")
-    @Size(max = 100, message = "Vorname darf maximal 100 Zeichen lang sein.")
+    @NotBlank(message = "First name cannot be empty.")
+    @Size(max = 100, message = "First name cannot exceed 100 characters.")
     private String firstName;
 
-    @NotBlank(message = "Geburtsdatum darf nicht leer sein.")
-    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Geburtsdatum muss im Format YYYY-MM-DD sein.")
-    private String dateOfBirth; // Wird im Service zu LocalDate geparst
+    @NotBlank(message = "Date of birth cannot be empty.")
+    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Date of birth must be in YYYY-MM-DD format.")
+    private String dateOfBirth; // Will be parsed to LocalDate in service
 
-    @NotNull(message = "Primäres Fitnessstudio muss ausgewählt werden.")
+    @NotNull(message = "Primary gym must be selected.")
     private UUID primaryGymId;
 
-    // Optional: Die URL kann beim Erstellen des Profils oder später hinzugefügt werden.
+    // Optional: The URL can be added when creating the profile or later.
     private String profilePhotoUrl; 
 
-    // --- Profil-Tagging-System ---
+    // --- Profile Tagging System ---
 
-    // Liste von Tag-IDs (Integer), die der Benutzer für seine Ziele ausgewählt hat
+    // List of tag IDs (Integer) that the user has selected for their goals
     private List<Integer> goalTagIds; 
 
-    // Liste von Tag-IDs (Integer), die der Benutzer für seine Verfügbarkeit ausgewählt hat
+    // List of tag IDs (Integer) that the user has selected for their availability
     private List<Integer> scheduleTagIds;
 
 }

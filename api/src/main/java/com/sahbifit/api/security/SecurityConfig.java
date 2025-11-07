@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; // <- NEW
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -20,6 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity // <- THIS LINE ADDED
 public class SecurityConfig {
 
     @Autowired
@@ -32,16 +34,16 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                // Öffentliche Endpunkte
+                // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 
-                // --- ADMIN ENDPUNKTE ---
+                // --- ADMIN ENDPOINTS ---
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 
-                // --- VERIFICATION ENDPUNKTE - für alle authentifizierten Benutzer ---
+                // --- VERIFICATION ENDPOINTS - for all authenticated users ---
                 .requestMatchers("/api/verification/**").authenticated()
                 
-                // Alle anderen Anfragen erfordern Authentifizierung
+                // All other requests require authentication
                 .anyRequest().authenticated()
             );
 
@@ -52,7 +54,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "https://your-production-domain.com"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

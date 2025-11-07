@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sahbifit.api.auth.dto.AuthResponse;
 import com.sahbifit.api.auth.dto.LoginRequest;
 import com.sahbifit.api.auth.dto.RegisterRequest;
-import com.sahbifit.api.auth.dto.ResendOtpRequest; // NEUER IMPORT
+import com.sahbifit.api.auth.dto.ResendOtpRequest; // NEW IMPORT
 import com.sahbifit.api.auth.dto.VerifySmsRequest;
 
 import jakarta.validation.Valid;
@@ -31,28 +31,28 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         authService.register(registerRequest);
-        // Aktualisierte deutsche Antwort
-        return ResponseEntity.ok("Registrierung erfolgreich! Bitte prüfen Sie Ihre SMS, um Ihr Konto zu verifizieren.");
+        // Updated English response
+        return ResponseEntity.ok("Registration successful! Please check your SMS to verify your account.");
     }
 
     /**
-     * Bestätigt die Telefonnummer eines Benutzers mit dem per SMS gesendeten OTP.
+     * Verifies a user's phone number with the OTP sent via SMS.
      */
     @PostMapping("/verify-sms")
     public ResponseEntity<?> verifySms(@Valid @RequestBody VerifySmsRequest verifyRequest) {
         authService.verifySmsOtp(verifyRequest);
-        return ResponseEntity.ok("Telefonnummer erfolgreich verifiziert. Sie können sich jetzt einloggen.");
+        return ResponseEntity.ok("Phone number successfully verified. You can now log in.");
     }
 
-    // --- NEUER ENDPUNKT ---
+    // --- NEW ENDPOINT ---
 
     /**
-     * Sendet einen neuen OTP-Code an eine nicht verifizierte Telefonnummer.
-     * Wird verwendet, wenn der ursprüngliche OTP abgelaufen ist.
+     * Sends a new OTP code to an unverified phone number.
+     * Used when the original OTP has expired.
      */
     @PostMapping("/resend-otp")
     public ResponseEntity<?> resendOtp(@Valid @RequestBody ResendOtpRequest resendRequest) {
         authService.resendOtp(resendRequest);
-        return ResponseEntity.ok("Neuer Bestätigungscode wurde per SMS gesendet.");
+        return ResponseEntity.ok("New verification code has been sent via SMS.");
     }
 }

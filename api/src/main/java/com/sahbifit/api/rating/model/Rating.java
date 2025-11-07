@@ -1,4 +1,4 @@
-// Pfad: src/main/java/com/sahbifit/api/rating/model/Rating.java
+// Path: src/main/java/com/sahbifit/api/rating/model/Rating.java
 package com.sahbifit.api.rating.model;
 
 import java.time.OffsetDateTime;
@@ -55,7 +55,7 @@ public class Rating {
     private User ratingFor;
 
     @Column(name = "rating_value", nullable = false)
-    private Short ratingValue; // SMALLINT entspricht Short
+    private Short ratingValue; // SMALLINT corresponds to Short
 
     @Column(name = "comment")
     private String comment;

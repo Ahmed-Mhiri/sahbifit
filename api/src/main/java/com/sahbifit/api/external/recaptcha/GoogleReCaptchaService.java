@@ -21,17 +21,17 @@ public class GoogleReCaptchaService implements ReCaptchaService {
     @Autowired
     public GoogleReCaptchaService(ReCaptchaConfig reCaptchaConfig, RestTemplate restTemplate) {
         this.reCaptchaConfig = reCaptchaConfig;
-        // Wir verwenden das RestTemplate-Bean wieder, das in WinSmsConfig erstellt wurde!
+        // We are reusing the RestTemplate bean created in WinSmsConfig!
         this.restTemplate = restTemplate; 
     }
 
     @Override
     public void validate(String token) {
-        // Google erwartet eine POST-Anfrage mit 'x-www-form-urlencoded' Daten
+        // Google expects a POST request with 'x-www-form-urlencoded' data
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("secret", reCaptchaConfig.getSecretKey());
         body.add("response", token);
-        // Optional können Sie auch die IP des Benutzers mitsenden:
+        // Optionally, you can also send the user's IP:
         // body.add("remoteip", userIp);
 
         ReCaptchaResponse response;
@@ -42,28 +42,28 @@ public class GoogleReCaptchaService implements ReCaptchaService {
                     ReCaptchaResponse.class
             );
         } catch (Exception e) {
-            logger.error("Fehler bei der Kommunikation mit der Google reCAPTCHA API: {}", e.getMessage());
-            // Wir werfen eine Exception, um die Registrierung zu stoppen
-            throw new RuntimeException("reCAPTCHA-Dienst nicht erreichbar.");
+            logger.error("Error communicating with Google reCAPTCHA API: {}", e.getMessage());
+            // We throw an exception to stop the registration
+            throw new RuntimeException("reCAPTCHA service unavailable.");
         }
 
-        // 1. Prüfen, ob die Anfrage selbst erfolgreich war
+        // 1. Check if the request itself was successful
         if (response == null || !response.isSuccess()) {
-            logger.warn("reCAPTCHA-Validierung fehlgeschlagen. Fehler: {}", 
-                (response != null ? response.getErrorCodes() : "Keine Antwort"));
-            throw new RuntimeException("reCAPTCHA-Validierung fehlgeschlagen.");
+            logger.warn("reCAPTCHA validation failed. Errors: {}", 
+                (response != null ? response.getErrorCodes() : "No response"));
+            throw new RuntimeException("reCAPTCHA validation failed.");
         }
 
-        // 2. Prüfen, ob der Score (Bot-Wahrscheinlichkeit) ausreichend ist
+        // 2. Check if the score (bot probability) is sufficient
         if (response.getScore() < reCaptchaConfig.getScoreThreshold()) {
-            logger.warn("Potenzieller Bot blockiert. reCAPTCHA Score: {}", response.getScore());
-            throw new RuntimeException("Validierung fehlgeschlagen (niedriger Score).");
+            logger.warn("Potential bot blocked. reCAPTCHA Score: {}", response.getScore());
+            throw new RuntimeException("Validation failed (low score).");
         }
         
-        // 3. (Optional) Sie können auch die 'action' prüfen, 
-        //    um sicherzustellen, dass das Token von Ihrer Registrierungsseite stammt.
-        //    z.B. if (!"register".equals(response.getAction())) { ... }
+        // 3. (Optional) You can also check the 'action' 
+        //    to ensure the token comes from your registration page.
+        //    e.g., if (!"register".equals(response.getAction())) { ... }
 
-        logger.info("reCAPTCHA-Validierung erfolgreich (Score: {}).", response.getScore());
+        logger.info("reCAPTCHA validation successful (Score: {}).", response.getScore());
     }
 }

@@ -1,12 +1,11 @@
-// Pfad: src/main/java/com/sahbifit/api/user/model/UserBlockId.java
 package com.sahbifit.api.user.model;
+
+import java.io.Serializable;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Data;
-
-import java.io.Serializable;
-import java.util.UUID;
 
 @Data
 @Embeddable

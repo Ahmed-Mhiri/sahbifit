@@ -10,11 +10,11 @@ import lombok.Setter;
 @Setter
 public class VerifySmsRequest {
 
-    @NotBlank(message = "Telefonnummer darf nicht leer sein.")
-    @Pattern(regexp = "^(2|3|4|5|7|9)\\d{7}$", message = "Ungültige tunesische Telefonnummer.")
+    @NotBlank(message = "Phone number cannot be empty.")
+    @Pattern(regexp = "^(2|3|4|5|7|9)\\d{7}$", message = "Invalid Tunisian phone number.")
     private String phoneNumber;
 
-    @NotBlank(message = "OTP darf nicht leer sein.")
-    @Size(min = 6, max = 6, message = "OTP muss 6 Ziffern lang sein.")
+    @NotBlank(message = "OTP cannot be empty.")
+    @Size(min = 6, max = 6, message = "OTP must be 6 digits long.")
     private String otp;
 }

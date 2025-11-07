@@ -11,22 +11,22 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Duration;
 
 @Configuration
-@ConfigurationProperties(prefix = "winsms") // Bindet an winsms.api-key & winsms.base-url
+@ConfigurationProperties(prefix = "winsms") // Binds to winsms.api-key & winsms.base-url
 @Getter
 @Setter
 public class WinSmsConfig {
 
-    // Diese Felder werden automatisch aus application.properties befüllt
+    // These fields are automatically populated from application.properties
     private String apiKey;
     private String baseUrl;
 
     /**
-     * Stellt ein RestTemplate-Bean für die Anwendung bereit.
-     * RestTemplate ist der moderne Spring-Weg, um HTTP-Anfragen zu senden.
+     * Provides a RestTemplate bean for the application.
+     * RestTemplate is the modern Spring way to send HTTP requests.
      */
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        // Setzt Timeouts, genau wie in Ihrem Beispiel (1000ms)
+        // Sets timeouts, exactly as in your example (1000ms)
         return builder
                 .setConnectTimeout(Duration.ofMillis(1000))
                 .setReadTimeout(Duration.ofMillis(1000))

@@ -9,9 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.sahbifit.api.config.WinSmsConfig; // Import aus Ihrem Beispiel
+import com.sahbifit.api.config.WinSmsConfig; // Import from your example
 
-@Service // Wichtig: Markiert dies als Spring-Implementierung von SmsService
+@Service // Important: Marks this as Spring implementation of SmsService
 public class WinSmsService implements SmsService {
 
     private static final Logger logger = LoggerFactory.getLogger(WinSmsService.class);
@@ -28,15 +28,15 @@ public class WinSmsService implements SmsService {
     @Override
     public void sendVerificationSms(String phoneNumber, String otp) {
         
-        // 🚨 WICHTIG: WinSMS erwartet '216' als Präfix.
-        // Ihre Validierung speichert die Nummer ohne Präfix.
+        // 🚨 IMPORTANT: WinSMS expects '216' as prefix.
+        // Your validation stores the number without prefix.
         String fullPhoneNumber = "216" + phoneNumber;
         
-        String message = String.format("Ihr SahbiFit-Verifizierungscode lautet: %s", otp);
+        String message = String.format("Your SahbiFit verification code is: %s", otp);
 
         try {
-            // Wir bauen die URL genau wie in Ihrem Beispiel, 
-            // da WinSMS möglicherweise eine spezielle URL-Kodierung erwartet.
+            // We build the URL exactly like in your example,
+            // since WinSMS might expect special URL encoding.
             String params = String.format("action=send-sms&api_key=%s&to=%s&sms=%s",
                     URLEncoder.encode(winSmsConfig.getApiKey(), StandardCharsets.UTF_8),
                     URLEncoder.encode(fullPhoneNumber, StandardCharsets.UTF_8),
@@ -44,21 +44,21 @@ public class WinSmsService implements SmsService {
             
             String fullUrl = winSmsConfig.getBaseUrl() + "?" + params;
 
-            // Senden Sie die GET-Anfrage
-            // Wir verwenden getForObject, da wir eine String-Antwort erwarten (z.B. "OK")
+            // Send the GET request
+            // We use getForObject since we expect a String response (e.g., "OK")
             String response = restTemplate.getForObject(fullUrl, String.class);
 
-            // Antwort von WinSMS prüfen.
+            // Check response from WinSMS.
             if (response != null && response.contains("OK")) {
-                logger.info("SMS an {} erfolgreich gesendet. (OTP: {})", fullPhoneNumber, otp);
+                logger.info("SMS to {} sent successfully. (OTP: {})", fullPhoneNumber, otp);
             } else {
-                // Wenn "OK" nicht in der Antwort enthalten ist, loggen wir den Fehler
-                logger.warn("Fehler beim Senden der SMS an {}. API-Antwort: {}", fullPhoneNumber, response);
+                // If "OK" is not in the response, log the error
+                logger.warn("Error sending SMS to {}. API response: {}", fullPhoneNumber, response);
             }
 
         } catch (Exception e) {
-            // Fängt alle Fehler ab (z.B. java.io.UnsupportedEncodingException oder RestClientException)
-            logger.error("Fehler bei der Verbindung zur WinSMS-API: {}", e.getMessage(), e);
+            // Catches all errors (e.g., java.io.UnsupportedEncodingException or RestClientException)
+            logger.error("Error connecting to WinSMS API: {}", e.getMessage(), e);
         }
     }
 }

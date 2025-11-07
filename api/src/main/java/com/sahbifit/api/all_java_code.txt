@@ -22,10 +22,13 @@ Path: AdminController.java
 package com.sahbifit.api.admin;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,22 +37,23 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sahbifit.api.admin.dto.ApproveVerificationRequest;
 import com.sahbifit.api.admin.dto.RejectVerificationRequest;
 import com.sahbifit.api.admin.dto.VerificationQueueDto;
+import com.sahbifit.api.gym.model.Gym;
+import com.sahbifit.api.report.model.Report;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/admin/verification")
+@RequestMapping("/api/admin") // <-- NOTE: I changed this path to be more general
 public class AdminController {
 
     @Autowired
     private AdminService adminService;
 
-    /**
-     * (FÃ¼r Appsmith) Holt die Warteschlange der zu verifizierenden Benutzer.
-     */
-    @GetMapping("/queue")
+    // --- SECTION 1: VERIFICATION (Existing Endpoints) ---
+    // Change the path to be relative to /api/admin
+    @GetMapping("/verification/queue")
     public ResponseEntity<List<VerificationQueueDto>> getQueue() {
         log.info("Admin abfrage Verifikations-Warteschlange");
         List<VerificationQueueDto> queue = adminService.getVerificationQueue();
@@ -57,10 +61,8 @@ public class AdminController {
         return ResponseEntity.ok(queue);
     }
 
-    /**
-     * (FÃ¼r Appsmith) Genehmigt einen Benutzer.
-     */
-    @PutMapping("/approve")
+    // Change the path
+    @PutMapping("/verification/approve")
     public ResponseEntity<?> approveUser(@Valid @RequestBody ApproveVerificationRequest request) {
         log.info("Admin genehmigt Benutzer: {}, Geschlecht: {}", 
                 request.getUserId(), request.getVerifiedGender());
@@ -69,16 +71,41 @@ public class AdminController {
         return ResponseEntity.ok("Benutzer genehmigt.");
     }
 
-    /**
-     * (FÃ¼r Appsmith) Lehnt einen Benutzer ab.
-     */
-    @PutMapping("/reject")
+    // Change the path
+    @PutMapping("/verification/reject")
     public ResponseEntity<?> rejectUser(@Valid @RequestBody RejectVerificationRequest request) {
         log.info("Admin lehnt Benutzer ab: {}, Grund: {}", 
                 request.getUserId(), request.getReason());
         
         adminService.rejectVerification(request.getUserId(), request.getReason());
         return ResponseEntity.ok("Benutzer abgelehnt.");
+    }
+
+    // --- SECTION 2: REPORTS (New Endpoints) ---
+    @GetMapping("/reports/pending")
+    public ResponseEntity<List<Report>> getPendingReports() {
+        log.info("Admin abfrage Report-Warteschlange");
+        List<Report> reports = adminService.getPendingReports();
+        log.info("Gefunden {} Reports in der Warteschlange", reports.size());
+        return ResponseEntity.ok(reports);
+    }
+    
+
+    // --- SECTION 3: GYM SUBMISSIONS (New Endpoints) ---
+    @GetMapping("/gyms/pending")
+    public ResponseEntity<List<Gym>> getPendingGyms() {
+        log.info("Admin abfrage Gym-Warteschlange");
+        List<Gym> gyms = adminService.getPendingGyms();
+        log.info("Gefunden {} Gyms in der Warteschlange", gyms.size());
+        return ResponseEntity.ok(gyms);
+    }
+
+    // --- SECTION 4: USER MANAGEMENT (New Endpoints) ---
+    @PostMapping("/users/{userId}/ban")
+    public ResponseEntity<?> banUser(@PathVariable UUID userId) {
+        log.info("Admin bannt Benutzer: {}", userId);
+        adminService.banUser(userId);
+        return ResponseEntity.ok("Benutzer gesperrt.");
     }
 }
 
@@ -98,11 +125,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sahbifit.api.admin.dto.VerificationQueueDto;
+import com.sahbifit.api.external.push.PushNotificationService;
 import com.sahbifit.api.external.storage.StorageService;
-import com.sahbifit.api.model.enums.VerificationStatus;
-import com.sahbifit.api.model.enums.VerifiedGender;
+import com.sahbifit.api.gym.model.Gym;
+import com.sahbifit.api.gym.model.GymStatus;
+import com.sahbifit.api.gym.repository.GymRepository;
+import com.sahbifit.api.report.model.Report;
+import com.sahbifit.api.report.model.ReportStatus;
+import com.sahbifit.api.report.repository.ReportRepository;
 import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.model.UserStatus;
 import com.sahbifit.api.user.repository.UserRepository;
+import com.sahbifit.api.verification.model.VerificationStatus;
+import com.sahbifit.api.verification.model.VerifiedGender;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -116,12 +151,17 @@ public class AdminService {
     @Autowired
     private StorageService storageService; // For file deletion
 
-    // Optional: FÃ¼r spÃ¤tere Push-Benachrichtigungen
-    // @Autowired
-    // private PushNotificationService pushNotificationService;
+    @Autowired
+    private ReportRepository reportRepository;
+
+    @Autowired
+    private GymRepository gymRepository;
+
+    @Autowired
+    private PushNotificationService pushNotificationService;
 
     /**
-     * Holt alle Benutzer, die auf Verifizierung warten.
+     * Retrieves all users waiting for verification.
      */
     public List<VerificationQueueDto> getVerificationQueue() {
         List<User> pendingUsers = userRepository.findByVerificationStatus(VerificationStatus.pending_review);
@@ -141,15 +181,15 @@ public class AdminService {
     }
 
     /**
-     * Genehmigt einen Benutzer und setzt sein Geschlecht.
+     * Approves a user and sets their gender.
      */
     @Transactional
     public void approveVerification(UUID userId, VerifiedGender gender) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden."));
+                .orElseThrow(() -> new RuntimeException("User not found."));
 
         if (user.getVerificationStatus() != VerificationStatus.pending_review) {
-            throw new IllegalStateException("Benutzer wartet nicht auf Genehmigung.");
+            throw new IllegalStateException("User is not waiting for approval.");
         }
 
         // âœ… Store old video URL before clearing it
@@ -167,33 +207,33 @@ public class AdminService {
         if (oldVideoUrl != null) {
             try {
                 storageService.deleteFile(oldVideoUrl);
-                log.info("Verifizierungsvideo gelÃ¶scht fÃ¼r Benutzer: {}", userId);
+                log.info("Verification video deleted for user: {}", userId);
             } catch (IOException e) {
-                log.error("Fehler beim LÃ¶schen des Verifizierungsvideos fÃ¼r Benutzer {}: {}", userId, e.getMessage());
+                log.error("Error deleting verification video for user {}: {}", userId, e.getMessage());
                 // Don't throw exception - the user is still approved, just log the error
             }
         }
 
-        log.info("Benutzer {} wurde verifiziert. Geschlecht: {}", userId, gender);
+        log.info("User {} has been verified. Gender: {}", userId, gender);
 
-        // Der "Magic Moment" (Push-Benachrichtigung) - spÃ¤ter implementieren
-        // pushNotificationService.sendVerificationApproved(user);
+        // Send push notification
+        pushNotificationService.sendVerificationApproved(user);
     }
 
     /**
-     * Lehnt einen Benutzer aus einem bestimmten Grund ab.
+     * Rejects a user for a specific reason.
      */
     @Transactional
     public void rejectVerification(UUID userId, VerificationStatus reason) {
         if (reason != VerificationStatus.rejected_bad_video && reason != VerificationStatus.rejected_mismatch) {
-            throw new IllegalArgumentException("UngÃ¼ltiger Ablehnungsgrund.");
+            throw new IllegalArgumentException("Invalid rejection reason.");
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden."));
+                .orElseThrow(() -> new RuntimeException("User not found."));
 
         if (user.getVerificationStatus() != VerificationStatus.pending_review) {
-            throw new IllegalStateException("Benutzer wartet nicht auf Genehmigung.");
+            throw new IllegalStateException("User is not waiting for approval.");
         }
 
         // âœ… Store old video URL before clearing it
@@ -208,17 +248,46 @@ public class AdminService {
         if (oldVideoUrl != null) {
             try {
                 storageService.deleteFile(oldVideoUrl);
-                log.info("Verifizierungsvideo gelÃ¶scht fÃ¼r abgelehnten Benutzer: {}", userId);
+                log.info("Verification video deleted for rejected user: {}", userId);
             } catch (IOException e) {
-                log.error("Fehler beim LÃ¶schen des Verifizierungsvideos fÃ¼r abgelehnten Benutzer {}: {}", userId, e.getMessage());
+                log.error("Error deleting verification video for rejected user {}: {}", userId, e.getMessage());
                 // Don't throw exception - the rejection still proceeds
             }
         }
 
-        log.info("Benutzer {} wurde abgelehnt. Grund: {}", userId, reason);
+        log.info("User {} has been rejected. Reason: {}", userId, reason);
 
-        // (Optional) Sende Push-Benachrichtigung Ã¼ber Ablehnung
-        // pushNotificationService.sendVerificationRejected(user, reason);
+        // Send push notification about rejection
+        pushNotificationService.sendVerificationRejected(user, reason);
+    }
+
+    /**
+     * (For Appsmith) Bans a user (status = banned).
+     */
+    @Transactional
+    public void banUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found."));
+
+        user.setStatus(UserStatus.banned);
+        userRepository.save(user);
+
+        log.warn("Admin has banned user {}.", userId);
+    }
+
+    /**
+     * (For Appsmith) Retrieves the queue of reported users.
+     */
+    public List<Report> getPendingReports() {
+        return reportRepository.findByStatusOrderByPriorityDesc(ReportStatus.pending);
+    }
+
+    /**
+     * (For Appsmith) Retrieves the queue of gyms submitted by users.
+     */
+    public List<Gym> getPendingGyms() {
+        // This method already exists in GymRepository
+        return gymRepository.findByStatus(GymStatus.pending);
     }
 }
 
@@ -230,7 +299,7 @@ package com.sahbifit.api.admin.dto;
 
 import java.util.UUID;
 
-import com.sahbifit.api.model.enums.VerifiedGender;
+import com.sahbifit.api.verification.model.VerifiedGender;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -254,7 +323,7 @@ package com.sahbifit.api.admin.dto;
 
 import java.util.UUID;
 
-import com.sahbifit.api.model.enums.VerificationStatus;
+import com.sahbifit.api.verification.model.VerificationStatus;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -308,7 +377,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sahbifit.api.auth.dto.AuthResponse;
 import com.sahbifit.api.auth.dto.LoginRequest;
 import com.sahbifit.api.auth.dto.RegisterRequest;
-import com.sahbifit.api.auth.dto.ResendOtpRequest; // NEUER IMPORT
+import com.sahbifit.api.auth.dto.ResendOtpRequest; // NEW IMPORT
 import com.sahbifit.api.auth.dto.VerifySmsRequest;
 
 import jakarta.validation.Valid;
@@ -329,29 +398,29 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         authService.register(registerRequest);
-        // Aktualisierte deutsche Antwort
-        return ResponseEntity.ok("Registrierung erfolgreich! Bitte prÃ¼fen Sie Ihre SMS, um Ihr Konto zu verifizieren.");
+        // Updated English response
+        return ResponseEntity.ok("Registration successful! Please check your SMS to verify your account.");
     }
 
     /**
-     * BestÃ¤tigt die Telefonnummer eines Benutzers mit dem per SMS gesendeten OTP.
+     * Verifies a user's phone number with the OTP sent via SMS.
      */
     @PostMapping("/verify-sms")
     public ResponseEntity<?> verifySms(@Valid @RequestBody VerifySmsRequest verifyRequest) {
         authService.verifySmsOtp(verifyRequest);
-        return ResponseEntity.ok("Telefonnummer erfolgreich verifiziert. Sie kÃ¶nnen sich jetzt einloggen.");
+        return ResponseEntity.ok("Phone number successfully verified. You can now log in.");
     }
 
-    // --- NEUER ENDPUNKT ---
+    // --- NEW ENDPOINT ---
 
     /**
-     * Sendet einen neuen OTP-Code an eine nicht verifizierte Telefonnummer.
-     * Wird verwendet, wenn der ursprÃ¼ngliche OTP abgelaufen ist.
+     * Sends a new OTP code to an unverified phone number.
+     * Used when the original OTP has expired.
      */
     @PostMapping("/resend-otp")
     public ResponseEntity<?> resendOtp(@Valid @RequestBody ResendOtpRequest resendRequest) {
         authService.resendOtp(resendRequest);
-        return ResponseEntity.ok("Neuer BestÃ¤tigungscode wurde per SMS gesendet.");
+        return ResponseEntity.ok("New verification code has been sent via SMS.");
     }
 }
 
@@ -388,16 +457,16 @@ import com.sahbifit.api.external.recaptcha.ReCaptchaService;
 import com.sahbifit.api.external.sms.SmsService;
 import com.sahbifit.api.gym.model.Gym;
 import com.sahbifit.api.gym.repository.GymRepository;
-import com.sahbifit.api.model.enums.UserRole;
-import com.sahbifit.api.model.enums.UserStatus;
-import com.sahbifit.api.model.enums.VerificationStatus;
-import com.sahbifit.api.model.enums.VerifiedGender;
 import com.sahbifit.api.security.JwtTokenProvider;
 import com.sahbifit.api.tag.model.Tag;
 import com.sahbifit.api.tag.model.UserTag;
 import com.sahbifit.api.tag.repository.TagRepository;
 import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.model.UserRole;
+import com.sahbifit.api.user.model.UserStatus;
 import com.sahbifit.api.user.repository.UserRepository;
+import com.sahbifit.api.verification.model.VerificationStatus;
+import com.sahbifit.api.verification.model.VerifiedGender;
 
 @Service
 public class AuthService {
@@ -428,57 +497,57 @@ public class AuthService {
 
     @Transactional
     public void register(RegisterRequest request) {
-        // 1. reCAPTCHA v3 Validierung
+        // 1. reCAPTCHA v3 validation
         reCaptchaService.validate(request.getRecaptchaToken());
 
-        // 2. Tunesische Nummernvalidierung
+        // 2. Tunisian number validation
         if (!isTunisianNumber(request.getPhoneNumber())) {
-            throw new IllegalArgumentException("UngÃ¼ltiges tunesisches Telefonnummernformat.");
+            throw new IllegalArgumentException("Invalid Tunisian phone number format.");
         }
 
-        // 3. PrÃ¼fen, ob der Benutzer bereits existiert
+        // 3. Check if user already exists
         if (userRepository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
-            throw new PhoneNumberAlreadyExistsException("Telefonnummer ist bereits vergeben.");
+            throw new PhoneNumberAlreadyExistsException("Phone number is already registered.");
         }
 
-        // 4. Benutzerobjekt erstellen
+        // 4. Create user object
         User user = new User();
         user.setPhoneNumber(request.getPhoneNumber());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFirstName(request.getFirstName());
         user.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
 
-        // 5. Primary Gym setzen
+        // 5. Set primary gym
         if (request.getPrimaryGymId() != null) {
             Gym primaryGym = gymRepository.findById(request.getPrimaryGymId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Gym nicht gefunden mit ID: " + request.getPrimaryGymId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Gym not found with ID: " + request.getPrimaryGymId()));
             user.setPrimaryGym(primaryGym);
         }
 
-        // 6. Profil-Tags (Goals, Schedule) verarbeiten und speichern
+        // 6. Process profile tags (Goals, Schedule) and save
         java.util.Set<UserTag> allUserTags = new java.util.HashSet<>();
 
-        // --- Verarbeitung der GOAL Tags (1 DB-Abfrage) ---
+        // --- Process GOAL tags (1 DB query) ---
         if (request.getGoalTagIds() != null && !request.getGoalTagIds().isEmpty()) {
             
-            // 1. Hole ALLE Goal-Tags mit EINER einzigen Datenbankabfrage
+            // 1. Get ALL Goal tags with a SINGLE database query
             java.util.List<Tag> goalTags = tagRepository.findAllById(request.getGoalTagIds());
             
-            // 2. Validierung: Sicherstellen, dass alle angeforderten IDs auch gefunden wurden
+            // 2. Validation: Ensure all requested IDs were found
             if (goalTags.size() != request.getGoalTagIds().size()) {
-                throw new ResourceNotFoundException("Ein oder mehrere 'Goal' Tags wurden nicht gefunden.");
+                throw new ResourceNotFoundException("One or more 'Goal' tags were not found.");
             }
 
-            // 3. Mappe die Tags im Speicher (keine weiteren DB-Aufrufe)
+            // 3. Map tags in memory (no additional DB calls)
             java.util.Set<UserTag> goalUserTags = goalTags.stream()
                 .map(tag -> {
-                    // Optionale, aber empfohlene Validierung des Tag-Typs
-                    if (tag.getTagType() != com.sahbifit.api.model.enums.TagType.goal) {
-                         throw new IllegalArgumentException("Tag " + tag.getTagName() + " ist kein 'Goal' Tag.");
+                    // Optional but recommended tag type validation
+                    if (tag.getTagType() != com.sahbifit.api.tag.model.TagType.goal) {
+                         throw new IllegalArgumentException("Tag " + tag.getTagName() + " is not a 'Goal' tag.");
                     }
                     UserTag userTag = new UserTag();
-                    userTag.setUser(user); // VerknÃ¼pft mit dem neuen User
-                    userTag.setTag(tag);   // VerknÃ¼pft mit dem gefundenen Tag
+                    userTag.setUser(user); // Link to new user
+                    userTag.setTag(tag);   // Link to found tag
                     return userTag;
                 })
                 .collect(Collectors.toSet());
@@ -486,23 +555,23 @@ public class AuthService {
             allUserTags.addAll(goalUserTags);
         }
 
-        // --- Verarbeitung der SCHEDULE Tags (1 DB-Abfrage) ---
+        // --- Process SCHEDULE tags (1 DB query) ---
         if (request.getScheduleTagIds() != null && !request.getScheduleTagIds().isEmpty()) {
 
-            // 1. Hole ALLE Schedule-Tags mit EINER einzigen Datenbankabfrage
+            // 1. Get ALL Schedule tags with a SINGLE database query
             java.util.List<Tag> scheduleTags = tagRepository.findAllById(request.getScheduleTagIds());
             
-            // 2. Validierung
+            // 2. Validation
             if (scheduleTags.size() != request.getScheduleTagIds().size()) {
-                throw new ResourceNotFoundException("Ein oder mehrere 'Schedule' Tags wurden nicht gefunden.");
+                throw new ResourceNotFoundException("One or more 'Schedule' tags were not found.");
             }
 
-            // 3. Mappe die Tags im Speicher (keine weiteren DB-Aufrufe)
+            // 3. Map tags in memory (no additional DB calls)
             java.util.Set<UserTag> scheduleUserTags = scheduleTags.stream()
                 .map(tag -> {
-                    // Validierung des Tag-Typs
-                    if (tag.getTagType() != com.sahbifit.api.model.enums.TagType.schedule) {
-                         throw new IllegalArgumentException("Tag " + tag.getTagName() + " ist kein 'Schedule' Tag.");
+                    // Tag type validation
+                    if (tag.getTagType() != com.sahbifit.api.tag.model.TagType.schedule) {
+                         throw new IllegalArgumentException("Tag " + tag.getTagName() + " is not a 'Schedule' tag.");
                     }
                     UserTag userTag = new UserTag();
                     userTag.setUser(user);
@@ -514,27 +583,27 @@ public class AuthService {
             allUserTags.addAll(scheduleUserTags);
         }
 
-        // Hier rufen wir die EINE korrekte Set-Methode von User.java auf
+        // Here we call the ONE correct set method from User.java
         user.setUserTags(allUserTags);
 
-        // 7. Standardwerte setzen (gemÃ¤ÃŸ Ihrer Spezifikation)
+        // 7. Set default values (according to your specification)
         user.setRole(UserRole.member);
         user.setStatus(UserStatus.active);
         user.setVerificationStatus(VerificationStatus.not_started);
         user.setVerifiedGender(VerifiedGender.not_verified);
         user.setPhoneVerified(false);
 
-        // 8. OTP (One-Time Password) fÃ¼r SMS generieren
+        // 8. Generate OTP (One-Time Password) for SMS
         String otp = generateOtp();
         
-        // 9. OTP und Ablaufdatum in der DB speichern
+        // 9. Save OTP and expiration date in DB
         user.setSmsOtp(otp);
-        user.setSmsOtpExpiresAt(OffsetDateTime.now().plusMinutes(10)); // 10 Minuten GÃ¼ltigkeit
+        user.setSmsOtpExpiresAt(OffsetDateTime.now().plusMinutes(10)); // 10 minutes validity
         
-        // 10. Benutzer speichern
+        // 10. Save user
         userRepository.save(user);
 
-        // 11. SMS senden
+        // 11. Send SMS
         smsService.sendVerificationSms(user.getPhoneNumber(), otp);
     }
 
@@ -550,52 +619,52 @@ public class AuthService {
                 )
         );
 
-        // 2. Security Context setzen
+        // 2. Set Security Context
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // 3. JWT generieren
+        // 3. Generate JWT
         String jwt = tokenProvider.generateToken(authentication);
         return new AuthResponse(jwt);
     }
 
     /**
-     * Verifiziert den SMS-OTP-Code eines Benutzers.
+     * Verifies a user's SMS OTP code.
      */
     @Transactional
     public void verifySmsOtp(VerifySmsRequest request) {
-        // 1. Benutzer anhand der Telefonnummer finden
+        // 1. Find user by phone number
         User user = userRepository.findByPhoneNumber(request.getPhoneNumber())
-                .orElseThrow(() -> new ResourceNotFoundException("Benutzer nicht gefunden."));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
 
-        // 2. PrÃ¼fen, ob bereits verifiziert
+        // 2. Check if already verified
         if (user.isPhoneVerified()) {
-            // Kein Fehler, aber auch keine Aktion nÃ¶tig.
+            // No error, but no action needed.
             return; 
         }
 
-        // 3. PrÃ¼fen, ob ein OTP gespeichert ist
+        // 3. Check if OTP is stored
         if (user.getSmsOtp() == null || user.getSmsOtpExpiresAt() == null) {
-            throw new IllegalStateException("Kein ausstehender OTP gefunden. Bitte erneut anfordern.");
+            throw new IllegalStateException("No pending OTP found. Please request a new one.");
         }
 
-        // 4. PrÃ¼fen, ob der OTP abgelaufen ist
+        // 4. Check if OTP has expired
         if (OffsetDateTime.now().isAfter(user.getSmsOtpExpiresAt())) {
-            // OTP lÃ¶schen, um Wiederverwendung zu verhindern
+            // Delete OTP to prevent reuse
             user.setSmsOtp(null);
             user.setSmsOtpExpiresAt(null);
             userRepository.save(user);
-            throw new OtpExpiredException("OTP ist abgelaufen. Bitte einen neuen Code anfordern.");
+            throw new OtpExpiredException("OTP has expired. Please request a new code.");
         }
 
-        // 5. PrÃ¼fen, ob der OTP-Code korrekt ist
+        // 5. Check if OTP code is correct
         if (!user.getSmsOtp().equals(request.getOtp())) {
-            throw new InvalidOtpException("UngÃ¼ltiger OTP-Code.");
+            throw new InvalidOtpException("Invalid OTP code.");
         }
 
-        // 6. Erfolg! Benutzer als verifiziert markieren
+        // 6. Success! Mark user as verified
         user.setPhoneVerified(true);
         
-        // 7. OTP-Felder aus SicherheitsgrÃ¼nden lÃ¶schen
+        // 7. Clear OTP fields for security
         user.setSmsOtp(null);
         user.setSmsOtpExpiresAt(null);
 
@@ -603,52 +672,52 @@ public class AuthService {
     }
 
     /**
-     * Sendet einen neuen OTP-Code an eine nicht verifizierte Telefonnummer.
-     * Wird verwendet, wenn der ursprÃ¼ngliche OTP abgelaufen ist.
+     * Sends a new OTP code to an unverified phone number.
+     * Used when the original OTP has expired.
      */
     @Transactional
     public void resendOtp(ResendOtpRequest request) {
-        // 1. reCAPTCHA validieren
+        // 1. Validate reCAPTCHA
         reCaptchaService.validate(request.getRecaptchaToken());
 
-        // 2. Tunesische Nummernvalidierung
+        // 2. Tunisian number validation
         if (!isTunisianNumber(request.getPhoneNumber())) {
-            throw new IllegalArgumentException("UngÃ¼ltiges tunesisches Telefonnummernformat.");
+            throw new IllegalArgumentException("Invalid Tunisian phone number format.");
         }
 
-        // 3. Benutzer anhand der Telefonnummer finden
+        // 3. Find user by phone number
         User user = userRepository.findByPhoneNumber(request.getPhoneNumber())
-                .orElseThrow(() -> new ResourceNotFoundException("Benutzer nicht gefunden."));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
 
-        // 4. PrÃ¼fen, ob bereits verifiziert
+        // 4. Check if already verified
         if (user.isPhoneVerified()) {
-            throw new IllegalArgumentException("Konto ist bereits verifiziert. Bitte einloggen.");
+            throw new IllegalArgumentException("Account is already verified. Please log in.");
         }
 
-        // 5. Neuen OTP generieren
+        // 5. Generate new OTP
         String newOtp = generateOtp();
         
-        // 6. Neuen OTP und Ablaufdatum setzen
+        // 6. Set new OTP and expiration date
         user.setSmsOtp(newOtp);
-        user.setSmsOtpExpiresAt(OffsetDateTime.now().plusMinutes(10)); // 10 Minuten GÃ¼ltigkeit
+        user.setSmsOtpExpiresAt(OffsetDateTime.now().plusMinutes(10)); // 10 minutes validity
         
-        // 7. Benutzer speichern
+        // 7. Save user
         userRepository.save(user);
 
-        // 8. SMS mit neuem OTP senden
+        // 8. Send SMS with new OTP
         smsService.sendVerificationSms(user.getPhoneNumber(), newOtp);
     }
 
-    // --- Private Hilfsmethoden ---
+    // --- Private helper methods ---
 
     private boolean isTunisianNumber(String phone) {
-        // Implementieren Sie hier Ihre Validierungslogik
-        // z.B. Regex fÃ¼r (2, 3, 4, 5, 7, 9) + 7 Ziffern
+        // Implement your validation logic here
+        // e.g. Regex for (2, 3, 4, 5, 7, 9) + 7 digits
         return phone != null && phone.matches("^(2|3|4|5|7|9)\\d{7}$");
     }
 
     private String generateOtp() {
-        // Erzeugt einen 6-stelligen Code
+        // Generates a 6-digit code
         return String.format("%06d", new Random().nextInt(999999));
     }
 }
@@ -665,13 +734,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor // Erstellt einen Konstruktor, der den Token annimmt
+@AllArgsConstructor 
 public class AuthResponse {
 
     private String jwtToken;
 
-    // Optional: Sie kÃ¶nnten hier auch eine "gÃ¼ltig bis" Zeit hinzufÃ¼gen
-    // private String tokenType = "Bearer";
 }
 
 
@@ -702,6 +769,9 @@ Path: RegisterRequest.java
 ==================================================
 package com.sahbifit.api.auth.dto;
 
+import java.util.List;
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -709,48 +779,45 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-import java.util.UUID;
-
 @Getter
 @Setter
 public class RegisterRequest {
 
-    // --- Kern-Authentifizierung ---
+    // --- Core Authentication ---
 
-    @NotBlank(message = "Telefonnummer darf nicht leer sein.")
-    @Pattern(regexp = "^(2|3|4|5|7|9)\\d{7}$", message = "UngÃ¼ltige tunesische Telefonnummer. (Erwartet: 8 Ziffern ohne +216)")
+    @NotBlank(message = "Phone number cannot be empty.")
+    @Pattern(regexp = "^(2|3|4|5|7|9)\\d{7}$", message = "Invalid Tunisian phone number. (Expected: 8 digits without +216)")
     private String phoneNumber;
 
-    @NotBlank(message = "Passwort darf nicht leer sein.")
-    @Size(min = 8, message = "Passwort muss mindestens 8 Zeichen lang sein.")
+    @NotBlank(message = "Password cannot be empty.")
+    @Size(min = 8, message = "Password must be at least 8 characters long.")
     private String password;
 
-    @NotBlank(message = "reCAPTCHA Token darf nicht leer sein.")
+    @NotBlank(message = "reCAPTCHA token cannot be empty.")
     private String recaptchaToken;
 
-    // --- Profilfelder (wie im PRD definiert) ---
+    // --- Profile fields (as defined in PRD) ---
 
-    @NotBlank(message = "Vorname darf nicht leer sein.")
-    @Size(max = 100, message = "Vorname darf maximal 100 Zeichen lang sein.")
+    @NotBlank(message = "First name cannot be empty.")
+    @Size(max = 100, message = "First name cannot exceed 100 characters.")
     private String firstName;
 
-    @NotBlank(message = "Geburtsdatum darf nicht leer sein.")
-    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Geburtsdatum muss im Format YYYY-MM-DD sein.")
-    private String dateOfBirth; // Wird im Service zu LocalDate geparst
+    @NotBlank(message = "Date of birth cannot be empty.")
+    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Date of birth must be in YYYY-MM-DD format.")
+    private String dateOfBirth; // Will be parsed to LocalDate in service
 
-    @NotNull(message = "PrimÃ¤res Fitnessstudio muss ausgewÃ¤hlt werden.")
+    @NotNull(message = "Primary gym must be selected.")
     private UUID primaryGymId;
 
-    // Optional: Die URL kann beim Erstellen des Profils oder spÃ¤ter hinzugefÃ¼gt werden.
+    // Optional: The URL can be added when creating the profile or later.
     private String profilePhotoUrl; 
 
-    // --- Profil-Tagging-System ---
+    // --- Profile Tagging System ---
 
-    // Liste von Tag-IDs (Integer), die der Benutzer fÃ¼r seine Ziele ausgewÃ¤hlt hat
+    // List of tag IDs (Integer) that the user has selected for their goals
     private List<Integer> goalTagIds; 
 
-    // Liste von Tag-IDs (Integer), die der Benutzer fÃ¼r seine VerfÃ¼gbarkeit ausgewÃ¤hlt hat
+    // List of tag IDs (Integer) that the user has selected for their availability
     private List<Integer> scheduleTagIds;
 
 }
@@ -770,11 +837,11 @@ import lombok.Setter;
 @Setter
 public class ResendOtpRequest {
 
-    @NotBlank(message = "Telefonnummer darf nicht leer sein.")
-    @Pattern(regexp = "^(2|3|4|5|7|9)\\d{7}$", message = "UngÃ¼ltige tunesische Telefonnummer. (Erwartet: 8 Ziffern ohne +216)")
+    @NotBlank(message = "Phone number cannot be empty.")
+    @Pattern(regexp = "^(2|3|4|5|7|9)\\d{7}$", message = "Invalid Tunisian phone number. (Expected: 8 digits without +216)")
     private String phoneNumber;
 
-    @NotBlank(message = "reCAPTCHA Token darf nicht leer sein.")
+    @NotBlank(message = "reCAPTCHA token cannot be empty.")
     private String recaptchaToken;
 }
 
@@ -794,12 +861,12 @@ import lombok.Setter;
 @Setter
 public class VerifySmsRequest {
 
-    @NotBlank(message = "Telefonnummer darf nicht leer sein.")
-    @Pattern(regexp = "^(2|3|4|5|7|9)\\d{7}$", message = "UngÃ¼ltige tunesische Telefonnummer.")
+    @NotBlank(message = "Phone number cannot be empty.")
+    @Pattern(regexp = "^(2|3|4|5|7|9)\\d{7}$", message = "Invalid Tunisian phone number.")
     private String phoneNumber;
 
-    @NotBlank(message = "OTP darf nicht leer sein.")
-    @Size(min = 6, max = 6, message = "OTP muss 6 Ziffern lang sein.")
+    @NotBlank(message = "OTP cannot be empty.")
+    @Size(min = 6, max = 6, message = "OTP must be 6 digits long.")
     private String otp;
 }
 
@@ -864,14 +931,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Configuration
-@ConfigurationProperties(prefix = "recaptcha") // Bindet an recaptcha.*
+@ConfigurationProperties(prefix = "recaptcha")
 @Getter
 @Setter
 public class ReCaptchaConfig {
 
     private String secretKey;
     private String verifyUrl;
-    private double scoreThreshold; // Wichtig fÃ¼r die Validierung
+    private double scoreThreshold; 
 }
 
 
@@ -880,16 +947,17 @@ Path: S3ClientConfig.java
 ==================================================
 package com.sahbifit.api.config;
 
+import java.net.URI;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
-
-import java.net.URI;
 
 @Configuration
 public class S3ClientConfig {
@@ -907,10 +975,10 @@ public class S3ClientConfig {
         return S3Client.builder()
                 .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
                 .endpointOverride(URI.create(cloudflareConfig.getEndpoint()))
-                .region(Region.of("auto")) // R2 benÃ¶tigt "auto" als Region
+                .region(Region.of("auto")) 
                 .serviceConfiguration(S3Configuration.builder()
-                        .chunkedEncodingEnabled(false) // Wichtig fÃ¼r R2 KompatibilitÃ¤t
-                        .pathStyleAccessEnabled(true) // R2 benÃ¶tigt Path-Style
+                        .chunkedEncodingEnabled(false) 
+                        .pathStyleAccessEnabled(true) 
                         .build())
                 .build();
     }
@@ -933,22 +1001,22 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Duration;
 
 @Configuration
-@ConfigurationProperties(prefix = "winsms") // Bindet an winsms.api-key & winsms.base-url
+@ConfigurationProperties(prefix = "winsms") // Binds to winsms.api-key & winsms.base-url
 @Getter
 @Setter
 public class WinSmsConfig {
 
-    // Diese Felder werden automatisch aus application.properties befÃ¼llt
+    // These fields are automatically populated from application.properties
     private String apiKey;
     private String baseUrl;
 
     /**
-     * Stellt ein RestTemplate-Bean fÃ¼r die Anwendung bereit.
-     * RestTemplate ist der moderne Spring-Weg, um HTTP-Anfragen zu senden.
+     * Provides a RestTemplate bean for the application.
+     * RestTemplate is the modern Spring way to send HTTP requests.
      */
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        // Setzt Timeouts, genau wie in Ihrem Beispiel (1000ms)
+        // Sets timeouts, exactly as in your example (1000ms)
         return builder
                 .setConnectTimeout(Duration.ofMillis(1000))
                 .setReadTimeout(Duration.ofMillis(1000))
@@ -972,9 +1040,7 @@ Path: InvalidOtpException.java
 ==================================================
 package com.sahbifit.api.exception;
 
-/**
- * Exception die ausgelÃ¶st wird, wenn ein ungÃ¼ltiger OTP-Code eingegeben wurde.
- */
+
 public class InvalidOtpException extends RuntimeException {
 
     public InvalidOtpException() {
@@ -1000,9 +1066,7 @@ Path: OtpExpiredException.java
 ==================================================
 package com.sahbifit.api.exception;
 
-/**
- * Exception die ausgelÃ¶st wird, wenn ein OTP-Code abgelaufen ist.
- */
+
 public class OtpExpiredException extends RuntimeException {
 
     public OtpExpiredException() {
@@ -1028,9 +1092,7 @@ Path: PhoneNumberAlreadyExistsException.java
 ==================================================
 package com.sahbifit.api.exception;
 
-/**
- * Exception die ausgelÃ¶st wird, wenn versucht wird einen Benutzer mit einer bereits existierenden Telefonnummer zu registrieren.
- */
+
 public class PhoneNumberAlreadyExistsException extends RuntimeException {
 
     public PhoneNumberAlreadyExistsException() {
@@ -1060,11 +1122,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * Eine benutzerdefinierte Exception, die ausgelÃ¶st wird, wenn eine Ressource
- * (z. B. ein Benutzer) nicht gefunden werden konnte.
- * * Die @ResponseStatus-Annotation sorgt dafÃ¼r, dass Spring Boot automatisch
- * einen 404 NOT FOUND HTTP-Statuscode zurÃ¼ckgibt, wenn diese Exception 
- * von einem Controller geworfen wird.
+ * A custom exception that is thrown when a resource
+ * (e.g., a user) could not be found.
+ * * The @ResponseStatus annotation ensures that Spring Boot automatically
+ * returns a 404 NOT FOUND HTTP status code when this exception
+ * is thrown by a controller.
  */
 @ResponseStatus(HttpStatus.NOT_FOUND)
 public class ResourceNotFoundException extends RuntimeException {
@@ -1076,22 +1138,202 @@ public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    // +++ HERE IS THE ADDED METHOD +++
+    /**
+     * Creates a new ResourceNotFoundException with formatted text.
+     * @param resourceName The name of the resource (e.g., "User")
+     * @param fieldName The name of the field (e.g., "userId")
+     * @param fieldValue The value of the field (e.g., the UUID)
+     */
+    public ResourceNotFoundException(String resourceName, String fieldName, Object fieldValue) {
+        // Automatically formats the message, e.g.: "User not found with userId : '12345-abcde'"
+        super(String.format("%s not found with %s : '%s'", resourceName, fieldName, fieldValue.toString()));
+    }
+    // +++ END OF NEW CODE +++
 }
 
 
 ==================================================
 Path: ChatService.java
 ==================================================
+// Pfad: src/main/java/com/sahbifit/api/external/chat/ChatService.java
+package com.sahbifit.api.external.chat;
+
+import java.util.UUID;
+
+public interface ChatService {
+    
+    /**
+     * Creates a new chat document in Firestore for a given session.
+     * (MVP 3.6)
+     * @param sessionId The UUID of the session.
+     * @return The document ID (which is the sessionId as a string).
+     */
+    String createChatForSession(UUID sessionId);
+}
 
 
 ==================================================
 Path: FirebaseChatService.java
 ==================================================
+// Pfad: src/main/java/com/sahbifit/api/external/chat/FirebaseChatService.java
+package com.sahbifit.api.external.chat;
+
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.WriteResult;
+import com.google.firebase.cloud.FirestoreClient;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+
+@Service
+public class FirebaseChatService implements ChatService {
+
+    private static final String COLLECTION_NAME = "session_chats";
+
+    /**
+     * (Method) Creates a chat document in Firestore for a new session.
+     * (MVP 3.6)
+     */
+    @Override
+    public String createChatForSession(UUID sessionId) {
+        try {
+            Firestore db = FirestoreClient.getFirestore();
+            String documentId = sessionId.toString();
+
+            // Create an initial message or empty document
+            Map<String, Object> initialData = new HashMap<>();
+            initialData.put("systemMessage", "Session chat created.");
+            // We can add a "messages" subcollection or an empty array later
+
+            // Asynchronously write the document
+            ApiFuture<WriteResult> future = db.collection(COLLECTION_NAME)
+                                              .document(documentId)
+                                              .set(initialData);
+
+            // Wait for the write to complete (in a real app, you might not block)
+            future.get(); // Blocks until write is complete
+
+            return documentId;
+        } catch (InterruptedException | ExecutionException e) {
+            // Handle exceptions appropriately
+            throw new RuntimeException("Failed to create Firestore chat room", e);
+        }
+    }
+}
+
+
+==================================================
+Path: FirebasePushNotificationService.java
+==================================================
+package com.sahbifit.api.external.push;
+
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.verification.model.VerificationStatus;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+@Slf4j
+@Service
+public class FirebasePushNotificationService implements PushNotificationService {
+
+    // FirebaseMessaging is initialized in your FirebaseConfig.java
+    private final FirebaseMessaging fcm;
+
+    public FirebasePushNotificationService(FirebaseMessaging fcm) {
+        this.fcm = fcm;
+    }
+
+    @Override
+    public void sendVerificationApproved(User user) {
+        String token = user.getPushNotificationToken();
+        if (token == null || token.isEmpty()) {
+            log.warn("Cannot send 'Verification Approved' push: User {} has no FCM token.", user.getUserId());
+            return;
+        }
+
+        Notification notification = Notification.builder()
+                .setTitle("You're verified! âœ…")
+                .setBody("Welcome to SahbiFit. You can now join all sessions and post your own.")
+                .build();
+
+        Message message = Message.builder()
+                .setToken(token)
+                .setNotification(notification)
+                .putData("type", "VERIFICATION_APPROVED")
+                .build();
+
+        send(message, user.getUserId());
+    }
+
+    @Override
+    public void sendVerificationRejected(User user, VerificationStatus reason) {
+        String token = user.getPushNotificationToken();
+        if (token == null || token.isEmpty()) {
+            log.warn("Cannot send 'Verification Rejected' push: User {} has no FCM token.", user.getUserId());
+            return;
+        }
+
+        String reasonText = reason == VerificationStatus.rejected_mismatch 
+            ? "due to a mismatch" 
+            : "due to poor video quality";
+
+        Notification notification = Notification.builder()
+                .setTitle("Verification Update")
+                .setBody("Your verification was rejected " + reasonText + ". Please submit a new video.")
+                .build();
+
+        Message message = Message.builder()
+                .setToken(token)
+                .setNotification(notification)
+                .putData("type", "VERIFICATION_REJECTED")
+                .build();
+        
+        send(message, user.getUserId());
+    }
+
+    private void send(Message message, java.util.UUID userId) {
+        try {
+            fcm.send(message);
+            log.info("Push notification sent successfully to user {}", userId);
+        } catch (FirebaseMessagingException e) {
+            log.error("Failed to send push notification to user {}: {}", userId, e.getMessage());
+        }
+    }
+}
 
 
 ==================================================
 Path: PushNotificationService.java
 ==================================================
+// This file was empty, now add content:
+package com.sahbifit.api.external.push;
+
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.verification.model.VerificationStatus;
+
+public interface PushNotificationService {
+
+    /**
+     * Sends a notification when a user's verification is approved.
+     */
+    void sendVerificationApproved(User user);
+
+    /**
+     * Sends a notification when a user's verification is rejected.
+     */
+    void sendVerificationRejected(User user, VerificationStatus reason);
+}
 
 
 ==================================================
@@ -1120,17 +1362,17 @@ public class GoogleReCaptchaService implements ReCaptchaService {
     @Autowired
     public GoogleReCaptchaService(ReCaptchaConfig reCaptchaConfig, RestTemplate restTemplate) {
         this.reCaptchaConfig = reCaptchaConfig;
-        // Wir verwenden das RestTemplate-Bean wieder, das in WinSmsConfig erstellt wurde!
+        // We are reusing the RestTemplate bean created in WinSmsConfig!
         this.restTemplate = restTemplate; 
     }
 
     @Override
     public void validate(String token) {
-        // Google erwartet eine POST-Anfrage mit 'x-www-form-urlencoded' Daten
+        // Google expects a POST request with 'x-www-form-urlencoded' data
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("secret", reCaptchaConfig.getSecretKey());
         body.add("response", token);
-        // Optional kÃ¶nnen Sie auch die IP des Benutzers mitsenden:
+        // Optionally, you can also send the user's IP:
         // body.add("remoteip", userIp);
 
         ReCaptchaResponse response;
@@ -1141,29 +1383,29 @@ public class GoogleReCaptchaService implements ReCaptchaService {
                     ReCaptchaResponse.class
             );
         } catch (Exception e) {
-            logger.error("Fehler bei der Kommunikation mit der Google reCAPTCHA API: {}", e.getMessage());
-            // Wir werfen eine Exception, um die Registrierung zu stoppen
-            throw new RuntimeException("reCAPTCHA-Dienst nicht erreichbar.");
+            logger.error("Error communicating with Google reCAPTCHA API: {}", e.getMessage());
+            // We throw an exception to stop the registration
+            throw new RuntimeException("reCAPTCHA service unavailable.");
         }
 
-        // 1. PrÃ¼fen, ob die Anfrage selbst erfolgreich war
+        // 1. Check if the request itself was successful
         if (response == null || !response.isSuccess()) {
-            logger.warn("reCAPTCHA-Validierung fehlgeschlagen. Fehler: {}", 
-                (response != null ? response.getErrorCodes() : "Keine Antwort"));
-            throw new RuntimeException("reCAPTCHA-Validierung fehlgeschlagen.");
+            logger.warn("reCAPTCHA validation failed. Errors: {}", 
+                (response != null ? response.getErrorCodes() : "No response"));
+            throw new RuntimeException("reCAPTCHA validation failed.");
         }
 
-        // 2. PrÃ¼fen, ob der Score (Bot-Wahrscheinlichkeit) ausreichend ist
+        // 2. Check if the score (bot probability) is sufficient
         if (response.getScore() < reCaptchaConfig.getScoreThreshold()) {
-            logger.warn("Potenzieller Bot blockiert. reCAPTCHA Score: {}", response.getScore());
-            throw new RuntimeException("Validierung fehlgeschlagen (niedriger Score).");
+            logger.warn("Potential bot blocked. reCAPTCHA Score: {}", response.getScore());
+            throw new RuntimeException("Validation failed (low score).");
         }
         
-        // 3. (Optional) Sie kÃ¶nnen auch die 'action' prÃ¼fen, 
-        //    um sicherzustellen, dass das Token von Ihrer Registrierungsseite stammt.
-        //    z.B. if (!"register".equals(response.getAction())) { ... }
+        // 3. (Optional) You can also check the 'action' 
+        //    to ensure the token comes from your registration page.
+        //    e.g., if (!"register".equals(response.getAction())) { ... }
 
-        logger.info("reCAPTCHA-Validierung erfolgreich (Score: {}).", response.getScore());
+        logger.info("reCAPTCHA validation successful (Score: {}).", response.getScore());
     }
 }
 
@@ -1206,10 +1448,10 @@ package com.sahbifit.api.external.recaptcha;
 public interface ReCaptchaService {
 
     /**
-     * Validiert ein vom Client gesendetes reCAPTCHA v3 Token.
-     * LÃ¶st eine Ausnahme aus, wenn die Validierung fehlschlÃ¤gt (Bot oder Fehler).
+     * Validates a reCAPTCHA v3 token sent from the client.
+     * Throws an exception if validation fails (bot or error).
      *
-     * @param token Das 'response' Token von der reCAPTCHA v3 Client-Seite.
+     * @param token The 'response' token from the reCAPTCHA v3 client side.
      */
     void validate(String token);
 }
@@ -1239,9 +1481,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.sahbifit.api.config.WinSmsConfig; // Import aus Ihrem Beispiel
+import com.sahbifit.api.config.WinSmsConfig; // Import from your example
 
-@Service // Wichtig: Markiert dies als Spring-Implementierung von SmsService
+@Service // Important: Marks this as Spring implementation of SmsService
 public class WinSmsService implements SmsService {
 
     private static final Logger logger = LoggerFactory.getLogger(WinSmsService.class);
@@ -1258,15 +1500,15 @@ public class WinSmsService implements SmsService {
     @Override
     public void sendVerificationSms(String phoneNumber, String otp) {
         
-        // ðŸš¨ WICHTIG: WinSMS erwartet '216' als PrÃ¤fix.
-        // Ihre Validierung speichert die Nummer ohne PrÃ¤fix.
+        // ðŸš¨ IMPORTANT: WinSMS expects '216' as prefix.
+        // Your validation stores the number without prefix.
         String fullPhoneNumber = "216" + phoneNumber;
         
-        String message = String.format("Ihr SahbiFit-Verifizierungscode lautet: %s", otp);
+        String message = String.format("Your SahbiFit verification code is: %s", otp);
 
         try {
-            // Wir bauen die URL genau wie in Ihrem Beispiel, 
-            // da WinSMS mÃ¶glicherweise eine spezielle URL-Kodierung erwartet.
+            // We build the URL exactly like in your example,
+            // since WinSMS might expect special URL encoding.
             String params = String.format("action=send-sms&api_key=%s&to=%s&sms=%s",
                     URLEncoder.encode(winSmsConfig.getApiKey(), StandardCharsets.UTF_8),
                     URLEncoder.encode(fullPhoneNumber, StandardCharsets.UTF_8),
@@ -1274,21 +1516,21 @@ public class WinSmsService implements SmsService {
             
             String fullUrl = winSmsConfig.getBaseUrl() + "?" + params;
 
-            // Senden Sie die GET-Anfrage
-            // Wir verwenden getForObject, da wir eine String-Antwort erwarten (z.B. "OK")
+            // Send the GET request
+            // We use getForObject since we expect a String response (e.g., "OK")
             String response = restTemplate.getForObject(fullUrl, String.class);
 
-            // Antwort von WinSMS prÃ¼fen.
+            // Check response from WinSMS.
             if (response != null && response.contains("OK")) {
-                logger.info("SMS an {} erfolgreich gesendet. (OTP: {})", fullPhoneNumber, otp);
+                logger.info("SMS to {} sent successfully. (OTP: {})", fullPhoneNumber, otp);
             } else {
-                // Wenn "OK" nicht in der Antwort enthalten ist, loggen wir den Fehler
-                logger.warn("Fehler beim Senden der SMS an {}. API-Antwort: {}", fullPhoneNumber, response);
+                // If "OK" is not in the response, log the error
+                logger.warn("Error sending SMS to {}. API response: {}", fullPhoneNumber, response);
             }
 
         } catch (Exception e) {
-            // FÃ¤ngt alle Fehler ab (z.B. java.io.UnsupportedEncodingException oder RestClientException)
-            logger.error("Fehler bei der Verbindung zur WinSMS-API: {}", e.getMessage(), e);
+            // Catches all errors (e.g., java.io.UnsupportedEncodingException or RestClientException)
+            logger.error("Error connecting to WinSMS API: {}", e.getMessage(), e);
         }
     }
 }
@@ -1329,24 +1571,24 @@ public class CloudflareR2Service implements StorageService {
     @Override
     public String uploadFile(MultipartFile file, String folder, String fileName) throws IOException {
         try {
-            // Validierung der Datei
+            // File validation
             if (file.isEmpty()) {
-                throw new IllegalArgumentException("Datei ist leer");
+                throw new IllegalArgumentException("File is empty");
             }
 
-            // Generiere den vollstÃ¤ndigen S3 Key (Pfad im Bucket)
+            // Generate the complete S3 key (path in the bucket)
             String key = generateFileKey(folder, fileName);
             
-            log.info("Lade Datei hoch: {} -> {}/{}", file.getOriginalFilename(), 
+            log.info("Uploading file: {} -> {}/{}", file.getOriginalFilename(), 
                     cloudflareConfig.getBucketName(), key);
 
-            // Metadaten fÃ¼r das Video
+            // Metadata for the video
             var metadata = new java.util.HashMap<String, String>();
             metadata.put("Content-Type", file.getContentType());
             metadata.put("Original-Filename", file.getOriginalFilename());
             metadata.put("Upload-Timestamp", String.valueOf(System.currentTimeMillis()));
 
-            // Erstelle PutObjectRequest
+            // Create PutObjectRequest
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(cloudflareConfig.getBucketName())
                     .key(key)
@@ -1355,32 +1597,32 @@ public class CloudflareR2Service implements StorageService {
                     .metadata(metadata)
                     .build();
 
-            // Datei hochladen
+            // Upload file
             s3Client.putObject(putObjectRequest, 
                     RequestBody.fromBytes(file.getBytes()));
 
-            // Generiere die Ã¶ffentliche URL
+            // Generate public URL
             String publicUrl = generatePublicUrl(key);
             
-            log.info("Datei erfolgreich hochgeladen: {}", publicUrl);
+            log.info("File successfully uploaded: {}", publicUrl);
             return publicUrl;
 
         } catch (S3Exception e) {
-            log.error("S3 Fehler beim Hochladen der Datei: {}", e.awsErrorDetails().errorMessage(), e);
-            throw new IOException("Fehler beim Hochladen der Datei: " + e.awsErrorDetails().errorMessage(), e);
+            log.error("S3 error uploading file: {}", e.awsErrorDetails().errorMessage(), e);
+            throw new IOException("Error uploading file: " + e.awsErrorDetails().errorMessage(), e);
         } catch (Exception e) {
-            log.error("Unerwarteter Fehler beim Hochladen der Datei", e);
-            throw new IOException("Unerwarteter Fehler beim Hochladen: " + e.getMessage(), e);
+            log.error("Unexpected error uploading file", e);
+            throw new IOException("Unexpected error during upload: " + e.getMessage(), e);
         }
     }
 
     @Override
     public void deleteFile(String fileUrl) throws IOException {
         try {
-            // Extrahiere den Key aus der URL
+            // Extract key from URL
             String key = extractKeyFromUrl(fileUrl);
             
-            log.info("LÃ¶sche Datei: {}", key);
+            log.info("Deleting file: {}", key);
             
             DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                     .bucket(cloudflareConfig.getBucketName())
@@ -1389,43 +1631,43 @@ public class CloudflareR2Service implements StorageService {
 
             s3Client.deleteObject(deleteObjectRequest);
             
-            log.info("Datei erfolgreich gelÃ¶scht: {}", key);
+            log.info("File successfully deleted: {}", key);
 
         } catch (S3Exception e) {
-            log.error("S3 Fehler beim LÃ¶schen der Datei: {}", e.awsErrorDetails().errorMessage(), e);
-            throw new IOException("Fehler beim LÃ¶schen der Datei: " + e.awsErrorDetails().errorMessage(), e);
+            log.error("S3 error deleting file: {}", e.awsErrorDetails().errorMessage(), e);
+            throw new IOException("Error deleting file: " + e.awsErrorDetails().errorMessage(), e);
         }
     }
 
     /**
-     * Generiert den S3 Key fÃ¼r die Datei
+     * Generates the S3 key for the file
      */
     private String generateFileKey(String folder, String fileName) {
-        // Entferne fÃ¼hrende und nachfolgende SchrÃ¤gstriche
+        // Remove leading and trailing slashes
         String cleanFolder = folder.replaceAll("^/|/$", "");
         return String.format("%s/%s", cleanFolder, fileName);
     }
 
     /**
-     * Generiert die Ã¶ffentliche URL fÃ¼r die Datei
+     * Generates the public URL for the file
      */
     private String generatePublicUrl(String key) {
         return String.format("%s/%s", cloudflareConfig.getPublicUrl(), key);
     }
 
     /**
-     * Extrahiert den S3 Key aus der Ã¶ffentlichen URL
+     * Extracts the S3 key from the public URL
      */
     private String extractKeyFromUrl(String fileUrl) {
         String baseUrl = cloudflareConfig.getPublicUrl() + "/";
         if (fileUrl.startsWith(baseUrl)) {
             return fileUrl.substring(baseUrl.length());
         }
-        throw new IllegalArgumentException("UngÃ¼ltige R2 URL: " + fileUrl);
+        throw new IllegalArgumentException("Invalid R2 URL: " + fileUrl);
     }
     
     /**
-     * Hilfsmethode zum Generieren eines eindeutigen Dateinamens
+     * Helper method to generate a unique filename
      */
     public String generateUniqueFileName(String originalFileName) {
         String extension = "";
@@ -1448,17 +1690,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface StorageService {
     /**
-     * LÃ¤dt eine Datei in den Cloud-Speicher hoch.
-     * @param file Die hochzuladende Datei.
-     * @param folder Der Zielordner im Bucket (z.B. "verification-videos").
-     * @param fileName Der gewÃ¼nschte Dateiname (sollte eindeutig sein).
-     * @return Die Ã¶ffentliche URL der hochgeladenen Datei.
+     * Uploads a file to cloud storage.
+     * @param file The file to upload.
+     * @param folder The target folder in the bucket (e.g., "verification-videos").
+     * @param fileName The desired filename (should be unique).
+     * @return The public URL of the uploaded file.
      */
     String uploadFile(MultipartFile file, String folder, String fileName) throws IOException;
     
     /**
-     * LÃ¶scht eine Datei aus dem Cloud-Speicher.
-     * @param fileUrl Die URL der zu lÃ¶schenden Datei.
+     * Deletes a file from cloud storage.
+     * @param fileUrl The URL of the file to delete.
      */
     void deleteFile(String fileUrl) throws IOException;
 }
@@ -1467,17 +1709,260 @@ public interface StorageService {
 ==================================================
 Path: GymController.java
 ==================================================
+// Pfad: src/main/java/com/sahbifit/api/gym/GymController.java
+package com.sahbifit.api.gym;
+
+import java.security.Principal;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.sahbifit.api.gym.dto.AdminGymDto;
+import com.sahbifit.api.gym.dto.GymSubmissionDto;
+import com.sahbifit.api.gym.model.Gym;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api")
+@RequiredArgsConstructor
+public class GymController {
+
+    private final GymService gymService;
+
+    /**
+     * (Mobile App) Get all approved gyms.
+     */
+    @GetMapping("/gyms")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<List<Gym>> getApprovedGyms() {
+        return ResponseEntity.ok(gymService.getApprovedGyms());
+    }
+
+    /**
+     * (Mobile App) Submit a new gym for review.
+     */
+    @PostMapping("/gyms/submit")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<Gym> submitGym(@RequestBody GymSubmissionDto dto, Principal principal) {
+        Gym submittedGym = gymService.submitGym(dto, principal.getName());
+        return new ResponseEntity<>(submittedGym, HttpStatus.CREATED);
+    }
+
+    /**
+     * (Admin Dashboard) Create a new, pre-approved gym.
+     */
+    @PostMapping("/admin/gyms")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Gym> adminCreateGym(@RequestBody AdminGymDto dto) {
+        Gym createdGym = gymService.adminCreateGym(dto);
+        return new ResponseEntity<>(createdGym, HttpStatus.CREATED);
+    }
+
+    /**
+     * (Admin Dashboard) Approve a pending gym.
+     */
+    @PutMapping("/admin/gyms/{gymId}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Gym> adminApproveGym(@PathVariable UUID gymId) {
+        Gym approvedGym = gymService.adminApproveGym(gymId);
+        return ResponseEntity.ok(approvedGym);
+    }
+
+    /**
+     * (Admin Dashboard) Get ALL gyms (approved, pending, etc.)
+     */
+    @GetMapping("/admin/gyms")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Gym>> adminGetAllGyms() {
+        return ResponseEntity.ok(gymService.adminGetAllGyms());
+    }
+
+    /**
+     * (Admin Dashboard) Update an existing gym.
+     */
+    @PutMapping("/admin/gyms/{gymId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Gym> adminUpdateGym(@PathVariable UUID gymId, @RequestBody AdminGymDto dto) {
+        Gym updatedGym = gymService.adminUpdateGym(gymId, dto);
+        return ResponseEntity.ok(updatedGym);
+    }
+
+    /**
+     * (Admin Dashboard) Delete a gym (sets status to 'rejected').
+     */
+    @DeleteMapping("/admin/gyms/{gymId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> adminDeleteGym(@PathVariable UUID gymId) {
+        gymService.adminDeleteGym(gymId);
+        return ResponseEntity.noContent().build();
+    }
+}
 
 
 ==================================================
 Path: GymService.java
 ==================================================
+// Pfad: src/main/java/com/sahbifit/api/gym/GymService.java
+package com.sahbifit.api.gym;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sahbifit.api.exception.ResourceNotFoundException;
+import com.sahbifit.api.gym.dto.AdminGymDto;
+import com.sahbifit.api.gym.dto.GymSubmissionDto;
+import com.sahbifit.api.gym.model.Gym;
+import com.sahbifit.api.gym.model.GymStatus;
+import com.sahbifit.api.gym.repository.GymRepository;
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class GymService {
+
+    private final GymRepository gymRepository;
+    private final UserRepository userRepository;
+
+    /**
+     * (Method 1) For Users: Get all approved gyms to list in the app.
+     */
+    @Transactional(readOnly = true)
+    public List<Gym> getApprovedGyms() {
+        return gymRepository.findByStatus(GymStatus.approved);
+    }
+
+    /**
+     * (Method 2) For Users: Submit a new gym for admin review.
+     * (MVP 7.5)
+     */
+    public Gym submitGym(GymSubmissionDto dto, String userPhoneNumber) {
+        User user = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Gym gym = new Gym();
+        gym.setName(dto.getName());
+        gym.setAddress(dto.getAddress());
+        // Note: Location (Point) is not set here per the plan
+        gym.setStatus(GymStatus.pending); // Set to pending for review
+        gym.setSubmittedByUser(user);
+
+        return gymRepository.save(gym);
+    }
+
+    /**
+     * (Method 3) For Admins: Create a new, pre-approved gym.
+     * (MVP 7.4)
+     */
+    public Gym adminCreateGym(AdminGymDto dto) {
+        Gym gym = new Gym();
+        gym.setName(dto.getName());
+        gym.setAddress(dto.getAddress());
+        gym.setStatus(GymStatus.approved); // Approved immediately
+        // submittedByUser is null for admin-created gyms
+
+        return gymRepository.save(gym);
+    }
+
+    /**
+     * (Method 4) For Admins: Approve a user-submitted gym.
+     * (MVP 7.5)
+     */
+    public Gym adminApproveGym(UUID gymId) {
+        Gym gym = gymRepository.findById(gymId)
+                .orElseThrow(() -> new ResourceNotFoundException("Gym not found with ID: " + gymId));
+        
+        gym.setStatus(GymStatus.approved);
+        
+        return gymRepository.save(gym);
+    }
+
+    /**
+     * (Method 5) For Admins: Get ALL gyms (pending, approved, rejected).
+     */
+    @Transactional(readOnly = true)
+    public List<Gym> adminGetAllGyms() {
+        return gymRepository.findAll();
+    }
+
+    /**
+     * (Method 6) For Admins: Update an existing gym.
+     */
+    public Gym adminUpdateGym(UUID gymId, AdminGymDto dto) {
+        Gym gym = gymRepository.findById(gymId)
+                .orElseThrow(() -> new ResourceNotFoundException("Gym not found with ID: " + gymId));
+        
+        gym.setName(dto.getName());
+        gym.setAddress(dto.getAddress());
+        // Add any other fields from AdminGymDto here
+        
+        return gymRepository.save(gym);
+    }
+
+    /**
+     * (Method 7) For Admins: Delete a gym (which triggers @SQLDelete -> status = 'rejected').
+     */
+    public void adminDeleteGym(UUID gymId) {
+        // This will find the gym and trigger the @SQLDelete annotation,
+        // which sets the status to 'rejected' instead of a hard delete.
+        gymRepository.deleteById(gymId);
+    }
+}
+
+
+==================================================
+Path: AdminGymDto.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/gym/dto/AdminGymDto.java
+package com.sahbifit.api.gym.dto;
+
+import lombok.Data;
+
+@Data
+public class AdminGymDto {
+    private String name;
+    private String address;
+    // Add any other fields admins can set directly
+}
+
+
+==================================================
+Path: GymSubmissionDto.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/gym/dto/GymSubmissionDto.java
+package com.sahbifit.api.gym.dto;
+
+import lombok.Data;
+
+@Data
+public class GymSubmissionDto {
+    private String name;
+    private String address;
+    // We can add lat/lon here later if needed for Point mapping
+}
 
 
 ==================================================
 Path: Gym.java
 ==================================================
-// Pfad: src/main/java/com/sahbifit/api/gym/model/Gym.java
 package com.sahbifit.api.gym.model;
 
 import java.time.OffsetDateTime;
@@ -1492,11 +1977,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import org.locationtech.jts.geom.Point;
 
-import com.sahbifit.api.model.enums.GymStatus;
 import com.sahbifit.api.session.model.Session;
 import com.sahbifit.api.user.model.User;
 
-import jakarta.persistence.Column; // Wichtig fÃ¼r PostGIS
+import jakarta.persistence.Column; 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -1534,8 +2018,8 @@ public class Gym {
     private String address;
 
     @Column(name = "location", columnDefinition = "geography(Point, 4326)")
-    private Point location; // BenÃ¶tigt hibernate-spatial
-
+    private Point location; 
+    
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, columnDefinition = "gym_status")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -1563,30 +2047,10 @@ public class Gym {
 
 
 ==================================================
-Path: GymRepository.java
-==================================================
-// Pfad: src/main/java/com/sahbifit/api/gym/repository/GymRepository.java
-package com.sahbifit.api.gym.repository;
-
-import java.util.UUID;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import com.sahbifit.api.gym.model.Gym;
-
-@Repository
-public interface GymRepository extends JpaRepository<Gym, UUID> {
-    // Spring Data JPA automatically provides the findById(UUID id) method
-    // which is used in your AuthService.
-}
-
-
-==================================================
 Path: GymStatus.java
 ==================================================
 // Pfad: src/main/java/com/sahbifit/api/model/enums/GymStatus.java
-package com.sahbifit.api.model.enums;
+package com.sahbifit.api.gym.model;
 
 public enum GymStatus {
     pending,
@@ -1596,153 +2060,265 @@ public enum GymStatus {
 
 
 ==================================================
-Path: ParticipantStatus.java
+Path: GymRepository.java
 ==================================================
-// Pfad: src/main/java/com/sahbifit/api/model/enums/ParticipantStatus.java
-package com.sahbifit.api.model.enums;
+// Pfad: src/main/java/com/sahbifit/api/gym/repository/GymRepository.java
+package com.sahbifit.api.gym.repository;
 
-public enum ParticipantStatus {
-    joined,
-    attended,
-    no_show,
-    left
-}
+import java.util.List;
+import java.util.UUID;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-==================================================
-Path: ReportPriority.java
-==================================================
-// Pfad: src/main/java/com/sahbifit/api/model/enums/ReportPriority.java
-package com.sahbifit.api.model.enums;
+import com.sahbifit.api.gym.model.Gym;
+import com.sahbifit.api.gym.model.GymStatus;
 
-public enum ReportPriority {
-    low,
-    high,
-    critical
-}
-
-
-==================================================
-Path: ReportStatus.java
-==================================================
-// HINWEIS: Diese ENUM war in Ihrer SQL-Datei (report_status), aber nicht in Ihrem Baum.
-// Sie wird fÃ¼r das Report-Modell benÃ¶tigt.
-// Pfad: src/main/java/com/sahbifit/api/model/enums/ReportStatus.java
-package com.sahbifit.api.model.enums;
-
-public enum ReportStatus {
-    pending,
-    resolved,
-    dismissed
-}
-
-
-==================================================
-Path: SessionStatus.java
-==================================================
-// Pfad: src/main/java/com/sahbifit/api/model/enums/SessionStatus.java
-package com.sahbifit.api.model.enums;
-
-public enum SessionStatus {
-    active,
-    cancelled,
-    completed
-}
-
-
-==================================================
-Path: SessionType.java
-==================================================
-// Pfad: src/main/java/com/sahbifit/api/model/enums/SessionType.java
-package com.sahbifit.api.model.enums;
-
-public enum SessionType {
-    group,
-    one_on_one
-}
-
-
-==================================================
-Path: TagType.java
-==================================================
-// Pfad: src/main/java/com/sahbifit/api/model/enums/TagType.java
-package com.sahbifit.api.model.enums;
-
-public enum TagType {
-    goal,
-    schedule
-}
-
-
-==================================================
-Path: UserRole.java
-==================================================
-// Pfad: src/main/java/com/sahbifit/api/model/enums/UserRole.java
-package com.sahbifit.api.model.enums;
-
-public enum UserRole {
-    member,
-    ambassador,
-    admin
-}
-
-
-==================================================
-Path: UserStatus.java
-==================================================
-// Pfad: src/main/java/com/sahbifit/api/model/enums/UserStatus.java
-package com.sahbifit.api.model.enums;
-
-public enum UserStatus {
-    active,
-    suspended,
-    banned
-}
-
-
-==================================================
-Path: VerificationStatus.java
-==================================================
-// Pfad: src/main/java/com/sahbifit/api/model/enums/VerificationStatus.java
-package com.sahbifit.api.model.enums;
-
-public enum VerificationStatus {
-    not_started,
-    pending_review,
-    verified,
-    rejected_bad_video,
-    rejected_mismatch
-}
-
-
-==================================================
-Path: VerifiedGender.java
-==================================================
-// Pfad: src/main/java/com/sahbifit/api/model/enums/VerifiedGender.java
-package com.sahbifit.api.model.enums;
-
-public enum VerifiedGender {
-    not_verified,
-    male,
-    female,
-    other
+@Repository
+public interface GymRepository extends JpaRepository<Gym, UUID> {
+    // Spring Data JPA automatically provides the findById(UUID id) method
+    // which is used in your AuthService.
+    List<Gym> findByStatus(GymStatus status);
 }
 
 
 ==================================================
 Path: RatingController.java
 ==================================================
+// Path: src/main/java/com/sahbifit/api/rating/RatingController.java
+package com.sahbifit.api.rating;
+
+import java.security.Principal;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.sahbifit.api.rating.dto.CreateRatingDto;
+import com.sahbifit.api.rating.dto.PendingRatingDto;
+import com.sahbifit.api.rating.model.Rating;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/ratings")
+@RequiredArgsConstructor
+public class RatingController {
+
+    private final RatingService ratingService;
+
+    /**
+     * (MVP 5.1) Creates a new rating for a user after a session.
+     */
+    @PostMapping
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<Rating> createRating(@RequestBody CreateRatingDto dto, Principal principal) {
+        // principal.getName() contains the phone number of the logged-in user (the rater)
+        Rating newRating = ratingService.createRating(dto, principal.getName());
+        return new ResponseEntity<>(newRating, HttpStatus.CREATED);
+    }
+
+    /**
+     * (Optional) Retrieves all received ratings for a user profile.
+     */
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR', 'ADMIN')") // Anyone can view profile ratings
+    public ResponseEntity<List<Rating>> getRatingsForUser(@PathVariable UUID userId) {
+        List<Rating> ratings = ratingService.getRatingsForUser(userId);
+        return ResponseEntity.ok(ratings);
+    }
+
+    @GetMapping("/pending")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<List<PendingRatingDto>> getPendingRatings(Principal principal) {
+        List<PendingRatingDto> pendingRatings = ratingService.getPendingRatings(principal.getName());
+        return ResponseEntity.ok(pendingRatings);
+    }
+}
 
 
 ==================================================
 Path: RatingService.java
 ==================================================
+// Path: src/main/java/com/sahbifit/api/rating/RatingService.java
+package com.sahbifit.api.rating;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sahbifit.api.exception.ResourceNotFoundException;
+import com.sahbifit.api.rating.dto.CreateRatingDto;
+import com.sahbifit.api.rating.dto.PendingRatingDto;
+import com.sahbifit.api.rating.model.Rating;
+import com.sahbifit.api.rating.repository.RatingRepository;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.session.model.SessionParticipantId;
+import com.sahbifit.api.session.repository.SessionParticipantRepository;
+import com.sahbifit.api.session.repository.SessionRepository;
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class RatingService {
+
+    private final RatingRepository ratingRepository;
+    private final UserRepository userRepository;
+    private final SessionRepository sessionRepository; // Required to find the session
+    private final SessionParticipantRepository sessionParticipantRepository;
+
+    /**
+     * (MVP 5.1) Creates a new rating of one user for another
+     * after a shared session.
+     */
+    public Rating createRating(CreateRatingDto dto, String raterPhoneNumber) {
+        // 1. Find user and session
+        User raterUser = userRepository.findByPhoneNumber(raterPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Rater (User) not found"));
+
+        User ratedUser = userRepository.findById(dto.getRatedUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Rated User not found"));
+
+        Session session = sessionRepository.findById(dto.getSessionId())
+                .orElseThrow(() -> new ResourceNotFoundException("Session not found"));
+
+        // Validation 0 (Rating yourself)
+        if (raterUser.getUserId().equals(ratedUser.getUserId())) {
+            throw new IllegalStateException("You cannot rate yourself.");
+        }
+
+        // Validation 1 (Participation)
+        SessionParticipantId raterId = new SessionParticipantId();
+        raterId.setSessionId(dto.getSessionId());
+        raterId.setUserId(raterUser.getUserId());
+
+        SessionParticipantId ratedId = new SessionParticipantId();
+        ratedId.setSessionId(dto.getSessionId());
+        ratedId.setUserId(dto.getRatedUserId());
+
+        if (!sessionParticipantRepository.existsById(raterId) || !sessionParticipantRepository.existsById(ratedId)) {
+            throw new IllegalStateException("Both users must have participated in this session to rate each other.");
+        }
+
+        // Validation 2 (Duplicate rating)
+        boolean alreadyExists = ratingRepository.existsBySessionSessionIdAndRatingByUserIdAndRatingForUserId(
+                dto.getSessionId(),
+                raterUser.getUserId(),
+                dto.getRatedUserId()
+        );
+
+        if (alreadyExists) {
+            throw new IllegalStateException("You have already rated this user for this session.");
+        }
+
+        // 3. Create and save rating
+        Rating newRating = new Rating();
+        newRating.setSession(session);
+        newRating.setRatingBy(raterUser);
+        newRating.setRatingFor(ratedUser);
+        newRating.setRatingValue(dto.getRatingValue());
+        newRating.setComment(dto.getComment()); // Can be null
+
+        return ratingRepository.save(newRating);
+    }
+
+    /**
+     * (Optional) Retrieves all received ratings for a user.
+     */
+    @Transactional(readOnly = true)
+    public List<Rating> getRatingsForUser(UUID userId) {
+        // Ensure user exists before retrieving ratings
+        if (!userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException("User not found");
+        }
+        return ratingRepository.findByRatingForUserId(userId);
+    }
+
+    /**
+     * (MVP 5.2) Gets a list of users/sessions that the current user
+     * has attended but not yet rated - OPTIMIZED VERSION
+     */
+    @Transactional(readOnly = true)
+    public List<PendingRatingDto> getPendingRatings(String raterPhoneNumber) {
+        // Validate user exists
+        if (!userRepository.existsByPhoneNumber(raterPhoneNumber)) {
+            throw new ResourceNotFoundException("Rater (User) not found");
+        }
+        
+        // Single query to get all pending ratings
+        return ratingRepository.findPendingRatings(raterPhoneNumber);
+    }
+}
+
+
+==================================================
+Path: CreateRatingDto.java
+==================================================
+// Path: src/main/java/com/sahbifit/api/rating/dto/CreateRatingDto.java
+package com.sahbifit.api.rating.dto;
+
+import java.util.UUID;
+
+import lombok.Data;
+
+/**
+ * DTO for creating a new rating.
+ * (MVP 5.1)
+ */
+@Data
+public class CreateRatingDto {
+
+    // The session in which the rating took place
+    private UUID sessionId;
+
+    // The user who is BEING rated
+    private UUID ratedUserId;
+
+    // The rating value (e.g., 1-5)
+    private Short ratingValue;
+
+    // An optional comment
+    private String comment;
+}
+
+
+==================================================
+Path: PendingRatingDto.java
+==================================================
+package com.sahbifit.api.rating.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import java.util.UUID;
+
+@Data
+@AllArgsConstructor
+public class PendingRatingDto {
+    private UUID sessionId;
+    private String sessionTitle;
+    private UUID userIdToRate;
+    private String userNameToRate;
+}
 
 
 ==================================================
 Path: Rating.java
 ==================================================
-// Pfad: src/main/java/com/sahbifit/api/rating/model/Rating.java
+// Path: src/main/java/com/sahbifit/api/rating/model/Rating.java
 package com.sahbifit.api.rating.model;
 
 import java.time.OffsetDateTime;
@@ -1799,7 +2375,7 @@ public class Rating {
     private User ratingFor;
 
     @Column(name = "rating_value", nullable = false)
-    private Short ratingValue; // SMALLINT entspricht Short
+    private Short ratingValue; // SMALLINT corresponds to Short
 
     @Column(name = "comment")
     private String comment;
@@ -1813,16 +2389,236 @@ public class Rating {
 ==================================================
 Path: RatingRepository.java
 ==================================================
+// Path: src/main/java/com/sahbifit/api/rating/repository/RatingRepository.java
+package com.sahbifit.api.rating.repository;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import com.sahbifit.api.rating.dto.PendingRatingDto;
+import com.sahbifit.api.rating.model.Rating;
+import com.sahbifit.api.user.model.User;
+
+@Repository
+public interface RatingRepository extends JpaRepository<Rating, UUID> {
+
+    /**
+     * Checks if a user has already rated another user for a specific session.
+     * Required by RatingService.createRating() (validation 2).
+     */
+    boolean existsBySessionSessionIdAndRatingByUserIdAndRatingForUserId(UUID sessionId, UUID raterId, UUID ratedId);
+
+    /**
+     * (Optional) Retrieves all ratings a user has received.
+     * Required by RatingService.getRatingsForUser().
+     */
+    List<Rating> findByRatingForUserId(UUID ratedUserId);
+
+    List<Rating> findByRatingBy(User user);
+
+    // Add this method to RatingRepository.java
+    @Query("""
+        SELECT new com.sahbifit.api.rating.dto.PendingRatingDto(
+            sp.session.sessionId, 
+            sp.session.title, 
+            op.user.userId, 
+            op.user.firstName
+        )
+        FROM SessionParticipant sp
+        JOIN SessionParticipant op ON sp.session = op.session
+        WHERE sp.user.phoneNumber = :userPhoneNumber
+        AND sp.status = 'attended'
+        AND op.user.userId != sp.user.userId
+        AND op.status = 'attended'
+        AND NOT EXISTS (
+            SELECT 1 FROM Rating r 
+            WHERE r.session = sp.session 
+            AND r.ratingBy = sp.user 
+            AND r.ratingFor = op.user
+        )
+        ORDER BY sp.session.startTime DESC
+    """)
+    List<PendingRatingDto> findPendingRatings(@Param("userPhoneNumber") String userPhoneNumber);
+}
 
 
 ==================================================
 Path: ReportController.java
 ==================================================
+package com.sahbifit.api.report;
+
+import java.security.Principal;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.sahbifit.api.report.dto.CreateReportDto;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/reports")
+@RequiredArgsConstructor
+public class ReportController {
+
+    private final ReportService reportService;
+
+    @PostMapping
+    public ResponseEntity<Void> createReport(
+            @Valid @RequestBody CreateReportDto createReportDto,
+            Principal principal) {
+        
+        reportService.createReport(createReportDto, principal.getName());
+        
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+}
 
 
 ==================================================
 Path: ReportService.java
 ==================================================
+package com.sahbifit.api.report;
+
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sahbifit.api.exception.ResourceNotFoundException;
+import com.sahbifit.api.report.dto.CreateReportDto;
+import com.sahbifit.api.report.model.Report;
+import com.sahbifit.api.report.model.ReportPriority;
+import com.sahbifit.api.report.model.ReportStatus;
+import com.sahbifit.api.report.repository.ReportRepository;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.session.repository.SessionRepository;
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.model.UserRole;
+import com.sahbifit.api.user.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class ReportService {
+
+    private static final Logger log = LoggerFactory.getLogger(ReportService.class);
+
+    private final ReportRepository reportRepository;
+    private final UserRepository userRepository;
+    private final SessionRepository sessionRepository; // Required for optional sessionId
+
+    // Defines the critical keywords
+    private static final Set<String> CRITICAL_KEYWORDS = Set.of(
+            "safety", "threat", "harassment", "gefahr", "bedrohung", "unsafe", 
+            "belÃ¤stigung", "gewalt", "violence", "stalking"
+    );
+
+    @Transactional
+    public void createReport(CreateReportDto dto, String reporterPhoneNumber) {
+        // 1. Find reporter
+        User reporterUser = userRepository.findByPhoneNumber(reporterPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", reporterPhoneNumber));
+
+        // 2. Find reported user
+        User reportedUser = userRepository.findById(dto.getReportedUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", dto.getReportedUserId()));
+
+        // 3. Find optional session
+        Session session = null;
+        if (dto.getSessionId() != null) {
+            // We don't fail if the session ID is invalid, we just log it.
+            session = sessionRepository.findById(dto.getSessionId()).orElse(null);
+            if (session == null) {
+                log.warn("Report created with invalid sessionId: {}", dto.getSessionId());
+            }
+        }
+
+        // 4. Determine priority (MVP 7.2)
+        ReportPriority priority = determinePriority(dto.getReason(), reporterUser);
+
+        // 5. Create report object
+        Report report = new Report();
+        report.setReportedBy(reporterUser);
+        report.setReportedUser(reportedUser);
+        report.setSession(session);
+        report.setReason(dto.getReason());
+        report.setPriority(priority);
+        report.setStatus(ReportStatus.pending); // Default status
+
+        // 6. Save report
+        reportRepository.save(report);
+
+        // 7. (Optional) Immediate notification for critical priority
+        if (priority == ReportPriority.critical) {
+            log.warn("[SLEEP-SAFE TRIAGE] Critical report (ID: {}) from {} against {}. Reason: {}",
+                    report.getReportId(), reporterUser.getUserId(), reportedUser.getUserId(), dto.getReason());
+            // Trigger event here, e.g., via ApplicationEventPublisher
+            // (e.g., publishEvent(new CriticalReportEvent(this, report));)
+        }
+    }
+
+    /**
+     * Determines the priority of a report based on keywords and the reporter's role.
+     * (MVP 7.2 logic)
+     */
+    private ReportPriority determinePriority(String reason, User reporter) {
+        String lowerCaseReason = reason.toLowerCase();
+
+        // 1. Check for critical keywords
+        boolean isCritical = CRITICAL_KEYWORDS.stream().anyMatch(lowerCaseReason::contains);
+        if (isCritical) {
+            return ReportPriority.critical;
+        }
+
+        // 2. Check reporter's role
+        if (reporter.getRole() == UserRole.ambassador || reporter.getRole() == UserRole.admin) {
+            return ReportPriority.high;
+        }
+
+        // 3. Otherwise
+        return ReportPriority.low;
+    }
+}
+
+
+==================================================
+Path: CreateReportDto.java
+==================================================
+package com.sahbifit.api.report.dto;
+
+import java.util.UUID;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class CreateReportDto {
+
+    @NotNull(message = "reportedUserId darf nicht null sein")
+    private UUID reportedUserId;
+
+    @NotBlank(message = "Grund darf nicht leer sein")
+    private String reason;
+
+    private UUID sessionId;
+}
 
 
 ==================================================
@@ -1841,9 +2637,6 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
-
-import com.sahbifit.api.model.enums.ReportPriority;
-import com.sahbifit.api.model.enums.ReportStatus;
 import com.sahbifit.api.session.model.Session;
 import com.sahbifit.api.user.model.User;
 
@@ -1919,8 +2712,47 @@ public class Report {
 
 
 ==================================================
+Path: ReportPriority.java
+==================================================
+package com.sahbifit.api.report.model;
+
+public enum ReportPriority {
+    low,
+    high,
+    critical
+}
+
+
+==================================================
+Path: ReportStatus.java
+==================================================
+package com.sahbifit.api.report.model;
+
+public enum ReportStatus {
+    pending,
+    resolved,
+    dismissed
+}
+
+
+==================================================
 Path: ReportRepository.java
 ==================================================
+package com.sahbifit.api.report.repository;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.sahbifit.api.report.model.Report;
+import com.sahbifit.api.report.model.ReportStatus;
+
+@Repository
+public interface ReportRepository extends JpaRepository<Report, UUID> {
+    List<Report> findByStatusOrderByPriorityDesc(ReportStatus status);
+}
 
 
 ==================================================
@@ -1962,9 +2794,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
 
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String username = tokenProvider.getUsernameFromJWT(jwt); // Dies ist die Telefonnummer
+                String username = tokenProvider.getUsernameFromJWT(jwt); // This is the phone number
 
-                // ðŸ†• OPTION 1: Rollen direkt aus Token lesen (schneller, keine DB-Abfrage)
+                // ðŸ†• OPTION 1: Read roles directly from token (faster, no database query)
                 List<String> roles = tokenProvider.getRolesFromJWT(jwt);
                 List<GrantedAuthority> authorities = roles.stream()
                         .map(SimpleGrantedAuthority::new)
@@ -1976,7 +2808,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 
-                // ðŸ†• OPTION 2: Original-Logik (mit DB-Abfrage fÃ¼r aktuelle User-Daten)
+                // ðŸ†• OPTION 2: Original logic (with database query for current user data)
                 // UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
                 // UsernamePasswordAuthenticationToken authentication = 
                 //     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -2043,11 +2875,11 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-    // Erstellt ein JWT fÃ¼r einen authentifizierten Benutzer MIT ROLEN
+    // Creates a JWT for an authenticated user WITH ROLES
     public String generateToken(Authentication authentication) {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
 
-        // Rollen aus den Authorities extrahieren
+        // Extract roles from Authorities
         List<String> roles = userPrincipal.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
@@ -2056,15 +2888,15 @@ public class JwtTokenProvider {
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
         return Jwts.builder()
-                .setSubject(userPrincipal.getUsername()) // Telefonnummer
-                .claim("roles", roles) // ðŸ†• Rollen im Token speichern
+                .setSubject(userPrincipal.getUsername()) // Phone number
+                .claim("roles", roles) // ðŸ†• Store roles in token
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
 
-    // Extrahiert die Telefonnummer aus dem JWT
+    // Extracts the phone number from the JWT
     public String getUsernameFromJWT(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -2075,7 +2907,7 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
-    // ðŸ†• Extrahiert Rollen aus dem JWT Token
+    // ðŸ†• Extracts roles from JWT token
     public List<String> getRolesFromJWT(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -2086,7 +2918,7 @@ public class JwtTokenProvider {
         return claims.get("roles", List.class);
     }
 
-    // Validiert ein JWT
+    // Validates a JWT
     public boolean validateToken(String authToken) {
         try {
             Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(authToken);
@@ -2119,6 +2951,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; // <- NEW
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -2132,6 +2965,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity // <- THIS LINE ADDED
 public class SecurityConfig {
 
     @Autowired
@@ -2144,16 +2978,16 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                // Ã–ffentliche Endpunkte
+                // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 
-                // --- ADMIN ENDPUNKTE ---
+                // --- ADMIN ENDPOINTS ---
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 
-                // --- VERIFICATION ENDPUNKTE - fÃ¼r alle authentifizierten Benutzer ---
+                // --- VERIFICATION ENDPOINTS - for all authenticated users ---
                 .requestMatchers("/api/verification/**").authenticated()
                 
-                // Alle anderen Anfragen erfordern Authentifizierung
+                // All other requests require authentication
                 .anyRequest().authenticated()
             );
 
@@ -2164,7 +2998,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "https://your-production-domain.com"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
@@ -2238,17 +3076,390 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 ==================================================
 Path: SessionController.java
 ==================================================
+// Pfad: src/main/java/com/sahbifit/api/session/SessionController.java
+package com.sahbifit.api.session;
+
+import com.sahbifit.api.session.dto.CreateSessionDto;
+import com.sahbifit.api.session.dto.MarkAttendanceDto;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.verification.model.VerifiedGender;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/sessions")
+@RequiredArgsConstructor
+public class SessionController {
+
+    private final SessionService sessionService;
+
+    /**
+     * (Mobile App) Get the active session feed.
+     * Can be filtered by gender (e.g., /api/sessions?genderFilter=female)
+     */
+    @GetMapping
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<List<Session>> getActiveSessions(
+            Principal principal,
+            @RequestParam(required = false) VerifiedGender genderFilter) {
+        
+        List<Session> sessions = sessionService.getActiveSessions(principal.getName(), genderFilter);
+        return ResponseEntity.ok(sessions);
+    }
+
+    /**
+     * (Mobile App) Create a new session.
+     */
+    @PostMapping
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<Session> createSession(@RequestBody CreateSessionDto dto, Principal principal) {
+        Session newSession = sessionService.createSession(dto, principal.getName());
+        return new ResponseEntity<>(newSession, HttpStatus.CREATED);
+    }
+
+    /**
+     * (Mobile App) Join a session.
+     */
+    @PostMapping("/{sessionId}/join")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<Void> joinSession(@PathVariable UUID sessionId, Principal principal) {
+        sessionService.joinSession(sessionId, principal.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/attendance")
+    public ResponseEntity<Void> markAttendance(
+            @Valid @RequestBody MarkAttendanceDto markAttendanceDto,
+            Principal principal) {
+        
+        sessionService.markAttendance(markAttendanceDto, principal.getName());
+        return ResponseEntity.ok().build();
+    }
+}
 
 
 ==================================================
 Path: SessionService.java
 ==================================================
+package com.sahbifit.api.session;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sahbifit.api.exception.ResourceNotFoundException;
+import com.sahbifit.api.external.chat.ChatService;
+import com.sahbifit.api.gym.model.Gym;
+import com.sahbifit.api.gym.repository.GymRepository;
+import com.sahbifit.api.session.dto.CreateSessionDto;
+import com.sahbifit.api.session.dto.MarkAttendanceDto;
+import com.sahbifit.api.session.model.ParticipantStatus;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.session.model.SessionParticipant;
+import com.sahbifit.api.session.model.SessionParticipantId;
+import com.sahbifit.api.session.model.SessionStatus;
+import com.sahbifit.api.session.model.SessionType;
+import com.sahbifit.api.session.repository.SessionParticipantRepository;
+import com.sahbifit.api.session.repository.SessionRepository;
+import com.sahbifit.api.user.UserService;
+import com.sahbifit.api.user.model.ProfileVisibility;
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.model.UserRole;
+import com.sahbifit.api.user.repository.UserRepository;
+import com.sahbifit.api.verification.model.VerificationStatus;
+import com.sahbifit.api.verification.model.VerifiedGender;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class SessionService {
+
+    private final SessionRepository sessionRepository;
+    private final UserRepository userRepository;
+    private final GymRepository gymRepository;
+    private final SessionParticipantRepository sessionParticipantRepository;
+    private final UserService userService;
+    private final ChatService chatService;
+
+    /**
+     * (Method 1) Create a new session, applying all "Create" gates.
+     */
+    public Session createSession(CreateSessionDto dto, String userPhoneNumber) {
+        User user = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // Gate 1 (Verification)
+        if (user.getVerificationStatus() != VerificationStatus.verified) {
+            throw new IllegalStateException("You must be fully verified to create a session.");
+        }
+
+        // Gate 2 (Reputation - MVP 3.5)
+        if (dto.getSessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 3) {
+            throw new IllegalStateException("You must attend 3 group sessions before creating a 1-on-1 session.");
+        }
+
+        Gym gym = gymRepository.findById(dto.getGymId())
+                .orElseThrow(() -> new ResourceNotFoundException("Gym not found"));
+
+        // Create the session (don't save yet)
+        Session session = new Session();
+        session.setCreator(user);
+        session.setGym(gym);
+        session.setSessionType(dto.getSessionType());
+        session.setStatus(SessionStatus.active);
+        session.setTitle(dto.getTitle());
+        session.setStartTime(dto.getStartTime());
+        session.setEndTime(dto.getEndTime());
+        session.setMaxParticipants(dto.getMaxParticipants());
+
+        // Chat Integration (MVP 3.6)
+        String chatId = chatService.createChatForSession(session.getSessionId());
+        session.setFirestoreChatId(chatId);
+
+        // Save the session
+        Session savedSession = sessionRepository.save(session);
+
+        // Add the creator as the first participant
+        SessionParticipantId creatorId = new SessionParticipantId();
+        creatorId.setSessionId(savedSession.getSessionId());
+        creatorId.setUserId(user.getUserId());
+
+        SessionParticipant creatorEntry = new SessionParticipant();
+        creatorEntry.setId(creatorId);
+        creatorEntry.setSession(savedSession);
+        creatorEntry.setUser(user);
+        creatorEntry.setStatus(ParticipantStatus.joined);
+        sessionParticipantRepository.save(creatorEntry);
+
+        return savedSession;
+    }
+
+    /**
+     * (Method 2) Join an existing session, applying all "Join" gates.
+     */
+    public void joinSession(UUID sessionId, String userPhoneNumber) {
+        User user = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
+        Session session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Session not found"));
+
+        // Gate 1 (Probationary Mode - MVP 2.6)
+        if (user.getVerificationStatus() == VerificationStatus.pending_review) {
+            if (session.getCreator().getRole() != UserRole.ambassador) {
+                throw new IllegalStateException("Verification pending. You can only join Ambassador sessions.");
+            }
+        }
+
+        // Gate 2 (Reputation - MVP 3.5)
+        if (session.getSessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 3) {
+            throw new IllegalStateException("You must attend 3 group sessions before joining a 1-on-1 session.");
+        }
+
+        // Gate 3 (Session Full?)
+        int participantCount = sessionParticipantRepository.countBySessionId(sessionId);
+        if (participantCount >= session.getMaxParticipants()) {
+            throw new IllegalStateException("This session is already full.");
+        }
+
+        // Gate 4 (Already Joined?)
+        SessionParticipantId participantId = new SessionParticipantId();
+        participantId.setSessionId(sessionId);
+        participantId.setUserId(user.getUserId());
+
+        if (sessionParticipantRepository.existsById(participantId)) {
+            throw new IllegalStateException("You have already joined this session.");
+        }
+
+        // Success: Create and save the participant entry
+        SessionParticipant newParticipant = new SessionParticipant();
+        newParticipant.setId(participantId);
+        newParticipant.setSession(session);
+        newParticipant.setUser(user);
+        newParticipant.setStatus(ParticipantStatus.joined);
+        sessionParticipantRepository.save(newParticipant);
+    }
+
+    /**
+     * (Method 3) Get all active sessions for the feed.
+     * (MVP 6.1)
+     * NOW INCLUDES GENDER FILTERING AND PRIVACY/VISIBILITY LOGIC.
+     * OPTIMIZED: Uses JOIN FETCH to prevent N+1 queries
+     */
+    @Transactional(readOnly = true)
+    public List<Session> getActiveSessions(String userPhoneNumber, VerifiedGender genderFilter) {
+        
+        // 1. Get the user who is VIEWING the feed
+        User viewer = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        List<Session> sessions;
+
+        // 2. Apply the GENDER FILTER (existing logic) using optimized queries
+        if (genderFilter != null) {
+            // Security Check: You can only filter by your own gender.
+            if (viewer.getVerifiedGender() != genderFilter) {
+                throw new AccessDeniedException("You can only filter sessions by your own verified gender.");
+            }
+            // Use optimized query with JOIN FETCH
+            sessions = sessionRepository.findByStatusAndCreatorVerifiedGenderWithCreatorAndGym(SessionStatus.active, genderFilter);
+        } else {
+            // Use optimized query with JOIN FETCH
+            sessions = sessionRepository.findByStatusWithCreatorAndGym(SessionStatus.active);
+        }
+
+        // 3. Apply PRIVACY FILTER (new logic)
+        return sessions.stream()
+                .filter(session -> isVisible(session.getCreator(), viewer))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Helper method to check if a creator's profile is visible to a viewer.
+     */
+    private boolean isVisible(User creator, User viewer) {
+        // If creator is visible to all, return true.
+        if (creator.getProfileVisibility() == ProfileVisibility.all) {
+            return true;
+        }
+
+        // If creator is 'same_gender' only, check for match.
+        if (creator.getProfileVisibility() == ProfileVisibility.same_gender) {
+            // Both must be verified AND their genders must match.
+            return creator.getVerifiedGender() != VerifiedGender.not_verified &&
+                   creator.getVerifiedGender() == viewer.getVerifiedGender();
+        }
+
+        return false;
+    }
+
+    @Transactional
+    public void markAttendance(MarkAttendanceDto dto, String markerPhoneNumber) {
+        
+        // 1. Benutzer finden, der die Markierung vornimmt
+        User markerUser = userRepository.findByPhoneNumber(markerPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", markerPhoneNumber));
+
+        // 2. Session finden
+        Session session = sessionRepository.findById(dto.getSessionId())
+                .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", dto.getSessionId()));
+
+        // 3. BerechtigungsprÃ¼fung
+        boolean isCreator = session.getCreator().getUserId().equals(markerUser.getUserId());
+        boolean isAdmin = markerUser.getRole() == UserRole.admin;
+
+        if (!isCreator && !isAdmin) {
+            throw new AccessDeniedException("Nur der Ersteller der Session oder ein Admin kann die Anwesenheit markieren.");
+        }
+
+        // 4. SessionParticipant (das Ziel-Objekt) finden
+        SessionParticipantId participantId = new SessionParticipantId();
+        participantId.setSessionId(dto.getSessionId());
+        participantId.setUserId(dto.getParticipantUserId());
+
+        SessionParticipant participant = sessionParticipantRepository.findById(participantId)
+                .orElseThrow(() -> new ResourceNotFoundException("SessionParticipant", "Id", participantId));
+
+        // 5. Status aktualisieren
+        participant.setStatus(dto.getNewStatus());
+        sessionParticipantRepository.save(participant);
+
+        // 6. Kette auslÃ¶sen (MVP 5.4)
+        if (dto.getNewStatus() == ParticipantStatus.no_show) {
+            // Ruft die Logik in UserService auf
+            userService.incrementNoShowCount(dto.getParticipantUserId());
+        } 
+        else if (dto.getNewStatus() == ParticipantStatus.attended) {
+            // PrÃ¼fen, ob es eine Gruppensitzung war (MVP 3.5)
+            if (session.getSessionType() == SessionType.group) {
+                userService.incrementGroupSessionCount(dto.getParticipantUserId());
+            }
+        }
+    }
+}
+
+
+==================================================
+Path: CreateSessionDto.java
+==================================================
+package com.sahbifit.api.session.dto;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+import com.sahbifit.api.session.model.SessionType;
+
+import lombok.Data;
+
+@Data
+public class CreateSessionDto {
+    private UUID gymId;
+    private SessionType sessionType;
+    private String title;
+    private OffsetDateTime startTime;
+    private OffsetDateTime endTime;
+    private Integer maxParticipants;
+}
+
+
+==================================================
+Path: MarkAttendanceDto.java
+==================================================
+package com.sahbifit.api.session.dto;
+
+import java.util.UUID;
+
+import com.sahbifit.api.session.model.ParticipantStatus;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class MarkAttendanceDto {
+
+    @NotNull(message = "sessionId cannot be null")
+    private UUID sessionId;
+
+    @NotNull(message = "participantUserId cannot be null")
+    private UUID participantUserId;
+
+    @NotNull(message = "newStatus cannot be null")
+    private ParticipantStatus newStatus;
+}
+
+
+==================================================
+Path: ParticipantStatus.java
+==================================================
+package com.sahbifit.api.session.model;
+
+public enum ParticipantStatus {
+    joined,
+    attended,
+    no_show,
+    left
+}
 
 
 ==================================================
 Path: Session.java
 ==================================================
-// Pfad: src/main/java/com/sahbifit/api/session/model/Session.java
 package com.sahbifit.api.session.model;
 
 import java.time.OffsetDateTime;
@@ -2257,6 +3468,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.Check;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
@@ -2264,8 +3476,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import com.sahbifit.api.gym.model.Gym;
-import com.sahbifit.api.model.enums.SessionStatus;
-import com.sahbifit.api.model.enums.SessionType;
 import com.sahbifit.api.rating.model.Rating;
 import com.sahbifit.api.report.model.Report;
 import com.sahbifit.api.user.model.User;
@@ -2289,9 +3499,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "sessions", indexes = { // <-- ADD THIS BLOCK
+@Table(name = "sessions", indexes = {
     @Index(name = "idx_session_creator_user", columnList = "creator_user_id"),
-    @Index(name = "idx_session_gym", columnList = "gym_id")
+    @Index(name = "idx_session_gym", columnList = "gym_id"),
+    @Index(name = "idx_session_status_type", columnList = "status, session_type"),
+    @Index(name = "idx_session_time_range", columnList = "start_time, end_time")
 })
 @Check(constraints = "(session_type = 'one_on_one' AND max_participants = 2) OR (session_type = 'group' AND max_participants >= 3)")
 @SQLDelete(sql = "UPDATE sessions SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE session_id = ?")
@@ -2344,7 +3556,15 @@ public class Session {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
-    // --- Beziehungen ---
+    // --- Optimized Fields ---
+    
+    /**
+     * Calculates participant count at the database level to avoid N+1 queries.
+     * This eliminates the need to fetch all participant objects just to get a count.
+     */
+    @Formula("(SELECT COUNT(*) FROM session_participants sp WHERE sp.session_id = session_id AND sp.status = 'joined')")
+    private int participantCount;
+
 
     @OneToMany(mappedBy = "session")
     private Set<SessionParticipant> participants;
@@ -2360,7 +3580,6 @@ public class Session {
 ==================================================
 Path: SessionParticipant.java
 ==================================================
-// Pfad: src/main/java/com/sahbifit/api/session/model/SessionParticipant.java
 package com.sahbifit.api.session.model;
 
 import java.time.OffsetDateTime;
@@ -2369,7 +3588,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import com.sahbifit.api.model.enums.ParticipantStatus;
 import com.sahbifit.api.user.model.User;
 
 import jakarta.persistence.Column;
@@ -2424,7 +3642,6 @@ public class SessionParticipant {
 ==================================================
 Path: SessionParticipantId.java
 ==================================================
-// Pfad: src/main/java/com/sahbifit/api/session/model/SessionParticipantId.java
 package com.sahbifit.api.session.model;
 
 import jakarta.persistence.Column;
@@ -2447,13 +3664,118 @@ public class SessionParticipantId implements Serializable {
 
 
 ==================================================
+Path: SessionStatus.java
+==================================================
+package com.sahbifit.api.session.model;
+
+public enum SessionStatus {
+    active,
+    cancelled,
+    completed
+}
+
+
+==================================================
+Path: SessionType.java
+==================================================
+package com.sahbifit.api.session.model;
+
+public enum SessionType {
+    group,
+    one_on_one
+}
+
+
+==================================================
 Path: SessionParticipantRepository.java
 ==================================================
+// Pfad: src/main/java/com/sahbifit/api/session/repository/SessionParticipantRepository.java
+package com.sahbifit.api.session.repository;
+
+import java.util.List;
+
+import com.sahbifit.api.session.model.SessionParticipant;
+import com.sahbifit.api.session.model.SessionParticipantId;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.sahbifit.api.session.model.ParticipantStatus;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.user.model.User;
+
+import java.util.UUID;
+
+@Repository
+public interface SessionParticipantRepository extends JpaRepository<SessionParticipant, SessionParticipantId> {
+
+    /**
+     * Counts the number of participants in a given session.
+     * Required by SessionService.joinSession() Gate 3.
+     */
+    int countBySessionId(UUID sessionId);
+    
+    // existsById(SessionParticipantId id) is provided by JpaRepository
+    // and used in SessionService.joinSession() Gate 4.
+
+
+    /**
+     * Finds all participations for a user with a specific status.
+     */
+    List<SessionParticipant> findByUserAndStatus(User user, ParticipantStatus status);
+    
+    /**
+     * Finds all participants for a specific session.
+     */
+    List<SessionParticipant> findBySession(Session session);
+}
 
 
 ==================================================
 Path: SessionRepository.java
 ==================================================
+// Pfad: src/main/java/com/sahbifit/api/session/repository/SessionRepository.java
+package com.sahbifit.api.session.repository;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.session.model.SessionStatus;
+import com.sahbifit.api.verification.model.VerifiedGender;
+
+@Repository
+public interface SessionRepository extends JpaRepository<Session, UUID> {
+
+    /**
+     * Finds all sessions with a specific status (e.g., 'active').
+     * Required by SessionService.getActiveSessions() (MVP 6.1)
+     */
+    List<Session> findByStatus(SessionStatus status);
+    
+    List<Session> findByStatusAndCreatorVerifiedGender(SessionStatus status, VerifiedGender gender);
+    
+    /**
+     * Finds all sessions with a specific status, fetching creator and gym data in one query.
+     * This prevents N+1 query problem when accessing session.getCreator() and session.getGym()
+     */
+    @Query("SELECT s FROM Session s JOIN FETCH s.creator JOIN FETCH s.gym WHERE s.status = :status")
+    List<Session> findByStatusWithCreatorAndGym(@Param("status") SessionStatus status);
+    
+    /**
+     * Finds all sessions with specific status and creator gender, fetching creator and gym data in one query.
+     * This prevents N+1 query problem when accessing session.getCreator() and session.getGym()
+     */
+    @Query("SELECT s FROM Session s JOIN FETCH s.creator JOIN FETCH s.gym WHERE s.status = :status AND s.creator.verifiedGender = :gender")
+    List<Session> findByStatusAndCreatorVerifiedGenderWithCreatorAndGym(
+            @Param("status") SessionStatus status, 
+            @Param("gender") VerifiedGender gender);
+}
 
 
 ==================================================
@@ -2469,17 +3791,24 @@ Path: TagService.java
 ==================================================
 Path: Tag.java
 ==================================================
-// Pfad: src/main/java/com/sahbifit/api/tag/model/Tag.java
 package com.sahbifit.api.tag.model;
 
-import com.sahbifit.api.model.enums.TagType;
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.Set;
+
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import java.util.Set;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -2497,7 +3826,7 @@ public class Tag {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tag_type", nullable = false, columnDefinition = "tag_type")
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM) // Wichtig fÃ¼r PostgreSQL ENUMs
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM) 
     private TagType tagType;
 
     @OneToMany(mappedBy = "tag")
@@ -2506,9 +3835,18 @@ public class Tag {
 
 
 ==================================================
+Path: TagType.java
+==================================================
+package com.sahbifit.api.tag.model;
+public enum TagType {
+    goal,
+    schedule
+}
+
+
+==================================================
 Path: UserTag.java
 ==================================================
-// Pfad: src/main/java/com/sahbifit/api/tag/model/UserTag.java
 package com.sahbifit.api.tag.model;
 
 import com.sahbifit.api.user.model.User;
@@ -2551,15 +3889,14 @@ public class UserTag {
 ==================================================
 Path: UserTagId.java
 ==================================================
-// Pfad: src/main/java/com/sahbifit/api/tag/model/UserTagId.java
 package com.sahbifit.api.tag.model;
+
+import java.io.Serializable;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Data;
-
-import java.io.Serializable;
-import java.util.UUID;
 
 @Data
 @Embeddable
@@ -2599,17 +3936,281 @@ Path: UserTagRepository.java
 ==================================================
 Path: UserController.java
 ==================================================
+package com.sahbifit.api.user;
+
+import java.security.Principal;
+import java.util.UUID;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.sahbifit.api.user.dto.UpdateFcmTokenDto;
+import com.sahbifit.api.user.dto.UpdateVisibilityDto;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/users")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserService userService;
+
+    // ... (Hier kÃ¶nnten andere User-Endpunkte stehen, z.B. GET /api/users/me)
+
+    /**
+     * Endpunkt zum Blockieren eines anderen Benutzers.
+     * Der blockierende Benutzer wird Ã¼ber das JWT (Principal) identifiziert.
+     */
+    @PostMapping("/{userId}/block")
+    public ResponseEntity<Void> blockUser(
+            @PathVariable UUID userId,
+            Principal principal) {
+        
+        // principal.getName() enthÃ¤lt die Telefonnummer des authentifizierten Benutzers
+        userService.blockUser(principal.getName(), userId);
+        
+        return ResponseEntity.ok().build();
+    }
+    /**
+     * Updates the FCM push notification token for the currently authenticated user.
+     */
+    @PutMapping("/me/fcm-token")
+    public ResponseEntity<Void> updateFcmToken(
+            @Valid @RequestBody UpdateFcmTokenDto dto,
+            Principal principal) {
+        
+        userService.updateFcmToken(principal.getName(), dto.getFcmToken());
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Updates the profile visibility setting for the currently authenticated user.
+     */
+    @PutMapping("/me/visibility")
+    public ResponseEntity<Void> updateProfileVisibility(
+            @Valid @RequestBody UpdateVisibilityDto dto,
+            Principal principal) {
+        
+        userService.updateProfileVisibility(principal.getName(), dto.getVisibility());
+        return ResponseEntity.ok().build();
+    }
+}
 
 
 ==================================================
 Path: UserService.java
 ==================================================
+package com.sahbifit.api.user;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sahbifit.api.exception.ResourceNotFoundException;
+import com.sahbifit.api.user.model.ProfileVisibility;
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.model.UserBlock;
+import com.sahbifit.api.user.model.UserBlockId;
+import com.sahbifit.api.user.model.UserStatus;
+import com.sahbifit.api.user.repository.UserBlockRepository;
+import com.sahbifit.api.user.repository.UserRepository;
+import com.sahbifit.api.verification.model.VerifiedGender;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final UserRepository userRepository;
+    private final UserBlockRepository userBlockRepository;
+
+    // Definiert das Limit fÃ¼r "No-Shows"
+    private static final int NO_SHOW_LIMIT = 3;
+
+    /**
+     * ErhÃ¶ht den ZÃ¤hler fÃ¼r absolvierte Gruppensitzungen eines Benutzers.
+     * (MVP 3.5 Logik)
+     */
+    @Transactional
+    public void incrementGroupSessionCount(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+        
+        int newGroupCount = user.getGroupSessionCount() + 1;
+        user.setGroupSessionCount(newGroupCount);
+        userRepository.save(user);
+        
+        log.info("User {} group session count incremented to {}.", userId, newGroupCount);
+    }
+
+    /**
+     * ErhÃ¶ht den "No-Show"-ZÃ¤hler fÃ¼r einen Benutzer und wendet bei Bedarf eine Sperre an.
+     * (MVP 5.4 & 5.5 Logik)
+     */
+    @Transactional
+    public void incrementNoShowCount(UUID userId) {
+        // 1. Benutzer finden
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+
+        // 2. ZÃ¤hler erhÃ¶hen
+        int newNoShowCount = user.getNoShowCount() + 1;
+        user.setNoShowCount(newNoShowCount);
+
+        // 3. SperrprÃ¼fung (MVP 5.5)
+        if (newNoShowCount >= NO_SHOW_LIMIT) {
+            // Benutzer sperren
+            user.setStatus(UserStatus.suspended);
+            user.setSuspendedUntil(OffsetDateTime.now().plusDays(3)); // 3-Tage-Sperre
+            
+            // ZÃ¤hler zurÃ¼cksetzen, nachdem die Sperre angewendet wurde
+            user.setNoShowCount(0); 
+
+            log.warn("User {} suspended for 3 days due to {} no-shows.", userId, newNoShowCount);
+            
+            // (Optional: Hier einen Event fÃ¼r eine Push-Benachrichtigung auslÃ¶sen)
+            // z.B. eventPublisher.publishEvent(new UserSuspendedEvent(this, user, "3 days"));
+
+        } else {
+            log.info("User {} 'no-show' count incremented to {}.", userId, newNoShowCount);
+        }
+
+        // 4. Benutzer speichern
+        userRepository.save(user);
+    }
+
+    /**
+     * ErmÃ¶glicht einem Benutzer, einen anderen Benutzer zu blockieren.
+     * (MVP 4.2 Logik)
+     */
+    @Transactional
+    public void blockUser(String blockerPhoneNumber, UUID blockedUserId) {
+        // 1. Blocker (blocker) finden
+        User blockerUser = userRepository.findByPhoneNumber(blockerPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", blockerPhoneNumber));
+
+        // 2. Zu blockierenden (blocked) finden
+        User blockedUser = userRepository.findById(blockedUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", blockedUserId));
+
+        // 3. Selbstblockierung verhindern
+        if (blockerUser.getUserId().equals(blockedUser.getUserId())) {
+            throw new IllegalArgumentException("Ein Benutzer kann sich nicht selbst blockieren.");
+        }
+
+        // 4. PrÃ¼fen, ob bereits blockiert
+        boolean alreadyBlocked = userBlockRepository.existsByBlockerUserIdAndBlockedUserId(
+                blockerUser.getUserId(), blockedUser.getUserId());
+
+        if (alreadyBlocked) {
+            return;
+        }
+
+        // 5. UserBlock-EntitÃ¤t erstellen
+        UserBlockId blockId = new UserBlockId();
+        blockId.setBlockerUserId(blockerUser.getUserId());
+        blockId.setBlockedUserId(blockedUser.getUserId());
+
+        UserBlock newBlock = new UserBlock();
+        newBlock.setId(blockId);
+        newBlock.setBlocker(blockerUser);
+        newBlock.setBlocked(blockedUser);
+
+        // 6. Blockierung speichern
+        userBlockRepository.save(newBlock);
+    }
+    @Transactional
+    public void updateFcmToken(String userPhoneNumber, String fcmToken) {
+        User user = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
+        
+        user.setPushNotificationToken(fcmToken);
+        userRepository.save(user);
+        log.info("Updated FCM token for user: {}", user.getUserId());
+    }
+
+
+    @Transactional
+    public void updateProfileVisibility(String userPhoneNumber, ProfileVisibility newVisibility) {
+        User user = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
+
+        // Validation: You cannot set visibility to "same_gender" if you are not gender-verified.
+        if (newVisibility == ProfileVisibility.same_gender && 
+            user.getVerifiedGender() == VerifiedGender.not_verified) {
+            
+            throw new IllegalStateException("You must be gender-verified to use this privacy setting.");
+        }
+
+        user.setProfileVisibility(newVisibility);
+        userRepository.save(user);
+        log.info("Updated profile visibility for user {} to {}", user.getUserId(), newVisibility);
+    }
+}
+
+
+==================================================
+Path: UpdateFcmTokenDto.java
+==================================================
+package com.sahbifit.api.user.dto;
+
+import lombok.Data;
+import jakarta.validation.constraints.NotBlank;
+
+@Data
+public class UpdateFcmTokenDto {
+    @NotBlank
+    private String fcmToken;
+}
+
+
+==================================================
+Path: UpdateVisibilityDto.java
+==================================================
+package com.sahbifit.api.user.dto;
+
+import com.sahbifit.api.user.model.ProfileVisibility;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+
+@Data
+public class UpdateVisibilityDto {
+    @NotNull
+    private ProfileVisibility visibility;
+}
+
+
+==================================================
+Path: ProfileVisibility.java
+==================================================
+package com.sahbifit.api.user.model;
+
+public enum ProfileVisibility {
+    /** Everyone can see the profile. */
+    all,
+    
+    /** Only verified users of the same gender can see the profile. */
+    same_gender
+}
 
 
 ==================================================
 Path: User.java
 ==================================================
-// Pfad: src/main/java/com/sahbifit/api/user/model/User.java
 package com.sahbifit.api.user.model;
 
 import java.time.LocalDate;
@@ -2626,15 +4227,13 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import com.sahbifit.api.gym.model.Gym;
-import com.sahbifit.api.model.enums.UserRole;
-import com.sahbifit.api.model.enums.UserStatus;
-import com.sahbifit.api.model.enums.VerificationStatus;
-import com.sahbifit.api.model.enums.VerifiedGender;
 import com.sahbifit.api.rating.model.Rating;
 import com.sahbifit.api.report.model.Report;
 import com.sahbifit.api.session.model.Session;
 import com.sahbifit.api.session.model.SessionParticipant;
 import com.sahbifit.api.tag.model.UserTag;
+import com.sahbifit.api.verification.model.VerificationStatus;
+import com.sahbifit.api.verification.model.VerifiedGender;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -2657,7 +4256,10 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "users", indexes = {
-        @Index(name = "idx_user_primary_gym", columnList = "primary_gym_id")
+    @Index(name = "idx_user_primary_gym", columnList = "primary_gym_id"),
+    @Index(name = "idx_user_verification_status", columnList = "verification_status"),
+    @Index(name = "idx_user_role_status", columnList = "role, status"),
+    @Index(name = "idx_user_created_at", columnList = "created_at DESC")
 })
 @SQLDelete(sql = "UPDATE users SET status = 'banned', updated_at = CURRENT_TIMESTAMP WHERE user_id = ?")
 @SQLRestriction("status != 'banned'")
@@ -2678,13 +4280,12 @@ public class User {
     @ColumnDefault("false")
     private boolean isPhoneVerified = false;
 
-    // --- HINZUGEFÃœGTE FELDER FÃœR SMS OTP ---
+    
     @Column(name = "sms_otp", length = 6)
     private String smsOtp;
 
     @Column(name = "sms_otp_expires_at")
     private OffsetDateTime smsOtpExpiresAt;
-    // --- ENDE DER HINZUGEFÃœGTEN FELDER ---
 
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
@@ -2707,6 +4308,12 @@ public class User {
     @Column(name = "verified_gender", nullable = false, columnDefinition = "verified_gender")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerifiedGender verifiedGender = VerifiedGender.not_verified;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "profile_visibility", nullable = false, columnDefinition = "profile_visibility")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @ColumnDefault("'all'") // Default to 'all'
+    private ProfileVisibility profileVisibility = ProfileVisibility.all;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "primary_gym_id")
@@ -2744,7 +4351,6 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
-    // --- Beziehungen ---
 
     @OneToMany(mappedBy = "submittedByUser")
     private Set<Gym> submittedGyms;
@@ -2781,7 +4387,6 @@ public class User {
 ==================================================
 Path: UserBlock.java
 ==================================================
-// Pfad: src/main/java/com/sahbifit/api/user/model/UserBlock.java
 package com.sahbifit.api.user.model;
 
 import java.time.OffsetDateTime;
@@ -2831,15 +4436,14 @@ public class UserBlock {
 ==================================================
 Path: UserBlockId.java
 ==================================================
-// Pfad: src/main/java/com/sahbifit/api/user/model/UserBlockId.java
 package com.sahbifit.api.user.model;
+
+import java.io.Serializable;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Data;
-
-import java.io.Serializable;
-import java.util.UUID;
 
 @Data
 @Embeddable
@@ -2854,6 +4458,51 @@ public class UserBlockId implements Serializable {
 
 
 ==================================================
+Path: UserRole.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/model/enums/UserRole.java
+package com.sahbifit.api.user.model;
+
+public enum UserRole {
+    member,
+    ambassador,
+    admin
+}
+
+
+==================================================
+Path: UserStatus.java
+==================================================
+package com.sahbifit.api.user.model;
+
+public enum UserStatus {
+    active,
+    suspended,
+    banned
+}
+
+
+==================================================
+Path: UserBlockRepository.java
+==================================================
+package com.sahbifit.api.user.repository;
+
+import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.sahbifit.api.user.model.UserBlock;
+import com.sahbifit.api.user.model.UserBlockId;
+
+@Repository
+public interface UserBlockRepository extends JpaRepository<UserBlock, UserBlockId> {
+
+    // Hilfsmethode, um zu prÃ¼fen, ob eine Blockierung bereits existiert
+    boolean existsByBlockerUserIdAndBlockedUserId(UUID blockerUserId, UUID blockedUserId);
+}
+
+
+==================================================
 Path: UserRepository.java
 ==================================================
 package com.sahbifit.api.user.repository;
@@ -2864,8 +4513,8 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.sahbifit.api.model.enums.VerificationStatus;
 import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.verification.model.VerificationStatus;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
     
@@ -2874,6 +4523,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     
     // Add this method to fix the first error
     List<User> findByVerificationStatus(VerificationStatus verificationStatus);
+
+    // Add to UserRepository.java
+    boolean existsByPhoneNumber(String phoneNumber);
 }
 
 
@@ -2910,7 +4562,7 @@ public class VerificationController {
     private VerificationService verificationService;
 
     /**
-     * Endpunkt zum Einreichen des Verifizierungsvideos.
+     * Endpoint for submitting verification video.
      */
     @PostMapping("/submit")
     public ResponseEntity<?> submitVideo(
@@ -2918,54 +4570,54 @@ public class VerificationController {
             @RequestParam("video") MultipartFile videoFile) {
 
         String userPhoneNumber = userDetails.getUsername();
-        log.info("Video-Upload-Anfrage von Benutzer: {}", userPhoneNumber);
+        log.info("Video upload request from user: {}", userPhoneNumber);
 
         try {
-            // 1. Validierung: Datei ist nicht leer
+            // 1. Validation: File is not empty
             if (videoFile.isEmpty()) {
-                log.warn("Leere Datei von Benutzer: {}", userPhoneNumber);
-                return ResponseEntity.badRequest().body("Die Videodatei ist leer.");
+                log.warn("Empty file from user: {}", userPhoneNumber);
+                return ResponseEntity.badRequest().body("The video file is empty.");
             }
 
             // âœ… IMPROVED: Allow multiple video types for better UX
             String contentType = videoFile.getContentType();
             if (contentType == null || !contentType.startsWith("video/")) {
-                log.warn("UngÃ¼ltiger Dateityp von Benutzer: {}, Typ: {}", userPhoneNumber, contentType);
-                return ResponseEntity.badRequest().body("Nur Videodateien sind erlaubt.");
+                log.warn("Invalid file type from user: {}, Type: {}", userPhoneNumber, contentType);
+                return ResponseEntity.badRequest().body("Only video files are allowed.");
             }
 
             // âœ… OPTIONAL: More specific validation if needed
             List<String> allowedTypes = Arrays.asList("video/mp4", "video/quicktime", "video/webm", "video/x-msvideo");
             if (!allowedTypes.contains(contentType)) {
-                log.warn("Nicht unterstÃ¼tzter Videotyp von Benutzer: {}, Typ: {}", userPhoneNumber, contentType);
-                return ResponseEntity.badRequest().body("Nur MP4, MOV, WebM und AVI Videodateien sind erlaubt.");
+                log.warn("Unsupported video type from user: {}, Type: {}", userPhoneNumber, contentType);
+                return ResponseEntity.badRequest().body("Only MP4, MOV, WebM and AVI video files are allowed.");
             }
 
-            // 3. Validierung: DateigrÃ¶ÃŸe (max. 100MB)
+            // 3. Validation: File size (max. 100MB)
             if (videoFile.getSize() > 100 * 1024 * 1024) {
-                log.warn("Datei zu groÃŸ von Benutzer: {}, GrÃ¶ÃŸe: {} bytes", userPhoneNumber, videoFile.getSize());
-                return ResponseEntity.badRequest().body("Die Videodatei darf maximal 100MB groÃŸ sein.");
+                log.warn("File too large from user: {}, Size: {} bytes", userPhoneNumber, videoFile.getSize());
+                return ResponseEntity.badRequest().body("The video file must not exceed 100MB.");
             }
 
-            // 4. Verarbeitung
+            // 4. Processing
             verificationService.submitVerificationVideo(userPhoneNumber, videoFile);
             
-            log.info("Video erfolgreich verarbeitet fÃ¼r Benutzer: {}", userPhoneNumber);
-            return ResponseEntity.ok("Video erfolgreich eingereicht. Die ÃœberprÃ¼fung steht aus.");
+            log.info("Video successfully processed for user: {}", userPhoneNumber);
+            return ResponseEntity.ok("Video successfully submitted. Verification is pending.");
 
         } catch (IllegalStateException e) {
-            log.warn("UngÃ¼ltiger Status fÃ¼r Video-Upload von Benutzer: {}, Fehler: {}", userPhoneNumber, e.getMessage());
+            log.warn("Invalid status for video upload from user: {}, Error: {}", userPhoneNumber, e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            log.error("Fehler beim Video-Upload fÃ¼r Benutzer: {}", userPhoneNumber, e);
+            log.error("Error during video upload for user: {}", userPhoneNumber, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Fehler beim Upload: " + e.getMessage());
+                    .body("Upload error: " + e.getMessage());
         }
     }
 
     /**
-     * Endpunkt fÃ¼r die App, um den Status des Benutzers abzufragen
-     * (z.B. um den "Probationary Mode" UI anzuzeigen).
+     * Endpoint for the app to query user status
+     * (e.g., to display the "Probationary Mode" UI).
      */
     @GetMapping("/status")
     public ResponseEntity<VerificationStatusDto> getStatus(@AuthenticationPrincipal UserDetails userDetails) {
@@ -2973,10 +4625,10 @@ public class VerificationController {
         
         try {
             VerificationStatusDto statusDto = verificationService.getVerificationStatus(userPhoneNumber);
-            log.debug("Statusabfrage fÃ¼r Benutzer: {}, Status: {}", userPhoneNumber, statusDto.getStatus());
+            log.debug("Status query for user: {}, Status: {}", userPhoneNumber, statusDto.getStatus());
             return ResponseEntity.ok(statusDto);
         } catch (Exception e) {
-            log.error("Fehler bei Statusabfrage fÃ¼r Benutzer: {}", userPhoneNumber, e);
+            log.error("Error during status query for user: {}", userPhoneNumber, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -2996,11 +4648,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.sahbifit.api.external.storage.StorageService;
-import com.sahbifit.api.model.enums.VerificationStatus;
-import com.sahbifit.api.model.enums.VerifiedGender;
 import com.sahbifit.api.user.model.User;
 import com.sahbifit.api.user.repository.UserRepository;
 import com.sahbifit.api.verification.dto.VerificationStatusDto;
+import com.sahbifit.api.verification.model.VerificationStatus;
+import com.sahbifit.api.verification.model.VerifiedGender;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -3012,49 +4664,49 @@ public class VerificationService {
     private UserRepository userRepository;
 
     @Autowired
-    private StorageService storageService; // CloudflareR2Service wird injiziert
+    private StorageService storageService; // CloudflareR2Service is injected
 
     /**
-     * Verarbeitet das hochgeladene Verifizierungsvideo eines Benutzers.
+     * Processes the uploaded verification video of a user.
      */
     @Transactional
     public void submitVerificationVideo(String userPhoneNumber, MultipartFile videoFile) throws IOException {
         User user = userRepository.findByPhoneNumber(userPhoneNumber)
-                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden."));
+                .orElseThrow(() -> new RuntimeException("User not found."));
 
-        // 1. Validierung: Verhindert doppelte Uploads
+        // 1. Validation: Prevents duplicate uploads
         if (user.getVerificationStatus() == VerificationStatus.pending_review || 
             user.getVerificationStatus() == VerificationStatus.verified) {
-            throw new IllegalStateException("ÃœberprÃ¼fung bereits abgeschlossen oder ausstehend.");
+            throw new IllegalStateException("Verification already completed or pending.");
         }
 
-        // 2. Eindeutigen Dateinamen generieren
+        // 2. Generate unique filename
         String fileName = user.getUserId().toString() + "_" + System.currentTimeMillis() + ".mp4";
         String folder = "verification-videos";
 
-        log.info("Starte Video-Upload fÃ¼r Benutzer: {}, Dateiname: {}", userPhoneNumber, fileName);
+        log.info("Starting video upload for user: {}, filename: {}", userPhoneNumber, fileName);
 
-        // 3. Datei hochladen
+        // 3. Upload file
         String fileUrl = storageService.uploadFile(videoFile, folder, fileName);
 
-        // 4. Benutzerstatus auf "pending_review" setzen
+        // 4. Set user status to "pending_review"
         user.setVerificationVideoUrl(fileUrl);
         user.setVerificationStatus(VerificationStatus.pending_review);
 
-        // 5. Wichtig: Geschlecht zurÃ¼cksetzen, falls es zuvor abgelehnt wurde
+        // 5. Important: Reset gender if it was previously rejected
         user.setVerifiedGender(VerifiedGender.not_verified);
 
         userRepository.save(user);
         
-        log.info("Video erfolgreich hochgeladen fÃ¼r Benutzer: {}, URL: {}", userPhoneNumber, fileUrl);
+        log.info("Video successfully uploaded for user: {}, URL: {}", userPhoneNumber, fileUrl);
     }
 
     /**
-     * Ruft den aktuellen Verifizierungsstatus des Benutzers ab.
+     * Retrieves the current verification status of the user.
      */
     public VerificationStatusDto getVerificationStatus(String userPhoneNumber) {
         User user = userRepository.findByPhoneNumber(userPhoneNumber)
-                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden."));
+                .orElseThrow(() -> new RuntimeException("User not found."));
 
         return new VerificationStatusDto(user.getVerificationStatus(), user.getVerifiedGender());
     }
@@ -3066,8 +4718,8 @@ Path: VerificationStatusDto.java
 ==================================================
 package com.sahbifit.api.verification.dto;
 
-import com.sahbifit.api.model.enums.VerificationStatus;
-import com.sahbifit.api.model.enums.VerifiedGender;
+import com.sahbifit.api.verification.model.VerificationStatus;
+import com.sahbifit.api.verification.model.VerifiedGender;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -3086,6 +4738,33 @@ public class VerificationStatusDto {
         this.status = status;
         this.gender = gender;
     }
+}
+
+
+==================================================
+Path: VerificationStatus.java
+==================================================
+package com.sahbifit.api.verification.model;
+
+public enum VerificationStatus {
+    not_started,
+    pending_review,
+    verified,
+    rejected_bad_video,
+    rejected_mismatch
+}
+
+
+==================================================
+Path: VerifiedGender.java
+==================================================
+package com.sahbifit.api.verification.model;
+
+public enum VerifiedGender {
+    not_verified,
+    male,
+    female,
+    other
 }
 
 

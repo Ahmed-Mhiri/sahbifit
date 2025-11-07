@@ -11,9 +11,6 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
-
-import com.sahbifit.api.model.enums.ReportPriority;
-import com.sahbifit.api.model.enums.ReportStatus;
 import com.sahbifit.api.session.model.Session;
 import com.sahbifit.api.user.model.User;
 

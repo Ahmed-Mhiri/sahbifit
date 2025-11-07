@@ -6,11 +6,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor // Erstellt einen Konstruktor, der den Token annimmt
+@AllArgsConstructor 
 public class AuthResponse {
 
     private String jwtToken;
 
-    // Optional: Sie könnten hier auch eine "gültig bis" Zeit hinzufügen
-    // private String tokenType = "Bearer";
 }

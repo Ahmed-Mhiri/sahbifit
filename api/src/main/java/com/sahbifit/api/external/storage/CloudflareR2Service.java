@@ -30,24 +30,24 @@ public class CloudflareR2Service implements StorageService {
     @Override
     public String uploadFile(MultipartFile file, String folder, String fileName) throws IOException {
         try {
-            // Validierung der Datei
+            // File validation
             if (file.isEmpty()) {
-                throw new IllegalArgumentException("Datei ist leer");
+                throw new IllegalArgumentException("File is empty");
             }
 
-            // Generiere den vollständigen S3 Key (Pfad im Bucket)
+            // Generate the complete S3 key (path in the bucket)
             String key = generateFileKey(folder, fileName);
             
-            log.info("Lade Datei hoch: {} -> {}/{}", file.getOriginalFilename(), 
+            log.info("Uploading file: {} -> {}/{}", file.getOriginalFilename(), 
                     cloudflareConfig.getBucketName(), key);
 
-            // Metadaten für das Video
+            // Metadata for the video
             var metadata = new java.util.HashMap<String, String>();
             metadata.put("Content-Type", file.getContentType());
             metadata.put("Original-Filename", file.getOriginalFilename());
             metadata.put("Upload-Timestamp", String.valueOf(System.currentTimeMillis()));
 
-            // Erstelle PutObjectRequest
+            // Create PutObjectRequest
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(cloudflareConfig.getBucketName())
                     .key(key)
@@ -56,32 +56,32 @@ public class CloudflareR2Service implements StorageService {
                     .metadata(metadata)
                     .build();
 
-            // Datei hochladen
+            // Upload file
             s3Client.putObject(putObjectRequest, 
                     RequestBody.fromBytes(file.getBytes()));
 
-            // Generiere die öffentliche URL
+            // Generate public URL
             String publicUrl = generatePublicUrl(key);
             
-            log.info("Datei erfolgreich hochgeladen: {}", publicUrl);
+            log.info("File successfully uploaded: {}", publicUrl);
             return publicUrl;
 
         } catch (S3Exception e) {
-            log.error("S3 Fehler beim Hochladen der Datei: {}", e.awsErrorDetails().errorMessage(), e);
-            throw new IOException("Fehler beim Hochladen der Datei: " + e.awsErrorDetails().errorMessage(), e);
+            log.error("S3 error uploading file: {}", e.awsErrorDetails().errorMessage(), e);
+            throw new IOException("Error uploading file: " + e.awsErrorDetails().errorMessage(), e);
         } catch (Exception e) {
-            log.error("Unerwarteter Fehler beim Hochladen der Datei", e);
-            throw new IOException("Unerwarteter Fehler beim Hochladen: " + e.getMessage(), e);
+            log.error("Unexpected error uploading file", e);
+            throw new IOException("Unexpected error during upload: " + e.getMessage(), e);
         }
     }
 
     @Override
     public void deleteFile(String fileUrl) throws IOException {
         try {
-            // Extrahiere den Key aus der URL
+            // Extract key from URL
             String key = extractKeyFromUrl(fileUrl);
             
-            log.info("Lösche Datei: {}", key);
+            log.info("Deleting file: {}", key);
             
             DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                     .bucket(cloudflareConfig.getBucketName())
@@ -90,43 +90,43 @@ public class CloudflareR2Service implements StorageService {
 
             s3Client.deleteObject(deleteObjectRequest);
             
-            log.info("Datei erfolgreich gelöscht: {}", key);
+            log.info("File successfully deleted: {}", key);
 
         } catch (S3Exception e) {
-            log.error("S3 Fehler beim Löschen der Datei: {}", e.awsErrorDetails().errorMessage(), e);
-            throw new IOException("Fehler beim Löschen der Datei: " + e.awsErrorDetails().errorMessage(), e);
+            log.error("S3 error deleting file: {}", e.awsErrorDetails().errorMessage(), e);
+            throw new IOException("Error deleting file: " + e.awsErrorDetails().errorMessage(), e);
         }
     }
 
     /**
-     * Generiert den S3 Key für die Datei
+     * Generates the S3 key for the file
      */
     private String generateFileKey(String folder, String fileName) {
-        // Entferne führende und nachfolgende Schrägstriche
+        // Remove leading and trailing slashes
         String cleanFolder = folder.replaceAll("^/|/$", "");
         return String.format("%s/%s", cleanFolder, fileName);
     }
 
     /**
-     * Generiert die öffentliche URL für die Datei
+     * Generates the public URL for the file
      */
     private String generatePublicUrl(String key) {
         return String.format("%s/%s", cloudflareConfig.getPublicUrl(), key);
     }
 
     /**
-     * Extrahiert den S3 Key aus der öffentlichen URL
+     * Extracts the S3 key from the public URL
      */
     private String extractKeyFromUrl(String fileUrl) {
         String baseUrl = cloudflareConfig.getPublicUrl() + "/";
         if (fileUrl.startsWith(baseUrl)) {
             return fileUrl.substring(baseUrl.length());
         }
-        throw new IllegalArgumentException("Ungültige R2 URL: " + fileUrl);
+        throw new IllegalArgumentException("Invalid R2 URL: " + fileUrl);
     }
     
     /**
-     * Hilfsmethode zum Generieren eines eindeutigen Dateinamens
+     * Helper method to generate a unique filename
      */
     public String generateUniqueFileName(String originalFileName) {
         String extension = "";

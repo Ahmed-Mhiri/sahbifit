@@ -6,17 +6,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface StorageService {
     /**
-     * Lädt eine Datei in den Cloud-Speicher hoch.
-     * @param file Die hochzuladende Datei.
-     * @param folder Der Zielordner im Bucket (z.B. "verification-videos").
-     * @param fileName Der gewünschte Dateiname (sollte eindeutig sein).
-     * @return Die öffentliche URL der hochgeladenen Datei.
+     * Uploads a file to cloud storage.
+     * @param file The file to upload.
+     * @param folder The target folder in the bucket (e.g., "verification-videos").
+     * @param fileName The desired filename (should be unique).
+     * @return The public URL of the uploaded file.
      */
     String uploadFile(MultipartFile file, String folder, String fileName) throws IOException;
     
     /**
-     * Löscht eine Datei aus dem Cloud-Speicher.
-     * @param fileUrl Die URL der zu löschenden Datei.
+     * Deletes a file from cloud storage.
+     * @param fileUrl The URL of the file to delete.
      */
     void deleteFile(String fileUrl) throws IOException;
 }

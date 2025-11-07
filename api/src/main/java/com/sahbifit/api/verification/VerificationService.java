@@ -8,11 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.sahbifit.api.external.storage.StorageService;
-import com.sahbifit.api.model.enums.VerificationStatus;
-import com.sahbifit.api.model.enums.VerifiedGender;
 import com.sahbifit.api.user.model.User;
 import com.sahbifit.api.user.repository.UserRepository;
 import com.sahbifit.api.verification.dto.VerificationStatusDto;
+import com.sahbifit.api.verification.model.VerificationStatus;
+import com.sahbifit.api.verification.model.VerifiedGender;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,49 +24,49 @@ public class VerificationService {
     private UserRepository userRepository;
 
     @Autowired
-    private StorageService storageService; // CloudflareR2Service wird injiziert
+    private StorageService storageService; // CloudflareR2Service is injected
 
     /**
-     * Verarbeitet das hochgeladene Verifizierungsvideo eines Benutzers.
+     * Processes the uploaded verification video of a user.
      */
     @Transactional
     public void submitVerificationVideo(String userPhoneNumber, MultipartFile videoFile) throws IOException {
         User user = userRepository.findByPhoneNumber(userPhoneNumber)
-                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden."));
+                .orElseThrow(() -> new RuntimeException("User not found."));
 
-        // 1. Validierung: Verhindert doppelte Uploads
+        // 1. Validation: Prevents duplicate uploads
         if (user.getVerificationStatus() == VerificationStatus.pending_review || 
             user.getVerificationStatus() == VerificationStatus.verified) {
-            throw new IllegalStateException("Überprüfung bereits abgeschlossen oder ausstehend.");
+            throw new IllegalStateException("Verification already completed or pending.");
         }
 
-        // 2. Eindeutigen Dateinamen generieren
+        // 2. Generate unique filename
         String fileName = user.getUserId().toString() + "_" + System.currentTimeMillis() + ".mp4";
         String folder = "verification-videos";
 
-        log.info("Starte Video-Upload für Benutzer: {}, Dateiname: {}", userPhoneNumber, fileName);
+        log.info("Starting video upload for user: {}, filename: {}", userPhoneNumber, fileName);
 
-        // 3. Datei hochladen
+        // 3. Upload file
         String fileUrl = storageService.uploadFile(videoFile, folder, fileName);
 
-        // 4. Benutzerstatus auf "pending_review" setzen
+        // 4. Set user status to "pending_review"
         user.setVerificationVideoUrl(fileUrl);
         user.setVerificationStatus(VerificationStatus.pending_review);
 
-        // 5. Wichtig: Geschlecht zurücksetzen, falls es zuvor abgelehnt wurde
+        // 5. Important: Reset gender if it was previously rejected
         user.setVerifiedGender(VerifiedGender.not_verified);
 
         userRepository.save(user);
         
-        log.info("Video erfolgreich hochgeladen für Benutzer: {}, URL: {}", userPhoneNumber, fileUrl);
+        log.info("Video successfully uploaded for user: {}, URL: {}", userPhoneNumber, fileUrl);
     }
 
     /**
-     * Ruft den aktuellen Verifizierungsstatus des Benutzers ab.
+     * Retrieves the current verification status of the user.
      */
     public VerificationStatusDto getVerificationStatus(String userPhoneNumber) {
         User user = userRepository.findByPhoneNumber(userPhoneNumber)
-                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden."));
+                .orElseThrow(() -> new RuntimeException("User not found."));
 
         return new VerificationStatusDto(user.getVerificationStatus(), user.getVerifiedGender());
     }

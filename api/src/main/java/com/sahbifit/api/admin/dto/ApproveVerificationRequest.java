@@ -2,7 +2,7 @@ package com.sahbifit.api.admin.dto;
 
 import java.util.UUID;
 
-import com.sahbifit.api.model.enums.VerifiedGender;
+import com.sahbifit.api.verification.model.VerifiedGender;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

@@ -34,9 +34,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
 
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String username = tokenProvider.getUsernameFromJWT(jwt); // Dies ist die Telefonnummer
+                String username = tokenProvider.getUsernameFromJWT(jwt); // This is the phone number
 
-                // 🆕 OPTION 1: Rollen direkt aus Token lesen (schneller, keine DB-Abfrage)
+                // 🆕 OPTION 1: Read roles directly from token (faster, no database query)
                 List<String> roles = tokenProvider.getRolesFromJWT(jwt);
                 List<GrantedAuthority> authorities = roles.stream()
                         .map(SimpleGrantedAuthority::new)
@@ -48,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 
-                // 🆕 OPTION 2: Original-Logik (mit DB-Abfrage für aktuelle User-Daten)
+                // 🆕 OPTION 2: Original logic (with database query for current user data)
                 // UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
                 // UsernamePasswordAuthenticationToken authentication = 
                 //     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

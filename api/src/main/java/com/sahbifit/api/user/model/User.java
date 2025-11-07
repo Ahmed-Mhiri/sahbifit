@@ -1,4 +1,3 @@
-// Pfad: src/main/java/com/sahbifit/api/user/model/User.java
 package com.sahbifit.api.user.model;
 
 import java.time.LocalDate;
@@ -15,15 +14,13 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import com.sahbifit.api.gym.model.Gym;
-import com.sahbifit.api.model.enums.UserRole;
-import com.sahbifit.api.model.enums.UserStatus;
-import com.sahbifit.api.model.enums.VerificationStatus;
-import com.sahbifit.api.model.enums.VerifiedGender;
 import com.sahbifit.api.rating.model.Rating;
 import com.sahbifit.api.report.model.Report;
 import com.sahbifit.api.session.model.Session;
 import com.sahbifit.api.session.model.SessionParticipant;
 import com.sahbifit.api.tag.model.UserTag;
+import com.sahbifit.api.verification.model.VerificationStatus;
+import com.sahbifit.api.verification.model.VerifiedGender;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -46,7 +43,10 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "users", indexes = {
-        @Index(name = "idx_user_primary_gym", columnList = "primary_gym_id")
+    @Index(name = "idx_user_primary_gym", columnList = "primary_gym_id"),
+    @Index(name = "idx_user_verification_status", columnList = "verification_status"),
+    @Index(name = "idx_user_role_status", columnList = "role, status"),
+    @Index(name = "idx_user_created_at", columnList = "created_at DESC")
 })
 @SQLDelete(sql = "UPDATE users SET status = 'banned', updated_at = CURRENT_TIMESTAMP WHERE user_id = ?")
 @SQLRestriction("status != 'banned'")
@@ -67,13 +67,12 @@ public class User {
     @ColumnDefault("false")
     private boolean isPhoneVerified = false;
 
-    // --- HINZUGEFÜGTE FELDER FÜR SMS OTP ---
+    
     @Column(name = "sms_otp", length = 6)
     private String smsOtp;
 
     @Column(name = "sms_otp_expires_at")
     private OffsetDateTime smsOtpExpiresAt;
-    // --- ENDE DER HINZUGEFÜGTEN FELDER ---
 
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
@@ -96,6 +95,12 @@ public class User {
     @Column(name = "verified_gender", nullable = false, columnDefinition = "verified_gender")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerifiedGender verifiedGender = VerifiedGender.not_verified;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "profile_visibility", nullable = false, columnDefinition = "profile_visibility")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @ColumnDefault("'all'") // Default to 'all'
+    private ProfileVisibility profileVisibility = ProfileVisibility.all;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "primary_gym_id")
@@ -133,7 +138,6 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
-    // --- Beziehungen ---
 
     @OneToMany(mappedBy = "submittedByUser")
     private Set<Gym> submittedGyms;

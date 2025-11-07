@@ -38,11 +38,11 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-    // Erstellt ein JWT für einen authentifizierten Benutzer MIT ROLEN
+    // Creates a JWT for an authenticated user WITH ROLES
     public String generateToken(Authentication authentication) {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
 
-        // Rollen aus den Authorities extrahieren
+        // Extract roles from Authorities
         List<String> roles = userPrincipal.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
@@ -51,15 +51,15 @@ public class JwtTokenProvider {
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
         return Jwts.builder()
-                .setSubject(userPrincipal.getUsername()) // Telefonnummer
-                .claim("roles", roles) // 🆕 Rollen im Token speichern
+                .setSubject(userPrincipal.getUsername()) // Phone number
+                .claim("roles", roles) // 🆕 Store roles in token
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
 
-    // Extrahiert die Telefonnummer aus dem JWT
+    // Extracts the phone number from the JWT
     public String getUsernameFromJWT(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -70,7 +70,7 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
-    // 🆕 Extrahiert Rollen aus dem JWT Token
+    // 🆕 Extracts roles from JWT token
     public List<String> getRolesFromJWT(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -81,7 +81,7 @@ public class JwtTokenProvider {
         return claims.get("roles", List.class);
     }
 
-    // Validiert ein JWT
+    // Validates a JWT
     public boolean validateToken(String authToken) {
         try {
             Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(authToken);

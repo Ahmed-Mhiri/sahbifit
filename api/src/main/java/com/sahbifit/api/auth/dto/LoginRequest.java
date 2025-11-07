@@ -1,6 +1,5 @@
 package com.sahbifit.api.auth.dto;
 
-
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,9 +8,9 @@ import lombok.Setter;
 @Setter
 public class LoginRequest {
 
-    @NotBlank(message = "Telefonnummer darf nicht leer sein.")
+    @NotBlank(message = "Phone number cannot be empty.")
     private String phoneNumber;
 
-    @NotBlank(message = "Passwort darf nicht leer sein.")
+    @NotBlank(message = "Password cannot be empty.")
     private String password;
 }

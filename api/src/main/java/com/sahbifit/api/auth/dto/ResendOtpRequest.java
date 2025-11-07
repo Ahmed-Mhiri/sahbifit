@@ -9,10 +9,10 @@ import lombok.Setter;
 @Setter
 public class ResendOtpRequest {
 
-    @NotBlank(message = "Telefonnummer darf nicht leer sein.")
-    @Pattern(regexp = "^(2|3|4|5|7|9)\\d{7}$", message = "Ungültige tunesische Telefonnummer. (Erwartet: 8 Ziffern ohne +216)")
+    @NotBlank(message = "Phone number cannot be empty.")
+    @Pattern(regexp = "^(2|3|4|5|7|9)\\d{7}$", message = "Invalid Tunisian phone number. (Expected: 8 digits without +216)")
     private String phoneNumber;
 
-    @NotBlank(message = "reCAPTCHA Token darf nicht leer sein.")
+    @NotBlank(message = "reCAPTCHA token cannot be empty.")
     private String recaptchaToken;
 }

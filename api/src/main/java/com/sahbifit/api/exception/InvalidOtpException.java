@@ -1,8 +1,6 @@
 package com.sahbifit.api.exception;
 
-/**
- * Exception die ausgelöst wird, wenn ein ungültiger OTP-Code eingegeben wurde.
- */
+
 public class InvalidOtpException extends RuntimeException {
 
     public InvalidOtpException() {

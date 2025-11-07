@@ -10,11 +10,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sahbifit.api.admin.dto.VerificationQueueDto;
+import com.sahbifit.api.external.push.PushNotificationService;
 import com.sahbifit.api.external.storage.StorageService;
-import com.sahbifit.api.model.enums.VerificationStatus;
-import com.sahbifit.api.model.enums.VerifiedGender;
+import com.sahbifit.api.gym.model.Gym;
+import com.sahbifit.api.gym.model.GymStatus;
+import com.sahbifit.api.gym.repository.GymRepository;
+import com.sahbifit.api.report.model.Report;
+import com.sahbifit.api.report.model.ReportStatus;
+import com.sahbifit.api.report.repository.ReportRepository;
 import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.model.UserStatus;
 import com.sahbifit.api.user.repository.UserRepository;
+import com.sahbifit.api.verification.model.VerificationStatus;
+import com.sahbifit.api.verification.model.VerifiedGender;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,12 +36,17 @@ public class AdminService {
     @Autowired
     private StorageService storageService; // For file deletion
 
-    // Optional: Für spätere Push-Benachrichtigungen
-    // @Autowired
-    // private PushNotificationService pushNotificationService;
+    @Autowired
+    private ReportRepository reportRepository;
+
+    @Autowired
+    private GymRepository gymRepository;
+
+    @Autowired
+    private PushNotificationService pushNotificationService;
 
     /**
-     * Holt alle Benutzer, die auf Verifizierung warten.
+     * Retrieves all users waiting for verification.
      */
     public List<VerificationQueueDto> getVerificationQueue() {
         List<User> pendingUsers = userRepository.findByVerificationStatus(VerificationStatus.pending_review);
@@ -53,15 +66,15 @@ public class AdminService {
     }
 
     /**
-     * Genehmigt einen Benutzer und setzt sein Geschlecht.
+     * Approves a user and sets their gender.
      */
     @Transactional
     public void approveVerification(UUID userId, VerifiedGender gender) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden."));
+                .orElseThrow(() -> new RuntimeException("User not found."));
 
         if (user.getVerificationStatus() != VerificationStatus.pending_review) {
-            throw new IllegalStateException("Benutzer wartet nicht auf Genehmigung.");
+            throw new IllegalStateException("User is not waiting for approval.");
         }
 
         // ✅ Store old video URL before clearing it
@@ -79,33 +92,33 @@ public class AdminService {
         if (oldVideoUrl != null) {
             try {
                 storageService.deleteFile(oldVideoUrl);
-                log.info("Verifizierungsvideo gelöscht für Benutzer: {}", userId);
+                log.info("Verification video deleted for user: {}", userId);
             } catch (IOException e) {
-                log.error("Fehler beim Löschen des Verifizierungsvideos für Benutzer {}: {}", userId, e.getMessage());
+                log.error("Error deleting verification video for user {}: {}", userId, e.getMessage());
                 // Don't throw exception - the user is still approved, just log the error
             }
         }
 
-        log.info("Benutzer {} wurde verifiziert. Geschlecht: {}", userId, gender);
+        log.info("User {} has been verified. Gender: {}", userId, gender);
 
-        // Der "Magic Moment" (Push-Benachrichtigung) - später implementieren
-        // pushNotificationService.sendVerificationApproved(user);
+        // Send push notification
+        pushNotificationService.sendVerificationApproved(user);
     }
 
     /**
-     * Lehnt einen Benutzer aus einem bestimmten Grund ab.
+     * Rejects a user for a specific reason.
      */
     @Transactional
     public void rejectVerification(UUID userId, VerificationStatus reason) {
         if (reason != VerificationStatus.rejected_bad_video && reason != VerificationStatus.rejected_mismatch) {
-            throw new IllegalArgumentException("Ungültiger Ablehnungsgrund.");
+            throw new IllegalArgumentException("Invalid rejection reason.");
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden."));
+                .orElseThrow(() -> new RuntimeException("User not found."));
 
         if (user.getVerificationStatus() != VerificationStatus.pending_review) {
-            throw new IllegalStateException("Benutzer wartet nicht auf Genehmigung.");
+            throw new IllegalStateException("User is not waiting for approval.");
         }
 
         // ✅ Store old video URL before clearing it
@@ -120,16 +133,45 @@ public class AdminService {
         if (oldVideoUrl != null) {
             try {
                 storageService.deleteFile(oldVideoUrl);
-                log.info("Verifizierungsvideo gelöscht für abgelehnten Benutzer: {}", userId);
+                log.info("Verification video deleted for rejected user: {}", userId);
             } catch (IOException e) {
-                log.error("Fehler beim Löschen des Verifizierungsvideos für abgelehnten Benutzer {}: {}", userId, e.getMessage());
+                log.error("Error deleting verification video for rejected user {}: {}", userId, e.getMessage());
                 // Don't throw exception - the rejection still proceeds
             }
         }
 
-        log.info("Benutzer {} wurde abgelehnt. Grund: {}", userId, reason);
+        log.info("User {} has been rejected. Reason: {}", userId, reason);
 
-        // (Optional) Sende Push-Benachrichtigung über Ablehnung
-        // pushNotificationService.sendVerificationRejected(user, reason);
+        // Send push notification about rejection
+        pushNotificationService.sendVerificationRejected(user, reason);
+    }
+
+    /**
+     * (For Appsmith) Bans a user (status = banned).
+     */
+    @Transactional
+    public void banUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found."));
+
+        user.setStatus(UserStatus.banned);
+        userRepository.save(user);
+
+        log.warn("Admin has banned user {}.", userId);
+    }
+
+    /**
+     * (For Appsmith) Retrieves the queue of reported users.
+     */
+    public List<Report> getPendingReports() {
+        return reportRepository.findByStatusOrderByPriorityDesc(ReportStatus.pending);
+    }
+
+    /**
+     * (For Appsmith) Retrieves the queue of gyms submitted by users.
+     */
+    public List<Gym> getPendingGyms() {
+        // This method already exists in GymRepository
+        return gymRepository.findByStatus(GymStatus.pending);
     }
 }

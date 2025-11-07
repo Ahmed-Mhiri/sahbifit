@@ -1,4 +1,3 @@
-// Pfad: src/main/java/com/sahbifit/api/user/model/UserBlock.java
 package com.sahbifit.api.user.model;
 
 import java.time.OffsetDateTime;

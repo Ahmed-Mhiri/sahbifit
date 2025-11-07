@@ -1,5 +1,4 @@
-// Pfad: src/main/java/com/sahbifit/api/model/enums/VerificationStatus.java
-package com.sahbifit.api.model.enums;
+package com.sahbifit.api.verification.model;
 
 public enum VerificationStatus {
     not_started,

@@ -1,4 +1,3 @@
-// Pfad: src/main/java/com/sahbifit/api/session/model/Session.java
 package com.sahbifit.api.session.model;
 
 import java.time.OffsetDateTime;
@@ -7,6 +6,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.Check;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
@@ -14,8 +14,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import com.sahbifit.api.gym.model.Gym;
-import com.sahbifit.api.model.enums.SessionStatus;
-import com.sahbifit.api.model.enums.SessionType;
 import com.sahbifit.api.rating.model.Rating;
 import com.sahbifit.api.report.model.Report;
 import com.sahbifit.api.user.model.User;
@@ -39,9 +37,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "sessions", indexes = { // <-- ADD THIS BLOCK
+@Table(name = "sessions", indexes = {
     @Index(name = "idx_session_creator_user", columnList = "creator_user_id"),
-    @Index(name = "idx_session_gym", columnList = "gym_id")
+    @Index(name = "idx_session_gym", columnList = "gym_id"),
+    @Index(name = "idx_session_status_type", columnList = "status, session_type"),
+    @Index(name = "idx_session_time_range", columnList = "start_time, end_time")
 })
 @Check(constraints = "(session_type = 'one_on_one' AND max_participants = 2) OR (session_type = 'group' AND max_participants >= 3)")
 @SQLDelete(sql = "UPDATE sessions SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE session_id = ?")
@@ -94,7 +94,15 @@ public class Session {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
-    // --- Beziehungen ---
+    // --- Optimized Fields ---
+    
+    /**
+     * Calculates participant count at the database level to avoid N+1 queries.
+     * This eliminates the need to fetch all participant objects just to get a count.
+     */
+    @Formula("(SELECT COUNT(*) FROM session_participants sp WHERE sp.session_id = session_id AND sp.status = 'joined')")
+    private int participantCount;
+
 
     @OneToMany(mappedBy = "session")
     private Set<SessionParticipant> participants;
