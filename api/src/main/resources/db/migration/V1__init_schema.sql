@@ -97,7 +97,7 @@ CREATE TABLE users (
     verification_status verification_status NOT NULL DEFAULT 'not_started',
     verified_gender verified_gender NOT NULL DEFAULT 'not_verified',
     profile_visibility profile_visibility NOT NULL DEFAULT 'all',
-    primary_gym_id UUID,
+    primary_gym_id UUID, -- Foreign key added below after gyms table is created
     role user_role NOT NULL DEFAULT 'member',
     status user_status NOT NULL DEFAULT 'active',
     suspended_until TIMESTAMPTZ,
@@ -105,7 +105,8 @@ CREATE TABLE users (
     no_show_count INT NOT NULL DEFAULT 0,
     push_notification_token TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    verification_submitted_at TIMESTAMPTZ -- Added from User.java
 );
 
 CREATE TABLE gyms (
@@ -119,6 +120,26 @@ CREATE TABLE gyms (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- -----------------------------
+-- | Badge System Tables       |
+-- -----------------------------
+
+CREATE TABLE badges (
+    badge_id SERIAL PRIMARY KEY,
+    badge_name VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT NOT NULL,
+    icon_url TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE user_badges (
+    user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    badge_id INT NOT NULL REFERENCES badges(badge_id) ON DELETE CASCADE,
+    earned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (user_id, badge_id)
+);
+
+-- Add the foreign key from users to gyms now that gyms table exists
 ALTER TABLE users
 ADD CONSTRAINT fk_users_primary_gym
 FOREIGN KEY (primary_gym_id) 
@@ -136,8 +157,25 @@ CREATE TABLE sessions (
     end_time TIMESTAMPTZ NOT NULL,
     max_participants INT NOT NULL DEFAULT 3,
     firestore_chat_id VARCHAR(100),
+    is_rating_notified BOOLEAN NOT NULL DEFAULT false,
+    -- --- NEW FIELDS FOR EPHEMERAL CHAT ---
+    
+    /**
+     * Controls if the chat is currently visible to clients.
+     * Managed by the ChatActivationService.
+     */
+    is_chat_active BOOLEAN NOT NULL DEFAULT false,
+    
+    /**
+     * Prevents the scheduler from re-processing old sessions.
+     * Set to true after the deactivation job runs.
+     */
+    is_chat_processed BOOLEAN NOT NULL DEFAULT false,
+    
+    -- --- END OF NEW FIELDS ---
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Check constraint from @Check annotation in Session.java
     CONSTRAINT check_max_participants
         CHECK ( (session_type = 'one_on_one' AND max_participants = 2) OR 
                 (session_type = 'group' AND max_participants >= 3) )
@@ -176,10 +214,12 @@ CREATE TABLE ratings (
     session_id UUID NOT NULL REFERENCES sessions(session_id) ON DELETE CASCADE,
     rating_by_user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     rating_for_user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    rating_value SMALLINT NOT NULL CHECK (rating_value BETWEEN 1 AND 5),
+    rating_value SMALLINT NOT NULL, -- Per Rating.java, no DB-level check constraint
     comment TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Unique constraint from @UniqueConstraint in Rating.java
     UNIQUE (session_id, rating_by_user_id, rating_for_user_id),
+    -- Check constraint from @Check in Rating.java
     CONSTRAINT no_self_rating CHECK (rating_by_user_id != rating_for_user_id)
 );
 
@@ -194,6 +234,7 @@ CREATE TABLE reports (
     resolution_notes TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Check constraint from @Check in Report.java
     CONSTRAINT no_self_reporting CHECK (reported_by_user_id != reported_user_id)
 );
 
@@ -201,100 +242,65 @@ CREATE TABLE user_blocks (
     blocker_user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     blocked_user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (blocker_user_id, blocked_user_id),
-    CONSTRAINT no_self_block CHECK (blocker_user_id != blocked_user_id)
+    PRIMARY KEY (blocker_user_id, blocked_user_id)
+    -- Note: no_self_block constraint is not in UserBlock.java
 );
 
 -- -----------------------------
 -- | Indexes for Performance   |
+-- | (As defined in @Index annotations) |
 -- -----------------------------
 
--- Existing indexes from your DDL
-CREATE INDEX idx_users_verification_status ON users (verification_status) WHERE verification_status = 'pending_review';
-CREATE UNIQUE INDEX idx_users_phone_number ON users (phone_number);
-CREATE INDEX idx_users_primary_gym_id ON users (primary_gym_id);
-CREATE INDEX idx_gyms_location ON gyms USING GIST (location);
-CREATE INDEX idx_gyms_status ON gyms (status) WHERE status = 'pending';
-CREATE INDEX idx_sessions_start_time ON sessions (start_time);
-CREATE INDEX idx_sessions_gym_id ON sessions (gym_id);
-CREATE INDEX idx_sessions_session_type ON sessions (session_type);
-CREATE INDEX idx_session_participants_user_id ON session_participants (user_id);
-CREATE INDEX idx_session_participants_session_id ON session_participants (session_id);
-CREATE INDEX idx_ratings_rating_for_user_id ON ratings (rating_for_user_id);
-CREATE INDEX idx_reports_status_priority ON reports (status, priority);
-CREATE INDEX idx_reports_reported_user_id ON reports (reported_user_id);
-CREATE INDEX idx_user_tags_tag_id ON user_tags (tag_id);
+-- Indexes from User.java
+CREATE INDEX idx_user_primary_gym ON users (primary_gym_id);
+CREATE INDEX idx_user_verification_status ON users (verification_status);
+CREATE INDEX idx_user_role_status ON users (role, status);
+CREATE INDEX idx_user_created_at ON users (created_at DESC);
 
--- New indexes for pending ratings query
-CREATE INDEX idx_session_participant_user_status ON session_participants(user_id, status);
-CREATE INDEX idx_session_participant_session_status ON session_participants(session_id, status);
-CREATE INDEX idx_rating_session_rater_rated ON ratings(session_id, rating_by_user_id, rating_for_user_id);
+-- Indexes for Badge System
+CREATE INDEX idx_badges_name ON badges (badge_name);
+CREATE INDEX idx_user_badges_user ON user_badges (user_id);
+CREATE INDEX idx_user_badges_badge ON user_badges (badge_id);
+CREATE INDEX idx_user_badges_earned_at ON user_badges (earned_at DESC);
 
--- Additional critical indexes
-CREATE INDEX idx_users_verification_gender ON users(verified_gender);
-CREATE INDEX idx_users_role_status ON users(role, status);
-CREATE INDEX idx_users_created_at ON users(created_at DESC);
-CREATE INDEX idx_users_dob ON users(date_of_birth);
-CREATE INDEX idx_users_profile_visibility ON users(profile_visibility);
+-- Indexes from Gym.java
+CREATE INDEX idx_gym_submitted_by_user ON gyms (submitted_by_user_id);
+CREATE INDEX idx_gyms_location ON gyms USING GIST (location); -- Standard index for PostGIS
 
--- Session query performance
-CREATE INDEX idx_sessions_status_type ON sessions(status, session_type);
-CREATE INDEX idx_sessions_time_range ON sessions(start_time, end_time) WHERE status = 'active';
-CREATE INDEX idx_sessions_creator_status ON sessions(creator_user_id, status);
-CREATE INDEX idx_sessions_created_at ON sessions(created_at DESC);
+-- Indexes from Session.java
+CREATE INDEX idx_session_creator_user ON sessions (creator_user_id);
+CREATE INDEX idx_session_gym ON sessions (gym_id);
+CREATE INDEX idx_session_status_type ON sessions (status, session_type);
+CREATE INDEX idx_session_time_range ON sessions (start_time, end_time);
+-- --- ADD THESE INDEXES for scheduler performance ---
+CREATE INDEX idx_session_chat_activation ON sessions (is_chat_active, is_chat_processed, start_time);
+CREATE INDEX idx_session_chat_deactivation ON sessions (is_chat_active, is_chat_processed, end_time);
 
--- Rating and reputation queries
-CREATE INDEX idx_ratings_rating_for_created ON ratings(rating_for_user_id, created_at DESC);
-CREATE INDEX idx_ratings_rating_value ON ratings(rating_value);
-CREATE INDEX idx_ratings_rating_by_created ON ratings(rating_by_user_id, created_at DESC);
+-- Indexes from SessionParticipant.java
+CREATE INDEX idx_sessionparticipant_session ON session_participants (session_id);
+CREATE INDEX idx_sessionparticipant_user ON session_participants (user_id);
 
--- Report management
-CREATE INDEX idx_reports_created_priority ON reports(created_at DESC, priority);
-CREATE INDEX idx_reports_status_created ON reports(status, created_at DESC);
-CREATE INDEX idx_reports_reported_by ON reports(reported_by_user_id);
+-- Indexes from UserTag.java
+CREATE INDEX idx_usertag_user ON user_tags (user_id);
+CREATE INDEX idx_usertag_tag ON user_tags (tag_id);
 
--- Gym location queries
-CREATE INDEX idx_gyms_status_location ON gyms(status, location);
-CREATE INDEX idx_gyms_created_at ON gyms(created_at DESC);
-CREATE INDEX idx_gyms_submitted_by ON gyms(submitted_by_user_id);
+-- Indexes from Rating.java
+CREATE INDEX idx_rating_session ON ratings (session_id);
+CREATE INDEX idx_rating_rating_by ON ratings (rating_by_user_id);
+CREATE INDEX idx_rating_rating_for ON ratings (rating_for_user_id);
 
--- Composite indexes for common join patterns
-CREATE INDEX idx_session_participants_user_session_composite ON session_participants(user_id, session_id, status);
-CREATE INDEX idx_user_tags_composite ON user_tags(user_id, tag_id);
-CREATE INDEX idx_user_blocks_composite ON user_blocks(blocker_user_id, blocked_user_id);
+-- Indexes from Report.java
+CREATE INDEX idx_report_reported_by ON reports (reported_by_user_id);
+CREATE INDEX idx_report_reported_user ON reports (reported_user_id);
+CREATE INDEX idx_report_session ON reports (session_id);
 
--- Partial indexes for soft deletion
-CREATE INDEX idx_active_users ON users(user_id) WHERE status != 'banned';
-CREATE INDEX idx_active_sessions ON sessions(session_id) WHERE status = 'active';
-CREATE INDEX idx_active_gyms ON gyms(gym_id) WHERE status = 'approved';
-
--- Covering indexes for common queries
-CREATE INDEX idx_user_profile ON users (user_id, first_name, profile_photo_url, verification_status, verified_gender);
-
--- Specialized indexes for pending ratings optimization
-CREATE INDEX idx_pending_ratings_query ON session_participants (user_id, status) INCLUDE (session_id) WHERE status IN ('attended', 'joined');
-CREATE INDEX idx_rating_checks ON ratings (session_id, rating_by_user_id) INCLUDE (rating_for_user_id);
-
--- -----------------------------
--- | Additional Constraints    |
--- -----------------------------
-
--- Add check constraints for data integrity
-ALTER TABLE users 
-ADD CONSTRAINT chk_users_age CHECK (date_of_birth <= CURRENT_DATE - INTERVAL '16 years');
-
-ALTER TABLE sessions 
-ADD CONSTRAINT chk_session_times CHECK (end_time > start_time);
-
-ALTER TABLE ratings 
-ADD CONSTRAINT chk_rating_value_range CHECK (rating_value BETWEEN 1 AND 5);
-
--- Ensure unique constraints that match entity definitions
-ALTER TABLE user_blocks 
-ADD CONSTRAINT uk_user_blocks_unique UNIQUE (blocker_user_id, blocked_user_id);
+-- Indexes from UserBlock.java
+CREATE INDEX idx_userblock_blocker ON user_blocks (blocker_user_id);
+CREATE INDEX idx_userblock_blocked ON user_blocks (blocked_user_id);
 
 -- -----------------------------
 -- | Triggers & Functions      |
+-- | (For @UpdateTimestamp)    |
 -- -----------------------------
 
 CREATE OR REPLACE FUNCTION fn_set_updated_at_timestamp()
@@ -305,6 +311,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Apply trigger to tables with @UpdateTimestamp
 CREATE TRIGGER trg_set_gyms_updated_at
 BEFORE UPDATE ON gyms
 FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at_timestamp();
@@ -336,6 +343,12 @@ VALUES
     ('weekends', 'schedule'),
     ('flexible', 'schedule');
 
+-- Insert the UNRELIABLE badge for the no-show system
+INSERT INTO badges (badge_name, description, icon_url)
+VALUES
+    ('UNRELIABLE', 'User has 3 or more no-shows.', '/badges/unreliable.png');
+
+-- Example data (optional, kept from your script)
 INSERT INTO gyms (name, address, location, status)
 VALUES
     ('Founders Gym 1', '123 Main St, Tunis', ST_SetSRID(ST_MakePoint(10.1815, 36.8065), 4326), 'approved');

@@ -1,6 +1,7 @@
-// Pfad: src/main/java/com/sahbifit/api/session/repository/SessionRepository.java
+// Path: src/main/java/com/sahbifit/api/session/repository/SessionRepository.java
 package com.sahbifit.api.session.repository;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,4 +40,34 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
     List<Session> findByStatusAndCreatorVerifiedGenderWithCreatorAndGym(
             @Param("status") SessionStatus status, 
             @Param("gender") VerifiedGender gender);
+
+    /**
+     * Finds sessions that have ended but for which rating notifications
+     * have not yet been sent.
+     */
+    @Query("SELECT s FROM Session s WHERE s.endTime < :now AND s.isRatingNotified = false AND s.status = 'active'")
+    List<Session> findCompletedSessionsPendingNotification(@Param("now") OffsetDateTime now);
+
+    // --- NEW METHODS FOR EPHEMERAL CHAT ---
+
+    /**
+     * Finds sessions that are scheduled to start within the activation window
+     * (e.g., 60 minutes from now) and have not been activated yet.
+     */
+    @Query("SELECT s FROM Session s WHERE s.startTime BETWEEN :now AND :activationTime " +
+           "AND s.isChatActive = false AND s.isChatProcessed = false AND s.status = 'active'")
+    List<Session> findSessionsToActivate(
+            @Param("now") OffsetDateTime now,
+            @Param("activationTime") OffsetDateTime activationTime);
+
+    /**
+     * Finds sessions that ended more than 1 hour ago, are still marked as active,
+     * and have not been processed for deactivation.
+     */
+    @Query("SELECT s FROM Session s WHERE s.endTime < :deactivationTime " +
+           "AND s.isChatActive = true AND s.isChatProcessed = false AND s.status = 'active'")
+    List<Session> findSessionsToDeactivate(
+            @Param("deactivationTime") OffsetDateTime deactivationTime);
+
+    // --- END OF NEW METHODS ---
 }

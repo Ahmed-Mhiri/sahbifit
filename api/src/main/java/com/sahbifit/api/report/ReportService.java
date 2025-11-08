@@ -44,28 +44,28 @@ public class ReportService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", reporterPhoneNumber));
 
         // 2. Find reported user
-        User reportedUser = userRepository.findById(dto.getReportedUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", dto.getReportedUserId()));
+        User reportedUser = userRepository.findById(dto.reportedUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", dto.reportedUserId()));
 
         // 3. Find optional session
         Session session = null;
-        if (dto.getSessionId() != null) {
+        if (dto.sessionId() != null) {
             // We don't fail if the session ID is invalid, we just log it.
-            session = sessionRepository.findById(dto.getSessionId()).orElse(null);
+            session = sessionRepository.findById(dto.sessionId()).orElse(null);
             if (session == null) {
-                log.warn("Report created with invalid sessionId: {}", dto.getSessionId());
+                log.warn("Report created with invalid sessionId: {}", dto.sessionId());
             }
         }
 
         // 4. Determine priority (MVP 7.2)
-        ReportPriority priority = determinePriority(dto.getReason(), reporterUser);
+        ReportPriority priority = determinePriority(dto.reason(), reporterUser);
 
         // 5. Create report object
         Report report = new Report();
         report.setReportedBy(reporterUser);
         report.setReportedUser(reportedUser);
         report.setSession(session);
-        report.setReason(dto.getReason());
+        report.setReason(dto.reason());
         report.setPriority(priority);
         report.setStatus(ReportStatus.pending); // Default status
 
@@ -75,7 +75,7 @@ public class ReportService {
         // 7. (Optional) Immediate notification for critical priority
         if (priority == ReportPriority.critical) {
             log.warn("[SLEEP-SAFE TRIAGE] Critical report (ID: {}) from {} against {}. Reason: {}",
-                    report.getReportId(), reporterUser.getUserId(), reportedUser.getUserId(), dto.getReason());
+                    report.getReportId(), reporterUser.getUserId(), reportedUser.getUserId(), dto.reason());
             // Trigger event here, e.g., via ApplicationEventPublisher
             // (e.g., publishEvent(new CriticalReportEvent(this, report));)
         }

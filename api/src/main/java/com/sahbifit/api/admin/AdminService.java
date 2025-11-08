@@ -17,6 +17,7 @@ import com.sahbifit.api.external.storage.StorageService;
 import com.sahbifit.api.report.model.Report;
 import com.sahbifit.api.report.model.ReportStatus;
 import com.sahbifit.api.report.repository.ReportRepository;
+import com.sahbifit.api.user.model.ProfileVisibility;
 import com.sahbifit.api.user.model.User;
 import com.sahbifit.api.user.model.UserStatus;
 import com.sahbifit.api.user.repository.UserRepository;
@@ -48,19 +49,20 @@ public class AdminService {
         List<User> pendingUsers = userRepository.findByVerificationStatus(VerificationStatus.pending_review);
 
         return pendingUsers.stream().map(user -> {
-            VerificationQueueDto dto = new VerificationQueueDto();
-            dto.setUserId(user.getUserId());
-            dto.setFirstName(user.getFirstName());
-            dto.setProfilePhotoUrl(user.getProfilePhotoUrl());
-            
-            // Construct public URL from the stored key for admin dashboard
+            // CHANGED: Using record constructor instead of setters
             String publicUrl = storageService.generatePublicUrl(user.getVerificationVideoUrl());
-            dto.setVerificationVideoUrl(publicUrl);
             
-            // FIX: Remove the atOffset() call since updatedAt is already OffsetDateTime
-            dto.setSubmittedAt(user.getUpdatedAt());
+            // FIX: Use the new dedicated timestamp, with a fallback for old data
+            var submittedAt = user.getVerificationSubmittedAt() != null ? 
+                user.getVerificationSubmittedAt() : user.getUpdatedAt();
             
-            return dto;
+            return new VerificationQueueDto(
+                user.getUserId(),
+                user.getFirstName(),
+                user.getProfilePhotoUrl(),
+                publicUrl,
+                submittedAt
+            );
         }).collect(Collectors.toList());
     }
 
@@ -135,6 +137,7 @@ public class AdminService {
 
         user.setVerificationStatus(verificationStatus); // Use the mapped variable
         user.setVerificationVideoUrl(null); // Delete reference
+        user.setProfileVisibility(ProfileVisibility.all); // Reset profile visibility to default
 
         userRepository.save(user);
 

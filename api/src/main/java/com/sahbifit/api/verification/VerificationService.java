@@ -1,6 +1,7 @@
 package com.sahbifit.api.verification;
 
 import java.io.IOException;
+import java.time.OffsetDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,9 @@ public class VerificationService {
             throw new IllegalStateException("Verification already completed or pending.");
         }
 
+        // 1b. Get the key for the old video, if it exists
+        String oldVideoKey = user.getVerificationVideoUrl();
+
         // 2. Generate unique filename
         String fileName = user.getUserId().toString() + "_" + System.currentTimeMillis() + ".mp4";
         String folder = "verification-videos";
@@ -56,9 +60,24 @@ public class VerificationService {
         // 5. Important: Reset gender if it was previously rejected
         user.setVerifiedGender(VerifiedGender.not_verified);
 
+        // 6. Set the submission timestamp
+        user.setVerificationSubmittedAt(OffsetDateTime.now());
+
         userRepository.save(user);
-        
+
         log.info("Video successfully uploaded for user: {}, Key: {}", userPhoneNumber, fileKey);
+
+        // 7. Delete the old file after the transaction is successful
+        if (oldVideoKey != null && !oldVideoKey.equals(fileKey)) {
+            try {
+                storageService.deleteFile(oldVideoKey);
+                log.info("Successfully deleted old verification video: {}", oldVideoKey);
+            } catch (IOException e) {
+                // Log this as a warning. The upload was still successful,
+                // but we have an orphaned file in storage.
+                log.warn("Failed to delete old video {}. New video {} was saved. This file is an orphan.", oldVideoKey, fileKey, e);
+            }
+        }
     }
 
     /**

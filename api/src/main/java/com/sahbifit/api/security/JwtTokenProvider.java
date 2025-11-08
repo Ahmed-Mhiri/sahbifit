@@ -18,10 +18,10 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
+// import io.jsonwebtoken.SignatureAlgorithm; // Removed: Deprecated
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException; // Added: New exception class
 
 @Component
 public class JwtTokenProvider {
@@ -51,32 +51,32 @@ public class JwtTokenProvider {
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
         return Jwts.builder()
-                .setSubject(userPrincipal.getUsername()) // Phone number
+                .subject(userPrincipal.getUsername()) // Replaced setSubject
                 .claim("roles", roles) // 🆕 Store roles in token
-                .setIssuedAt(new Date())
-                .setExpiration(expiryDate)
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .issuedAt(new Date()) // Replaced setIssuedAt
+                .expiration(expiryDate) // Replaced setExpiration
+                .signWith(getSigningKey(), Jwts.SIG.HS512) // Replaced SignatureAlgorithm.HS512
                 .compact();
     }
 
     // Extracts the phone number from the JWT
     public String getUsernameFromJWT(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        Claims claims = Jwts.parser() // Replaced parserBuilder()
+                .verifyWith(getSigningKey()) // Replaced setSigningKey()
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token) // Replaced parseClaimsJws()
+                .getPayload(); // Replaced getBody()
 
         return claims.getSubject();
     }
 
     // 🆕 Extracts roles from JWT token
     public List<String> getRolesFromJWT(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        Claims claims = Jwts.parser() // Replaced parserBuilder()
+                .verifyWith(getSigningKey()) // Replaced setSigningKey()
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token) // Replaced parseClaimsJws()
+                .getPayload(); // Replaced getBody()
 
         return claims.get("roles", List.class);
     }
@@ -84,9 +84,12 @@ public class JwtTokenProvider {
     // Validates a JWT
     public boolean validateToken(String authToken) {
         try {
-            Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(authToken);
+            Jwts.parser() // Replaced parserBuilder()
+                .verifyWith(getSigningKey()) // Replaced setSigningKey()
+                .build()
+                .parseSignedClaims(authToken); // Replaced parseClaimsJws()
             return true;
-        } catch (SignatureException ex) {
+        } catch (SignatureException ex) { // Using new security.SignatureException
             logger.error("Invalid JWT signature");
         } catch (MalformedJwtException ex) {
             logger.error("Invalid JWT token");

@@ -4,6 +4,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
+import com.sahbifit.api.session.model.Session;
 import com.sahbifit.api.user.model.User;
 import com.sahbifit.api.verification.model.VerificationStatus;
 
@@ -76,5 +77,33 @@ public class FirebasePushNotificationService implements PushNotificationService 
         } catch (FirebaseMessagingException e) {
             log.error("Failed to send push notification to user {}: {}", userId, e.getMessage());
         }
+    }
+
+    // --- ADD THIS ENTIRE METHOD ---
+    @Override
+    public void sendRatingReminder(User user, Session session) {
+        String token = user.getPushNotificationToken();
+        if (token == null || token.isEmpty()) {
+            log.warn("Cannot send 'Rating Reminder' push: User {} has no FCM token.", user.getUserId());
+            return;
+        }
+
+        String sessionTitle = session.getTitle().length() > 30 ? 
+            session.getTitle().substring(0, 30) + "..." : 
+            session.getTitle();
+
+        Notification notification = Notification.builder()
+                .setTitle("How was your session? 🤔")
+                .setBody("Your session '" + sessionTitle + "' is complete. Tap here to rate your partners!")
+                .build();
+
+        Message message = Message.builder()
+                .setToken(token)
+                .setNotification(notification)
+                .putData("type", "PENDING_RATING") // Client can use this to navigate
+                .putData("sessionId", session.getSessionId().toString())
+                .build();
+        
+        send(message, user.getUserId());
     }
 }

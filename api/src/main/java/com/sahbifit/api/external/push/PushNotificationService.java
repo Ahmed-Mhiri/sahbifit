@@ -15,4 +15,7 @@ public interface PushNotificationService {
      * Sends a notification when a user's verification is rejected.
      */
     void sendVerificationRejected(User user, VerificationStatus reason);
+
+
+    void sendRatingReminder(User user, com.sahbifit.api.session.model.Session session);
 }

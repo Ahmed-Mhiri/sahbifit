@@ -1,17 +1,12 @@
 package com.sahbifit.api.admin.dto;
 
 import java.util.UUID;
-
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
-public class RejectVerificationRequest {
+public record RejectVerificationRequest(
     @NotNull
-    private UUID userId;
+    UUID userId,
     
     @NotNull
-    private RejectionReason reason;      // WITH THIS
-}
+    RejectionReason reason
+) {}

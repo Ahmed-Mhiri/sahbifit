@@ -49,7 +49,7 @@ public class UserController {
             @Valid @RequestBody UpdateFcmTokenDto dto,
             Principal principal) {
         
-        userService.updateFcmToken(principal.getName(), dto.getFcmToken());
+        userService.updateFcmToken(principal.getName(), dto);
         return ResponseEntity.ok().build();
     }
 
@@ -61,7 +61,7 @@ public class UserController {
             @Valid @RequestBody UpdateVisibilityDto dto,
             Principal principal) {
         
-        userService.updateProfileVisibility(principal.getName(), dto.getVisibility());
+        userService.updateProfileVisibility(principal.getName(), dto);
         return ResponseEntity.ok().build();
     }
 }

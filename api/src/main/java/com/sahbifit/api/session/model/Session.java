@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.hibernate.annotations.Check;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -41,7 +42,10 @@ import lombok.Setter;
     @Index(name = "idx_session_creator_user", columnList = "creator_user_id"),
     @Index(name = "idx_session_gym", columnList = "gym_id"),
     @Index(name = "idx_session_status_type", columnList = "status, session_type"),
-    @Index(name = "idx_session_time_range", columnList = "start_time, end_time")
+    @Index(name = "idx_session_time_range", columnList = "start_time, end_time"),
+    // --- ADD THESE INDEXES for scheduler performance ---
+    @Index(name = "idx_session_chat_activation", columnList = "is_chat_active, is_chat_processed, start_time"),
+    @Index(name = "idx_session_chat_deactivation", columnList = "is_chat_active, is_chat_processed, end_time")
 })
 @Check(constraints = "(session_type = 'one_on_one' AND max_participants = 2) OR (session_type = 'group' AND max_participants >= 3)")
 @SQLDelete(sql = "UPDATE sessions SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE session_id = ?")
@@ -86,6 +90,30 @@ public class Session {
     @Column(name = "firestore_chat_id", length = 100)
     private String firestoreChatId;
 
+    @Column(name = "is_rating_notified", nullable = false)
+    @ColumnDefault("false")
+    private boolean isRatingNotified = false;
+
+    // --- NEW FIELDS FOR EPHEMERAL CHAT ---
+
+    /**
+     * Controls if the chat is currently visible to clients.
+     * Managed by the ChatActivationService.
+     */
+    @Column(name = "is_chat_active", nullable = false)
+    @ColumnDefault("false")
+    private boolean isChatActive = false;
+
+    /**
+     * Prevents the scheduler from re-processing old sessions.
+     * Set to true after the deactivation job runs.
+     */
+    @Column(name = "is_chat_processed", nullable = false)
+    @ColumnDefault("false")
+    private boolean isChatProcessed = false;
+
+    // --- END OF NEW FIELDS ---
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -102,7 +130,6 @@ public class Session {
      */
     @Formula("(SELECT COUNT(*) FROM session_participants sp WHERE sp.session_id = session_id AND sp.status = 'joined')")
     private int participantCount;
-
 
     @OneToMany(mappedBy = "session")
     private Set<SessionParticipant> participants;

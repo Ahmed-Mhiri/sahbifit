@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
@@ -21,18 +22,20 @@ public class S3ClientConfig {
     @Bean
     public S3Client s3Client() {
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(
-            cloudflareConfig.getAccessKeyId(),
-            cloudflareConfig.getSecretAccessKey()
+                cloudflareConfig.getAccessKeyId(),
+                cloudflareConfig.getSecretAccessKey()
         );
 
         return S3Client.builder()
                 .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
                 .endpointOverride(URI.create(cloudflareConfig.getEndpoint()))
-                .region(Region.of("auto")) 
+                .region(Region.of("auto"))
                 .serviceConfiguration(S3Configuration.builder()
-                        .chunkedEncodingEnabled(false) 
-                        .pathStyleAccessEnabled(true) 
+                        .chunkedEncodingEnabled(false)
+                        .pathStyleAccessEnabled(true)
                         .build())
+                // Use the synchronous HTTP client, which is preferred for virtual threads
+                .httpClient(UrlConnectionHttpClient.builder().build()) // <-- LINE ADDED
                 .build();
     }
 }

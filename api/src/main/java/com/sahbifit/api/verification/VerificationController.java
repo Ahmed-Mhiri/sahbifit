@@ -90,7 +90,7 @@ public class VerificationController {
         
         try {
             VerificationStatusDto statusDto = verificationService.getVerificationStatus(userPhoneNumber);
-            log.debug("Status query for user: {}, Status: {}", userPhoneNumber, statusDto.getStatus());
+            log.debug("Status query for user: {}, Status: {}", userPhoneNumber, statusDto.status());
             return ResponseEntity.ok(statusDto);
         } catch (Exception e) {
             log.error("Error during status query for user: {}", userPhoneNumber, e);

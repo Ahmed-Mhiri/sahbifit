@@ -28,8 +28,8 @@ public class WinSmsConfig {
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         // Sets timeouts, exactly as in your example (1000ms)
         return builder
-                .setConnectTimeout(Duration.ofMillis(1000))
-                .setReadTimeout(Duration.ofMillis(1000))
+                .connectTimeout(Duration.ofMillis(1000)) // <-- UPDATED
+                .readTimeout(Duration.ofMillis(1000))    // <-- UPDATED
                 .build();
     }
 }

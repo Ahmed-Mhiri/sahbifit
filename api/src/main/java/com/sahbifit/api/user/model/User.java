@@ -13,6 +13,7 @@ import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
+import com.sahbifit.api.badge.model.UserBadge;
 import com.sahbifit.api.gym.model.Gym;
 import com.sahbifit.api.rating.model.Rating;
 import com.sahbifit.api.report.model.Report;
@@ -67,7 +68,6 @@ public class User {
     @ColumnDefault("false")
     private boolean isPhoneVerified = false;
 
-    
     @Column(name = "sms_otp", length = 6)
     private String smsOtp;
 
@@ -138,6 +138,9 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
+    // NEW FIELD: Dedicated timestamp for verification submission
+    @Column(name = "verification_submitted_at")
+    private OffsetDateTime verificationSubmittedAt;
 
     @OneToMany(mappedBy = "submittedByUser")
     private Set<Gym> submittedGyms;
@@ -168,4 +171,7 @@ public class User {
 
     @OneToMany(mappedBy = "blocked")
     private Set<UserBlock> blockedByUsers;
+
+    @OneToMany(mappedBy = "user")
+    private Set<UserBadge> userBadges;
 }

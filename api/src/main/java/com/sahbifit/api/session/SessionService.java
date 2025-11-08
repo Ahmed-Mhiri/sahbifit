@@ -59,23 +59,23 @@ public class SessionService {
         }
 
         // Gate 2 (Reputation - MVP 3.5)
-        if (dto.getSessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 3) {
+        if (dto.sessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 3) {
             throw new IllegalStateException("You must attend 3 group sessions before creating a 1-on-1 session.");
         }
 
-        Gym gym = gymRepository.findById(dto.getGymId())
-                .orElseThrow(() -> new ResourceNotFoundException("Gym", "gymId", dto.getGymId()));
+        Gym gym = gymRepository.findById(dto.gymId())
+                .orElseThrow(() -> new ResourceNotFoundException("Gym", "gymId", dto.gymId()));
 
         // Create the session (don't save yet)
         Session session = new Session();
         session.setCreator(user);
         session.setGym(gym);
-        session.setSessionType(dto.getSessionType());
+        session.setSessionType(dto.sessionType());
         session.setStatus(SessionStatus.active);
-        session.setTitle(dto.getTitle());
-        session.setStartTime(dto.getStartTime());
-        session.setEndTime(dto.getEndTime());
-        session.setMaxParticipants(dto.getMaxParticipants());
+        session.setTitle(dto.title());
+        session.setStartTime(dto.startTime());
+        session.setEndTime(dto.endTime());
+        session.setMaxParticipants(dto.maxParticipants());
 
         // Save the session (This is where the session.sessionId is generated)
         Session savedSession = sessionRepository.save(session);
@@ -211,8 +211,8 @@ public class SessionService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", markerPhoneNumber));
 
         // 2. Find session
-        Session session = sessionRepository.findById(dto.getSessionId())
-                .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", dto.getSessionId()));
+        Session session = sessionRepository.findById(dto.sessionId())
+                .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", dto.sessionId()));
 
         // 3. Permission check
         boolean isCreator = session.getCreator().getUserId().equals(markerUser.getUserId());
@@ -224,25 +224,25 @@ public class SessionService {
 
         // 4. Find SessionParticipant (the target object)
         SessionParticipantId participantId = new SessionParticipantId();
-        participantId.setSessionId(dto.getSessionId());
-        participantId.setUserId(dto.getParticipantUserId());
+        participantId.setSessionId(dto.sessionId());
+        participantId.setUserId(dto.participantUserId());
 
         SessionParticipant participant = sessionParticipantRepository.findById(participantId)
                 .orElseThrow(() -> new ResourceNotFoundException("SessionParticipant", "Id", participantId));
 
         // 5. Update status
-        participant.setStatus(dto.getNewStatus());
+        participant.setStatus(dto.newStatus());
         sessionParticipantRepository.save(participant);
 
         // 6. Trigger chain (MVP 5.4)
-        if (dto.getNewStatus() == ParticipantStatus.no_show) {
+        if (dto.newStatus() == ParticipantStatus.no_show) {
             // Calls logic in UserService
-            userService.incrementNoShowCount(dto.getParticipantUserId());
+            userService.incrementNoShowCount(dto.participantUserId());
         } 
-        else if (dto.getNewStatus() == ParticipantStatus.attended) {
+        else if (dto.newStatus() == ParticipantStatus.attended) {
             // Check if it was a group session (MVP 3.5)
             if (session.getSessionType() == SessionType.group) {
-                userService.incrementGroupSessionCount(dto.getParticipantUserId());
+                userService.incrementGroupSessionCount(dto.participantUserId());
             }
         }
     }

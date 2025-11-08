@@ -9,6 +9,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Formula;
 import org.hibernate.type.SqlTypes;
 import org.locationtech.jts.geom.Point;
 
@@ -71,6 +72,14 @@ public class Gym {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
+
+    // --- NEW FIELD: MEMBER COUNT ---
+    /**
+     * Calculates the count of active users who have this gym
+     * set as their primary gym. This is calculated at the DB level.
+     */
+    @Formula("(SELECT COUNT(*) FROM users u WHERE u.primary_gym_id = gym_id AND u.status = 'active')")
+    private int memberCount;
 
     // Beziehungen zu anderen Tabellen
     @OneToMany(mappedBy = "primaryGym")

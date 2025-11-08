@@ -37,4 +37,10 @@ public interface SessionParticipantRepository extends JpaRepository<SessionParti
      * Finds all participants for a specific session.
      */
     List<SessionParticipant> findBySession(Session session);
+
+
+    /**
+     * Finds all participants for a specific session with a given status.
+     */
+    List<SessionParticipant> findBySessionAndStatus(Session session, ParticipantStatus status);
 }

@@ -2,10 +2,10 @@ package com.sahbifit.api.auth;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,7 +24,6 @@ import com.sahbifit.api.exception.OtpExpiredException;
 import com.sahbifit.api.exception.PhoneNumberAlreadyExistsException;
 import com.sahbifit.api.exception.ResourceNotFoundException;
 import com.sahbifit.api.external.recaptcha.ReCaptchaService;
-import com.sahbifit.api.external.sms.SmsService;
 import com.sahbifit.api.gym.model.Gym;
 import com.sahbifit.api.gym.repository.GymRepository;
 import com.sahbifit.api.security.JwtTokenProvider;
@@ -38,6 +37,9 @@ import com.sahbifit.api.user.repository.UserRepository;
 import com.sahbifit.api.verification.model.VerificationStatus;
 import com.sahbifit.api.verification.model.VerifiedGender;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class AuthService {
 
@@ -54,9 +56,6 @@ public class AuthService {
     private JwtTokenProvider tokenProvider;
 
     @Autowired
-    private SmsService smsService;
-
-    @Autowired
     private ReCaptchaService reCaptchaService;
 
     @Autowired
@@ -65,59 +64,77 @@ public class AuthService {
     @Autowired
     private TagRepository tagRepository;
 
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
     @Transactional
-    public void register(RegisterRequest request) {
-        // 1. reCAPTCHA v3 validation
-        reCaptchaService.validate(request.getRecaptchaToken());
+public void register(RegisterRequest request) {
+    // 1. reCAPTCHA v3 validation
+    reCaptchaService.validate(request.recaptchaToken());
 
-        // 2. Tunisian number validation
-        if (!isTunisianNumber(request.getPhoneNumber())) {
-            throw new IllegalArgumentException("Invalid Tunisian phone number format.");
+    // 2. Tunisian number validation
+    if (!isTunisianNumber(request.phoneNumber())) {
+        throw new IllegalArgumentException("Invalid Tunisian phone number format.");
+    }
+
+    // 3. Check if user already exists
+    if (userRepository.findByPhoneNumber(request.phoneNumber()).isPresent()) {
+        throw new PhoneNumberAlreadyExistsException("Phone number is already registered.");
+    }
+
+    // 4. Create user object
+    User user = new User();
+    user.setPhoneNumber(request.phoneNumber());
+    user.setPassword(passwordEncoder.encode(request.password()));
+    user.setFirstName(request.firstName());
+    user.setDateOfBirth(LocalDate.parse(request.dateOfBirth()));
+
+    // 5. Set primary gym
+    if (request.primaryGymId() != null) {
+        Gym primaryGym = gymRepository.findById(request.primaryGymId())
+                .orElseThrow(() -> new ResourceNotFoundException("Gym", "gymId", request.primaryGymId()));
+        user.setPrimaryGym(primaryGym);
+    }
+
+    // 6. Process profile tags (Goals, Schedule) with OPTIMIZED single query
+    java.util.Set<UserTag> allUserTags = new java.util.HashSet<>();
+
+    // --- COMBINED TAG PROCESSING (Single DB Query) ---
+    java.util.Set<Integer> allTagIds = new java.util.HashSet<>();
+    
+    if (request.goalTagIds() != null) {
+        allTagIds.addAll(request.goalTagIds());
+    }
+    
+    if (request.scheduleTagIds() != null) {
+        allTagIds.addAll(request.scheduleTagIds());
+    }
+
+    if (!allTagIds.isEmpty()) {
+        // SINGLE DATABASE QUERY for all tags
+        java.util.List<Tag> allTags = tagRepository.findAllById(allTagIds);
+        
+        // Validation: Ensure all requested IDs were found
+        if (allTags.size() != allTagIds.size()) {
+            throw new ResourceNotFoundException("One or more tags were not found.");
         }
 
-        // 3. Check if user already exists
-        if (userRepository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
-            throw new PhoneNumberAlreadyExistsException("Phone number is already registered.");
-        }
+        // Create a map for fast lookup
+        java.util.Map<Integer, Tag> tagMap = allTags.stream()
+            .collect(Collectors.toMap(Tag::getTagId, tag -> tag));
 
-        // 4. Create user object
-        User user = new User();
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setFirstName(request.getFirstName());
-        user.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
-
-        // 5. Set primary gym
-        if (request.getPrimaryGymId() != null) {
-            Gym primaryGym = gymRepository.findById(request.getPrimaryGymId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Gym", "gymId", request.getPrimaryGymId()));
-            user.setPrimaryGym(primaryGym);
-        }
-
-        // 6. Process profile tags (Goals, Schedule) and save
-        java.util.Set<UserTag> allUserTags = new java.util.HashSet<>();
-
-        // --- Process GOAL tags (1 DB query) ---
-        if (request.getGoalTagIds() != null && !request.getGoalTagIds().isEmpty()) {
-            
-            // 1. Get ALL Goal tags with a SINGLE database query
-            java.util.List<Tag> goalTags = tagRepository.findAllById(request.getGoalTagIds());
-            
-            // 2. Validation: Ensure all requested IDs were found
-            if (goalTags.size() != request.getGoalTagIds().size()) {
-                throw new ResourceNotFoundException("One or more 'Goal' tags were not found.");
-            }
-
-            // 3. Map tags in memory (no additional DB calls)
-            java.util.Set<UserTag> goalUserTags = goalTags.stream()
-                .map(tag -> {
-                    // Optional but recommended tag type validation
+        // --- Process GOAL tags from map ---
+        if (request.goalTagIds() != null && !request.goalTagIds().isEmpty()) {
+            java.util.Set<UserTag> goalUserTags = request.goalTagIds().stream()
+                .map(tagId -> {
+                    Tag tag = tagMap.get(tagId);
+                    // Tag type validation
                     if (tag.getTagType() != com.sahbifit.api.tag.model.TagType.goal) {
                          throw new IllegalArgumentException("Tag " + tag.getTagName() + " is not a 'Goal' tag.");
                     }
                     UserTag userTag = new UserTag();
-                    userTag.setUser(user); // Link to new user
-                    userTag.setTag(tag);   // Link to found tag
+                    userTag.setUser(user);
+                    userTag.setTag(tag);
                     return userTag;
                 })
                 .collect(Collectors.toSet());
@@ -125,20 +142,11 @@ public class AuthService {
             allUserTags.addAll(goalUserTags);
         }
 
-        // --- Process SCHEDULE tags (1 DB query) ---
-        if (request.getScheduleTagIds() != null && !request.getScheduleTagIds().isEmpty()) {
-
-            // 1. Get ALL Schedule tags with a SINGLE database query
-            java.util.List<Tag> scheduleTags = tagRepository.findAllById(request.getScheduleTagIds());
-            
-            // 2. Validation
-            if (scheduleTags.size() != request.getScheduleTagIds().size()) {
-                throw new ResourceNotFoundException("One or more 'Schedule' tags were not found.");
-            }
-
-            // 3. Map tags in memory (no additional DB calls)
-            java.util.Set<UserTag> scheduleUserTags = scheduleTags.stream()
-                .map(tag -> {
+        // --- Process SCHEDULE tags from map ---
+        if (request.scheduleTagIds() != null && !request.scheduleTagIds().isEmpty()) {
+            java.util.Set<UserTag> scheduleUserTags = request.scheduleTagIds().stream()
+                .map(tagId -> {
+                    Tag tag = tagMap.get(tagId);
                     // Tag type validation
                     if (tag.getTagType() != com.sahbifit.api.tag.model.TagType.schedule) {
                          throw new IllegalArgumentException("Tag " + tag.getTagName() + " is not a 'Schedule' tag.");
@@ -152,30 +160,30 @@ public class AuthService {
 
             allUserTags.addAll(scheduleUserTags);
         }
-
-        // Here we call the ONE correct set method from User.java
-        user.setUserTags(allUserTags);
-
-        // 7. Set default values (according to your specification)
-        user.setRole(UserRole.member);
-        user.setStatus(UserStatus.active);
-        user.setVerificationStatus(VerificationStatus.not_started);
-        user.setVerifiedGender(VerifiedGender.not_verified);
-        user.setPhoneVerified(false);
-
-        // 8. Generate OTP (One-Time Password) for SMS
-        String otp = generateOtp();
-        
-        // 9. Save OTP and expiration date in DB
-        user.setSmsOtp(otp);
-        user.setSmsOtpExpiresAt(OffsetDateTime.now().plusMinutes(10)); // 10 minutes validity
-        
-        // 10. Save user
-        userRepository.save(user);
-
-        // 11. Send SMS
-        smsService.sendVerificationSms(user.getPhoneNumber(), otp);
     }
+
+    // Here we call the ONE correct set method from User.java
+    user.setUserTags(allUserTags);
+
+    // 7. Set default values (according to your specification)
+    user.setRole(UserRole.member);
+    user.setStatus(UserStatus.active);
+    user.setVerificationStatus(VerificationStatus.not_started);
+    user.setVerifiedGender(VerifiedGender.not_verified);
+    user.setPhoneVerified(false);
+
+    // 8. Save user
+    userRepository.save(user);
+
+    // 9. Publish event for async SMS sending
+    try {
+        eventPublisher.publishEvent(new UserRegisteredEvent(this, user));
+        log.info("Successfully published UserRegisteredEvent for user {}", user.getPhoneNumber());
+    } catch (Exception e) {
+        // Log error but do not fail the registration
+        log.error("Failed to publish UserRegisteredEvent for user {}: {}", user.getPhoneNumber(), e.getMessage());
+    }
+}
 
     public AuthResponse login(LoginRequest loginRequest) {
         // REMOVED: The manual user check and phone verification check
@@ -184,8 +192,8 @@ public class AuthService {
         // 1. Authenticate (this will call UserDetailsServiceImpl.loadUserByUsername)
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.getPhoneNumber(),
-                        loginRequest.getPassword()
+                        loginRequest.phoneNumber(),
+                        loginRequest.password()
                 )
         );
 
@@ -203,8 +211,8 @@ public class AuthService {
     @Transactional
     public void verifySmsOtp(VerifySmsRequest request) {
         // 1. Find user by phone number
-        User user = userRepository.findByPhoneNumber(request.getPhoneNumber())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", request.getPhoneNumber()));
+        User user = userRepository.findByPhoneNumber(request.phoneNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", request.phoneNumber()));
 
         // 2. Check if already verified
         if (user.isPhoneVerified()) {
@@ -227,7 +235,7 @@ public class AuthService {
         }
 
         // 5. Check if OTP code is correct
-        if (!user.getSmsOtp().equals(request.getOtp())) {
+        if (!user.getSmsOtp().equals(request.otp())) {
             throw new InvalidOtpException("Invalid OTP code.");
         }
 
@@ -248,34 +256,35 @@ public class AuthService {
     @Transactional
     public void resendOtp(ResendOtpRequest request) {
         // 1. Validate reCAPTCHA
-        reCaptchaService.validate(request.getRecaptchaToken());
+        reCaptchaService.validate(request.recaptchaToken());
 
         // 2. Tunisian number validation
-        if (!isTunisianNumber(request.getPhoneNumber())) {
+        if (!isTunisianNumber(request.phoneNumber())) {
             throw new IllegalArgumentException("Invalid Tunisian phone number format.");
         }
 
         // 3. Find user by phone number
-        User user = userRepository.findByPhoneNumber(request.getPhoneNumber())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", request.getPhoneNumber()));
+        User user = userRepository.findByPhoneNumber(request.phoneNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", request.phoneNumber()));
 
         // 4. Check if already verified
         if (user.isPhoneVerified()) {
             throw new IllegalArgumentException("Account is already verified. Please log in.");
         }
 
-        // 5. Generate new OTP
-        String newOtp = generateOtp();
+        // 5. Generate new OTP (this will be handled by AuthEventListener)
+        // Note: OTP generation is now handled asynchronously by AuthEventListener
+        // after UserRegisteredEvent is published
         
-        // 6. Set new OTP and expiration date
-        user.setSmsOtp(newOtp);
-        user.setSmsOtpExpiresAt(OffsetDateTime.now().plusMinutes(10)); // 10 minutes validity
-        
-        // 7. Save user
-        userRepository.save(user);
-
-        // 8. Send SMS with new OTP
-        smsService.sendVerificationSms(user.getPhoneNumber(), newOtp);
+        // 6. Publish event for async OTP generation and SMS sending
+        try {
+            eventPublisher.publishEvent(new UserRegisteredEvent(this, user));
+            log.info("Successfully published UserRegisteredEvent for OTP resend to user {}", user.getPhoneNumber());
+        } catch (Exception e) {
+            // Log error but provide a generic message to the user
+            log.error("Failed to publish UserRegisteredEvent for OTP resend to user {}: {}", user.getPhoneNumber(), e.getMessage());
+            throw new RuntimeException("Failed to send OTP. Please try again.");
+        }
     }
 
     // --- Private helper methods ---
@@ -284,10 +293,5 @@ public class AuthService {
         // Implement your validation logic here
         // e.g. Regex for (2, 3, 4, 5, 7, 9) + 7 digits
         return phone != null && phone.matches("^(2|3|4|5|7|9)\\d{7}$");
-    }
-
-    private String generateOtp() {
-        // Generates a 6-digit code
-        return String.format("%06d", new Random().nextInt(999999));
     }
 }

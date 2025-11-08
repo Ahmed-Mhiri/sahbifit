@@ -40,10 +40,10 @@ public class RatingService {
         User raterUser = userRepository.findByPhoneNumber(raterPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Rater (User) not found"));
 
-        User ratedUser = userRepository.findById(dto.getRatedUserId())
+        User ratedUser = userRepository.findById(dto.ratedUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Rated User not found"));
 
-        Session session = sessionRepository.findById(dto.getSessionId())
+        Session session = sessionRepository.findById(dto.sessionId())
                 .orElseThrow(() -> new ResourceNotFoundException("Session not found"));
 
         // Validation 0 (Rating yourself)
@@ -53,12 +53,12 @@ public class RatingService {
 
         // Validation 1 (Participation)
         SessionParticipantId raterId = new SessionParticipantId();
-        raterId.setSessionId(dto.getSessionId());
+        raterId.setSessionId(dto.sessionId());
         raterId.setUserId(raterUser.getUserId());
 
         SessionParticipantId ratedId = new SessionParticipantId();
-        ratedId.setSessionId(dto.getSessionId());
-        ratedId.setUserId(dto.getRatedUserId());
+        ratedId.setSessionId(dto.sessionId());
+        ratedId.setUserId(dto.ratedUserId());
 
         if (!sessionParticipantRepository.existsById(raterId) || !sessionParticipantRepository.existsById(ratedId)) {
             throw new IllegalStateException("Both users must have participated in this session to rate each other.");
@@ -66,9 +66,9 @@ public class RatingService {
 
         // Validation 2 (Duplicate rating)
         boolean alreadyExists = ratingRepository.existsBySessionSessionIdAndRatingByUserIdAndRatingForUserId(
-                dto.getSessionId(),
+                dto.sessionId(),
                 raterUser.getUserId(),
-                dto.getRatedUserId()
+                dto.ratedUserId()
         );
 
         if (alreadyExists) {
@@ -80,8 +80,8 @@ public class RatingService {
         newRating.setSession(session);
         newRating.setRatingBy(raterUser);
         newRating.setRatingFor(ratedUser);
-        newRating.setRatingValue(dto.getRatingValue());
-        newRating.setComment(dto.getComment()); // Can be null
+        newRating.setRatingValue(dto.ratingValue());
+        newRating.setComment(dto.comment()); // Can be null
 
         return ratingRepository.save(newRating);
     }

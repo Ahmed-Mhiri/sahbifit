@@ -8,7 +8,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sahbifit.api.badge.model.Badge;
+import com.sahbifit.api.badge.model.UserBadge;
+import com.sahbifit.api.badge.model.UserBadgeId;
+import com.sahbifit.api.badge.repository.BadgeRepository;
+import com.sahbifit.api.badge.repository.UserBadgeRepository;
 import com.sahbifit.api.exception.ResourceNotFoundException;
+import com.sahbifit.api.user.dto.UpdateFcmTokenDto;
+import com.sahbifit.api.user.dto.UpdateVisibilityDto;
 import com.sahbifit.api.user.model.ProfileVisibility;
 import com.sahbifit.api.user.model.User;
 import com.sahbifit.api.user.model.UserBlock;
@@ -27,9 +34,12 @@ public class UserService {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
     private final UserBlockRepository userBlockRepository;
+    private final BadgeRepository badgeRepository;
+    private final UserBadgeRepository userBadgeRepository;
 
     // Defines the limit for "No-Shows"
     private static final int NO_SHOW_LIMIT = 3;
+    private static final String UNRELIABLE_BADGE_NAME = "UNRELIABLE";
 
     /**
      * Increases the counter for completed group sessions of a user.
@@ -72,15 +82,50 @@ public class UserService {
 
             log.warn("User {} suspended for 3 days due to {} no-shows.", userId, newNoShowCount);
             
-            // (Optional: Trigger an event for a push notification here)
-            // e.g. eventPublisher.publishEvent(new UserSuspendedEvent(this, user, "3 days"));
+            // --- NEW LOGIC ---
+            // 4. Award the "Unreliable" badge
+            try {
+                awardUnreliableBadge(user);
+            } catch (Exception e) {
+                log.error("Failed to award UNRELIABLE badge to user {}: {}", userId, e.getMessage());
+                // Don't fail the transaction, just log the error
+            }
+            // --- END NEW LOGIC ---
 
         } else {
             log.info("User {} 'no-show' count incremented to {}.", userId, newNoShowCount);
         }
 
-        // 4. Save user
+        // 5. Save user
         userRepository.save(user);
+    }
+
+    /**
+     * Awards the "UNRELIABLE" badge to a user
+     */
+    private void awardUnreliableBadge(User user) {
+        // Find the master "Unreliable" badge
+        Badge unreliableBadge = badgeRepository.findByBadgeName(UNRELIABLE_BADGE_NAME)
+                .orElseThrow(() -> new RuntimeException(UNRELIABLE_BADGE_NAME + " badge not found in database."));
+
+        // Create the composite key
+        UserBadgeId userBadgeId = new UserBadgeId();
+        userBadgeId.setUserId(user.getUserId());
+        userBadgeId.setBadgeId(unreliableBadge.getBadgeId());
+
+        // Check if user already has this badge
+        if (userBadgeRepository.existsById(userBadgeId)) {
+            return; // Already has it, do nothing
+        }
+
+        // Assign the badge
+        UserBadge newUserBadge = new UserBadge();
+        newUserBadge.setId(userBadgeId);
+        newUserBadge.setUser(user);
+        newUserBadge.setBadge(unreliableBadge);
+        
+        userBadgeRepository.save(newUserBadge);
+        log.info("Awarded {} badge to user {}", UNRELIABLE_BADGE_NAME, user.getUserId());
     }
 
     /**
@@ -125,29 +170,29 @@ public class UserService {
     }
 
     @Transactional
-    public void updateFcmToken(String userPhoneNumber, String fcmToken) {
+    public void updateFcmToken(String userPhoneNumber, UpdateFcmTokenDto dto) {
         User user = userRepository.findByPhoneNumber(userPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
         
-        user.setPushNotificationToken(fcmToken);
+        user.setPushNotificationToken(dto.fcmToken());
         userRepository.save(user);
         log.info("Updated FCM token for user: {}", user.getUserId());
     }
 
     @Transactional
-    public void updateProfileVisibility(String userPhoneNumber, ProfileVisibility newVisibility) {
+    public void updateProfileVisibility(String userPhoneNumber, UpdateVisibilityDto dto) {
         User user = userRepository.findByPhoneNumber(userPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
 
         // Validation: You cannot set visibility to "same_gender" if you are not gender-verified.
-        if (newVisibility == ProfileVisibility.same_gender && 
+        if (dto.visibility() == ProfileVisibility.same_gender && 
             user.getVerifiedGender() == VerifiedGender.not_verified) {
             
             throw new IllegalStateException("You must be gender-verified to use this privacy setting.");
         }
 
-        user.setProfileVisibility(newVisibility);
+        user.setProfileVisibility(dto.visibility());
         userRepository.save(user);
-        log.info("Updated profile visibility for user {} to {}", user.getUserId(), newVisibility);
+        log.info("Updated profile visibility for user {} to {}", user.getUserId(), dto.visibility());
     }
 }

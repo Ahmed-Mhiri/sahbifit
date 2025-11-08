@@ -43,8 +43,8 @@ public class GymService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Gym gym = new Gym();
-        gym.setName(dto.getName());
-        gym.setAddress(dto.getAddress());
+        gym.setName(dto.name());
+        gym.setAddress(dto.address());
         // Note: Location (Point) is not set here per the plan
         gym.setStatus(GymStatus.pending); // Set to pending for review
         gym.setSubmittedByUser(user);
@@ -58,8 +58,8 @@ public class GymService {
      */
     public Gym adminCreateGym(AdminGymDto dto) {
         Gym gym = new Gym();
-        gym.setName(dto.getName());
-        gym.setAddress(dto.getAddress());
+        gym.setName(dto.name());
+        gym.setAddress(dto.address());
         gym.setStatus(GymStatus.approved); // Approved immediately
         // submittedByUser is null for admin-created gyms
 
@@ -94,8 +94,8 @@ public class GymService {
         Gym gym = gymRepository.findById(gymId)
                 .orElseThrow(() -> new ResourceNotFoundException("Gym not found with ID: " + gymId));
         
-        gym.setName(dto.getName());
-        gym.setAddress(dto.getAddress());
+        gym.setName(dto.name());
+        gym.setAddress(dto.address());
         // Add any other fields from AdminGymDto here
         
         return gymRepository.save(gym);
