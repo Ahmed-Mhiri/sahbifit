@@ -1,0 +1,15 @@
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+LoginRequestModel _$LoginRequestModelFromJson(Map<String, dynamic> json) =>
+    LoginRequestModel(
+      phoneNumber: json['phoneNumber'] as String,
+      password: json['password'] as String,
+    );
+
+Map<String, dynamic> _$LoginRequestModelToJson(LoginRequestModel instance) =>
+    <String, dynamic>{
+      'phoneNumber': instance.phoneNumber,
+      'password': instance.password,
+    };

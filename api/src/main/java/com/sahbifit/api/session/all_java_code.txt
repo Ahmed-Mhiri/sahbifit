@@ -1,0 +1,944 @@
+﻿==================================================
+Path: ChatActivationService.java
+==================================================
+package com.sahbifit.api.session;
+
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.session.repository.SessionRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class ChatActivationService {
+
+    private final SessionRepository sessionRepository;
+
+    // Activation window: 1 hour (60 minutes)
+    private static final int ACTIVATION_WINDOW_MINUTES = 60;
+    
+    // Deactivation window: 1 hour (60 minutes)
+    private static final int DEACTIVATION_WINDOW_MINUTES = 60;
+
+    // Scheduler runs every 10 minutes (600,000 milliseconds)
+    private static final long JOB_RATE_MS = 600000;
+
+    /**
+     * Runs every 10 minutes to activate chats for upcoming sessions.
+     */
+    @Scheduled(fixedRate = JOB_RATE_MS) 
+    @Transactional
+    public void activateUpcomingChats() {
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime activationTime = now.plusMinutes(ACTIVATION_WINDOW_MINUTES);
+
+        log.info("[ChatScheduler] Running activation job. Finding sessions starting before: {}", activationTime);
+
+        List<Session> sessionsToActivate = sessionRepository.findSessionsToActivate(now, activationTime);
+
+        if (sessionsToActivate.isEmpty()) {
+            log.info("[ChatScheduler] No sessions found for chat activation.");
+            return;
+        }
+
+        log.info("[ChatScheduler] Activating chat for {} sessions.", sessionsToActivate.size());
+        for (Session session : sessionsToActivate) {
+            session.setChatActive(true);
+            // We don't set isChatProcessed yet; that's for the deactivation job
+        }
+        
+        // Batch save
+        sessionRepository.saveAll(sessionsToActivate);
+    }
+
+    /**
+     * Runs every 10 minutes to deactivate chats for completed sessions.
+     */
+    @Scheduled(fixedRate = JOB_RATE_MS) 
+    @Transactional
+    public void deactivateCompletedChats() {
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime deactivationTime = now.minusMinutes(DEACTIVATION_WINDOW_MINUTES);
+
+        log.info("[ChatScheduler] Running deactivation job. Finding sessions ending before: {}", deactivationTime);
+
+        List<Session> sessionsToDeactivate = sessionRepository.findSessionsToDeactivate(deactivationTime);
+
+        if (sessionsToDeactivate.isEmpty()) {
+            log.info("[ChatScheduler] No sessions found for chat deactivation.");
+            return;
+        }
+
+        log.info("[ChatScheduler] Deactivating chat for {} sessions.", sessionsToDeactivate.size());
+        for (Session session : sessionsToDeactivate) {
+            session.setChatActive(false);
+            session.setChatProcessed(true); // Mark as done to prevent re-processing
+        }
+        
+        // Batch save
+        sessionRepository.saveAll(sessionsToDeactivate);
+    }
+}
+
+
+==================================================
+Path: SessionController.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/session/SessionController.java
+package com.sahbifit.api.session;
+
+import com.sahbifit.api.session.dto.CreateSessionDto;
+import com.sahbifit.api.session.dto.MarkAttendanceDto;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.verification.model.VerifiedGender;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/sessions")
+@RequiredArgsConstructor
+public class SessionController {
+
+    private final SessionService sessionService;
+
+    /**
+     * (Mobile App) Get the active session feed.
+     * Can be filtered by gender (e.g., /api/sessions?genderFilter=female)
+     */
+    @GetMapping
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<List<Session>> getActiveSessions(
+            Principal principal,
+            @RequestParam(required = false) VerifiedGender genderFilter) {
+        
+        List<Session> sessions = sessionService.getActiveSessions(principal.getName(), genderFilter);
+        return ResponseEntity.ok(sessions);
+    }
+
+    /**
+     * (Mobile App) Create a new session.
+     */
+    @PostMapping
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<Session> createSession(@RequestBody CreateSessionDto dto, Principal principal) {
+        Session newSession = sessionService.createSession(dto, principal.getName());
+        return new ResponseEntity<>(newSession, HttpStatus.CREATED);
+    }
+
+    /**
+     * (Mobile App) Join a session.
+     */
+    @PostMapping("/{sessionId}/join")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<Void> joinSession(@PathVariable UUID sessionId, Principal principal) {
+        sessionService.joinSession(sessionId, principal.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/attendance")
+    public ResponseEntity<Void> markAttendance(
+            @Valid @RequestBody MarkAttendanceDto markAttendanceDto,
+            Principal principal) {
+        
+        sessionService.markAttendance(markAttendanceDto, principal.getName());
+        return ResponseEntity.ok().build();
+    }
+}
+
+
+==================================================
+Path: SessionCreatedEvent.java
+==================================================
+package com.sahbifit.api.session;
+
+import com.sahbifit.api.session.model.Session;
+import org.springframework.context.ApplicationEvent;
+
+public class SessionCreatedEvent extends ApplicationEvent {
+
+    private final Session session;
+
+    public SessionCreatedEvent(Object source, Session session) {
+        super(source);
+        this.session = session;
+    }
+
+    public Session getSession() {
+        return session;
+    }
+}
+
+
+==================================================
+Path: SessionEventListener.java
+==================================================
+package com.sahbifit.api.session;
+
+import com.sahbifit.api.external.chat.ChatService;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.session.repository.SessionRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class SessionEventListener {
+
+    private final ChatService chatService;
+    private final SessionRepository sessionRepository; 
+
+    @Async
+    @EventListener
+    @Retryable(
+        value = {Exception.class},
+        maxAttempts = 3,
+        backoff = @Backoff(delay = 2000, multiplier = 2) // 2s, 4s, 8s delays
+    )
+    public void handleSessionCreation(SessionCreatedEvent event) {
+        try {
+            Session session = event.getSession();
+            
+            log.info("Async: Creating chat for session {}", session.getSessionId());
+
+            String chatId = chatService.createChatForSession(session.getSessionId());
+
+            session.setFirestoreChatId(chatId);
+            sessionRepository.save(session);
+
+            log.info("Async: Chat created for session {}. ChatID: {}", session.getSessionId(), chatId);
+
+        } catch (Exception e) {
+            log.error("Async Error: Failed to create chat for session {} after retries: {}", 
+                      event.getSession().getSessionId(), e.getMessage(), e);
+            // After all retries fail, you can implement fallback logic here
+            handlePermanentFailure(event.getSession(), e);
+        }
+    }
+
+    private void handlePermanentFailure(Session session, Exception e) {
+        log.error("Permanent failure: Could not create chat for session {}. Session will remain without chat.", 
+                  session.getSessionId());
+        // Optionally, you can set a flag or send a notification
+        // session.setChatCreationFailed(true);
+        // sessionRepository.save(session);
+    }
+}
+
+
+==================================================
+Path: SessionService.java
+==================================================
+package com.sahbifit.api.session;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sahbifit.api.exception.ResourceNotFoundException;
+import com.sahbifit.api.gym.model.Gym;
+import com.sahbifit.api.gym.repository.GymRepository;
+import com.sahbifit.api.session.dto.CreateSessionDto;
+import com.sahbifit.api.session.dto.MarkAttendanceDto;
+import com.sahbifit.api.session.model.ParticipantStatus;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.session.model.SessionParticipant;
+import com.sahbifit.api.session.model.SessionParticipantId;
+import com.sahbifit.api.session.model.SessionStatus;
+import com.sahbifit.api.session.model.SessionType;
+import com.sahbifit.api.session.repository.SessionParticipantRepository;
+import com.sahbifit.api.session.repository.SessionRepository;
+import com.sahbifit.api.user.UserService;
+import com.sahbifit.api.user.model.ProfileVisibility;
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.model.UserRole;
+import com.sahbifit.api.user.repository.UserRepository;
+import com.sahbifit.api.verification.model.VerificationStatus;
+import com.sahbifit.api.verification.model.VerifiedGender;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class SessionService {
+
+    private final SessionRepository sessionRepository;
+    private final UserRepository userRepository;
+    private final GymRepository gymRepository;
+    private final SessionParticipantRepository sessionParticipantRepository;
+    private final UserService userService;
+    private final ApplicationEventPublisher eventPublisher;
+
+    /**
+     * (Method 1) Create a new session, applying all "Create" gates.
+     */
+    public Session createSession(CreateSessionDto dto, String userPhoneNumber) {
+        User user = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
+
+        // Gate 1 (Verification)
+        if (user.getVerificationStatus() != VerificationStatus.verified) {
+            throw new IllegalStateException("You must be fully verified to create a session.");
+        }
+
+        // Gate 2 (Reputation - MVP 3.5)
+        if (dto.sessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 3) {
+            throw new IllegalStateException("You must attend 3 group sessions before creating a 1-on-1 session.");
+        }
+
+        Gym gym = gymRepository.findById(dto.gymId())
+                .orElseThrow(() -> new ResourceNotFoundException("Gym", "gymId", dto.gymId()));
+
+        // Create the session (don't save yet)
+        Session session = new Session();
+        session.setCreator(user);
+        session.setGym(gym);
+        session.setSessionType(dto.sessionType());
+        session.setStatus(SessionStatus.active);
+        session.setTitle(dto.title());
+        session.setStartTime(dto.startTime());
+        session.setEndTime(dto.endTime());
+        session.setMaxParticipants(dto.maxParticipants());
+
+        // Save the session (This is where the session.sessionId is generated)
+        Session savedSession = sessionRepository.save(session);
+
+        // Add the creator as the first participant
+        SessionParticipantId creatorId = new SessionParticipantId();
+        creatorId.setSessionId(savedSession.getSessionId());
+        creatorId.setUserId(user.getUserId());
+
+        SessionParticipant creatorEntry = new SessionParticipant();
+        creatorEntry.setId(creatorId);
+        creatorEntry.setSession(savedSession);
+        creatorEntry.setUser(user);
+        creatorEntry.setStatus(ParticipantStatus.joined);
+        sessionParticipantRepository.save(creatorEntry);
+
+        // PUBLISH THE EVENT for the async listener
+        try {
+            // We pass 'savedSession', which now has a non-null ID
+            eventPublisher.publishEvent(new SessionCreatedEvent(this, savedSession));
+        } catch (Exception e) {
+            log.error("Failed to publish SessionCreatedEvent for session {}: {}", savedSession.getSessionId(), e.getMessage());
+            // Log error, but don't fail the transaction
+        }
+
+        return savedSession;
+    }
+
+    /**
+     * (Method 2) Join an existing session, applying all "Join" gates.
+     */
+    public void joinSession(UUID sessionId, String userPhoneNumber) {
+        User user = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
+        
+        Session session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", sessionId));
+
+        // Gate 1 (Probationary Mode - MVP 2.6)
+        if (user.getVerificationStatus() == VerificationStatus.pending_review) {
+            if (session.getCreator().getRole() != UserRole.ambassador) {
+                throw new IllegalStateException("Verification pending. You can only join Ambassador sessions.");
+            }
+        }
+
+        // Gate 2 (Reputation - MVP 3.5)
+        if (session.getSessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 3) {
+            throw new IllegalStateException("You must attend 3 group sessions before joining a 1-on-1 session.");
+        }
+
+        // Gate 3 (Session Full?)
+        int participantCount = sessionParticipantRepository.countBySessionId(sessionId);
+        if (participantCount >= session.getMaxParticipants()) {
+            throw new IllegalStateException("This session is already full.");
+        }
+
+        // Gate 4 (Already Joined?)
+        SessionParticipantId participantId = new SessionParticipantId();
+        participantId.setSessionId(sessionId);
+        participantId.setUserId(user.getUserId());
+
+        if (sessionParticipantRepository.existsById(participantId)) {
+            throw new IllegalStateException("You have already joined this session.");
+        }
+
+        // Success: Create and save the participant entry
+        SessionParticipant newParticipant = new SessionParticipant();
+        newParticipant.setId(participantId);
+        newParticipant.setSession(session);
+        newParticipant.setUser(user);
+        newParticipant.setStatus(ParticipantStatus.joined);
+        sessionParticipantRepository.save(newParticipant);
+    }
+
+    /**
+     * (Method 3) Get all active sessions for the feed.
+     * (MVP 6.1)
+     * NOW INCLUDES GENDER FILTERING AND PRIVACY/VISIBILITY LOGIC.
+     * OPTIMIZED: Uses JOIN FETCH to prevent N+1 queries
+     */
+    @Transactional(readOnly = true)
+    public List<Session> getActiveSessions(String userPhoneNumber, VerifiedGender genderFilter) {
+        
+        // 1. Get the user who is VIEWING the feed
+        User viewer = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
+
+        List<Session> sessions;
+
+        // 2. Apply the GENDER FILTER (existing logic) using optimized queries
+        if (genderFilter != null) {
+            // Security Check: You can only filter by your own gender.
+            if (viewer.getVerifiedGender() != genderFilter) {
+                throw new AccessDeniedException("You can only filter sessions by your own verified gender.");
+            }
+            // Use optimized query with JOIN FETCH
+            sessions = sessionRepository.findByStatusAndCreatorVerifiedGenderWithCreatorAndGym(SessionStatus.active, genderFilter);
+        } else {
+            // Use optimized query with JOIN FETCH
+            sessions = sessionRepository.findByStatusWithCreatorAndGym(SessionStatus.active);
+        }
+
+        // 3. Apply PRIVACY FILTER (new logic)
+        return sessions.stream()
+                .filter(session -> isVisible(session.getCreator(), viewer))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Helper method to check if a creator's profile is visible to a viewer.
+     */
+    private boolean isVisible(User creator, User viewer) {
+        // If creator is visible to all, return true.
+        if (creator.getProfileVisibility() == ProfileVisibility.all) {
+            return true;
+        }
+
+        // If creator is 'same_gender' only, check for match.
+        if (creator.getProfileVisibility() == ProfileVisibility.same_gender) {
+            // Both must be verified AND their genders must match.
+            return creator.getVerifiedGender() != VerifiedGender.not_verified &&
+                   creator.getVerifiedGender() == viewer.getVerifiedGender();
+        }
+
+        return false;
+    }
+
+    @Transactional
+    public void markAttendance(MarkAttendanceDto dto, String markerPhoneNumber) {
+        
+        // 1. Find user who is marking attendance
+        User markerUser = userRepository.findByPhoneNumber(markerPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", markerPhoneNumber));
+
+        // 2. Find session
+        Session session = sessionRepository.findById(dto.sessionId())
+                .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", dto.sessionId()));
+
+        // 3. Permission check
+        boolean isCreator = session.getCreator().getUserId().equals(markerUser.getUserId());
+        boolean isAdmin = markerUser.getRole() == UserRole.admin;
+
+        if (!isCreator && !isAdmin) {
+            throw new AccessDeniedException("Only the session creator or an admin can mark attendance.");
+        }
+
+        // 4. Find SessionParticipant (the target object)
+        SessionParticipantId participantId = new SessionParticipantId();
+        participantId.setSessionId(dto.sessionId());
+        participantId.setUserId(dto.participantUserId());
+
+        SessionParticipant participant = sessionParticipantRepository.findById(participantId)
+                .orElseThrow(() -> new ResourceNotFoundException("SessionParticipant", "Id", participantId));
+
+        // 5. Update status
+        participant.setStatus(dto.newStatus());
+        sessionParticipantRepository.save(participant);
+
+        // 6. Trigger chain (MVP 5.4)
+        if (dto.newStatus() == ParticipantStatus.no_show) {
+            // Calls logic in UserService
+            userService.incrementNoShowCount(dto.participantUserId());
+        } 
+        else if (dto.newStatus() == ParticipantStatus.attended) {
+            // Check if it was a group session (MVP 3.5)
+            if (session.getSessionType() == SessionType.group) {
+                userService.incrementGroupSessionCount(dto.participantUserId());
+            }
+        }
+    }
+}
+
+
+==================================================
+Path: CreateSessionDto.java
+==================================================
+package com.sahbifit.api.session.dto;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+import com.sahbifit.api.session.model.SessionType;
+
+public record CreateSessionDto(
+    UUID gymId,
+    SessionType sessionType,
+    String title,
+    OffsetDateTime startTime,
+    OffsetDateTime endTime,
+    Integer maxParticipants
+) {}
+
+
+==================================================
+Path: MarkAttendanceDto.java
+==================================================
+package com.sahbifit.api.session.dto;
+
+import java.util.UUID;
+
+import com.sahbifit.api.session.model.ParticipantStatus;
+
+import jakarta.validation.constraints.NotNull;
+
+public record MarkAttendanceDto(
+    @NotNull(message = "sessionId cannot be null")
+    UUID sessionId,
+
+    @NotNull(message = "participantUserId cannot be null")
+    UUID participantUserId,
+
+    @NotNull(message = "newStatus cannot be null")
+    ParticipantStatus newStatus
+) {}
+
+
+==================================================
+Path: ParticipantStatus.java
+==================================================
+package com.sahbifit.api.session.model;
+
+public enum ParticipantStatus {
+    joined,
+    attended,
+    no_show,
+    left
+}
+
+
+==================================================
+Path: Session.java
+==================================================
+package com.sahbifit.api.session.model;
+
+import java.time.OffsetDateTime;
+import java.util.Set;
+import java.util.UUID;
+
+import org.hibernate.annotations.Check;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Formula;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
+
+import com.sahbifit.api.gym.model.Gym;
+import com.sahbifit.api.rating.model.Rating;
+import com.sahbifit.api.report.model.Report;
+import com.sahbifit.api.user.model.User;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "sessions", indexes = {
+    @Index(name = "idx_session_creator_user", columnList = "creator_user_id"),
+    @Index(name = "idx_session_gym", columnList = "gym_id"),
+    @Index(name = "idx_session_status_type", columnList = "status, session_type"),
+    @Index(name = "idx_session_time_range", columnList = "start_time, end_time"),
+    // --- ADD THESE INDEXES for scheduler performance ---
+    @Index(name = "idx_session_chat_activation", columnList = "is_chat_active, is_chat_processed, start_time"),
+    @Index(name = "idx_session_chat_deactivation", columnList = "is_chat_active, is_chat_processed, end_time")
+})
+@Check(constraints = "(session_type = 'one_on_one' AND max_participants = 2) OR (session_type = 'group' AND max_participants >= 3)")
+@SQLDelete(sql = "UPDATE sessions SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE session_id = ?")
+@SQLRestriction("status = 'active'") // <-- 2. USE THIS (instead of @Where)
+public class Session {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "session_id")
+    private UUID sessionId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "creator_user_id", nullable = false)
+    private User creator;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gym_id", nullable = false)
+    private Gym gym;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "session_type", nullable = false, columnDefinition = "session_type")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private SessionType sessionType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, columnDefinition = "session_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private SessionStatus status;
+
+    @Column(name = "title", nullable = false, length = 255)
+    private String title;
+
+    @Column(name = "start_time", nullable = false)
+    private OffsetDateTime startTime;
+
+    @Column(name = "end_time", nullable = false)
+    private OffsetDateTime endTime;
+
+    @Column(name = "max_participants", nullable = false)
+    private Integer maxParticipants;
+
+    @Column(name = "firestore_chat_id", length = 100)
+    private String firestoreChatId;
+
+    @Column(name = "is_rating_notified", nullable = false)
+    @ColumnDefault("false")
+    private boolean isRatingNotified = false;
+
+    // --- NEW FIELDS FOR EPHEMERAL CHAT ---
+
+    /**
+     * Controls if the chat is currently visible to clients.
+     * Managed by the ChatActivationService.
+     */
+    @Column(name = "is_chat_active", nullable = false)
+    @ColumnDefault("false")
+    private boolean isChatActive = false;
+
+    /**
+     * Prevents the scheduler from re-processing old sessions.
+     * Set to true after the deactivation job runs.
+     */
+    @Column(name = "is_chat_processed", nullable = false)
+    @ColumnDefault("false")
+    private boolean isChatProcessed = false;
+
+    // --- END OF NEW FIELDS ---
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
+    // --- Optimized Fields ---
+    
+    /**
+     * Calculates participant count at the database level to avoid N+1 queries.
+     * This eliminates the need to fetch all participant objects just to get a count.
+     */
+    @Formula("(SELECT COUNT(*) FROM session_participants sp WHERE sp.session_id = session_id AND sp.status = 'joined')")
+    private int participantCount;
+
+    @OneToMany(mappedBy = "session")
+    private Set<SessionParticipant> participants;
+
+    @OneToMany(mappedBy = "session")
+    private Set<Rating> ratings;
+
+    @OneToMany(mappedBy = "session")
+    private Set<Report> reports;
+}
+
+
+==================================================
+Path: SessionParticipant.java
+==================================================
+package com.sahbifit.api.session.model;
+
+import java.time.OffsetDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import com.sahbifit.api.user.model.User;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "session_participants", indexes = { // <-- ADD THIS BLOCK
+    // We already have a PK on (session_id, user_id)
+    // but separate indexes are good for queries that only use one side
+    @Index(name = "idx_sessionparticipant_session", columnList = "session_id"),
+    @Index(name = "idx_sessionparticipant_user", columnList = "user_id")
+})
+public class SessionParticipant {
+
+    @EmbeddedId
+    private SessionParticipantId id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("sessionId")
+    @JoinColumn(name = "session_id")
+    private Session session;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("userId")
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, columnDefinition = "participant_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private ParticipantStatus status;
+
+    @CreationTimestamp
+    @Column(name = "joined_at", nullable = false, updatable = false)
+    private OffsetDateTime joinedAt;
+}
+
+
+==================================================
+Path: SessionParticipantId.java
+==================================================
+package com.sahbifit.api.session.model;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.UUID;
+
+@Data
+@Embeddable
+public class SessionParticipantId implements Serializable {
+
+    @Column(name = "session_id")
+    private UUID sessionId;
+
+    @Column(name = "user_id")
+    private UUID userId;
+}
+
+
+==================================================
+Path: SessionStatus.java
+==================================================
+package com.sahbifit.api.session.model;
+
+public enum SessionStatus {
+    active,
+    cancelled,
+    completed
+}
+
+
+==================================================
+Path: SessionType.java
+==================================================
+package com.sahbifit.api.session.model;
+
+public enum SessionType {
+    group,
+    one_on_one
+}
+
+
+==================================================
+Path: SessionParticipantRepository.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/session/repository/SessionParticipantRepository.java
+package com.sahbifit.api.session.repository;
+
+import java.util.List;
+
+import com.sahbifit.api.session.model.SessionParticipant;
+import com.sahbifit.api.session.model.SessionParticipantId;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.sahbifit.api.session.model.ParticipantStatus;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.user.model.User;
+
+import java.util.UUID;
+
+@Repository
+public interface SessionParticipantRepository extends JpaRepository<SessionParticipant, SessionParticipantId> {
+
+    /**
+     * Counts the number of participants in a given session.
+     * Required by SessionService.joinSession() Gate 3.
+     */
+    int countBySessionId(UUID sessionId);
+    
+    // existsById(SessionParticipantId id) is provided by JpaRepository
+    // and used in SessionService.joinSession() Gate 4.
+
+
+    /**
+     * Finds all participations for a user with a specific status.
+     */
+    List<SessionParticipant> findByUserAndStatus(User user, ParticipantStatus status);
+    
+    /**
+     * Finds all participants for a specific session.
+     */
+    List<SessionParticipant> findBySession(Session session);
+
+
+    /**
+     * Finds all participants for a specific session with a given status.
+     */
+    List<SessionParticipant> findBySessionAndStatus(Session session, ParticipantStatus status);
+}
+
+
+==================================================
+Path: SessionRepository.java
+==================================================
+// Path: src/main/java/com/sahbifit/api/session/repository/SessionRepository.java
+package com.sahbifit.api.session.repository;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.session.model.SessionStatus;
+import com.sahbifit.api.verification.model.VerifiedGender;
+
+@Repository
+public interface SessionRepository extends JpaRepository<Session, UUID> {
+
+    /**
+     * Finds all sessions with a specific status (e.g., 'active').
+     * Required by SessionService.getActiveSessions() (MVP 6.1)
+     */
+    List<Session> findByStatus(SessionStatus status);
+    
+    List<Session> findByStatusAndCreatorVerifiedGender(SessionStatus status, VerifiedGender gender);
+    
+    /**
+     * Finds all sessions with a specific status, fetching creator and gym data in one query.
+     * This prevents N+1 query problem when accessing session.getCreator() and session.getGym()
+     */
+    @Query("SELECT s FROM Session s JOIN FETCH s.creator JOIN FETCH s.gym WHERE s.status = :status")
+    List<Session> findByStatusWithCreatorAndGym(@Param("status") SessionStatus status);
+    
+    /**
+     * Finds all sessions with specific status and creator gender, fetching creator and gym data in one query.
+     * This prevents N+1 query problem when accessing session.getCreator() and session.getGym()
+     */
+    @Query("SELECT s FROM Session s JOIN FETCH s.creator JOIN FETCH s.gym WHERE s.status = :status AND s.creator.verifiedGender = :gender")
+    List<Session> findByStatusAndCreatorVerifiedGenderWithCreatorAndGym(
+            @Param("status") SessionStatus status, 
+            @Param("gender") VerifiedGender gender);
+
+    /**
+     * Finds sessions that have ended but for which rating notifications
+     * have not yet been sent.
+     */
+    @Query("SELECT s FROM Session s WHERE s.endTime < :now AND s.isRatingNotified = false AND s.status = 'active'")
+    List<Session> findCompletedSessionsPendingNotification(@Param("now") OffsetDateTime now);
+
+    // --- NEW METHODS FOR EPHEMERAL CHAT ---
+
+    /**
+     * Finds sessions that are scheduled to start within the activation window
+     * (e.g., 60 minutes from now) and have not been activated yet.
+     */
+    @Query("SELECT s FROM Session s WHERE s.startTime BETWEEN :now AND :activationTime " +
+           "AND s.isChatActive = false AND s.isChatProcessed = false AND s.status = 'active'")
+    List<Session> findSessionsToActivate(
+            @Param("now") OffsetDateTime now,
+            @Param("activationTime") OffsetDateTime activationTime);
+
+    /**
+     * Finds sessions that ended more than 1 hour ago, are still marked as active,
+     * and have not been processed for deactivation.
+     */
+    @Query("SELECT s FROM Session s WHERE s.endTime < :deactivationTime " +
+           "AND s.isChatActive = true AND s.isChatProcessed = false AND s.status = 'active'")
+    List<Session> findSessionsToDeactivate(
+            @Param("deactivationTime") OffsetDateTime deactivationTime);
+
+    // --- END OF NEW METHODS ---
+}
+
+

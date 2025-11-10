@@ -1,0 +1,403 @@
+﻿==================================================
+Path: GymController.java
+==================================================
+package com.sahbifit.api.gym;
+
+import java.security.Principal;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.sahbifit.api.gym.dto.AdminGymDto;
+import com.sahbifit.api.gym.dto.GymSubmissionDto;
+import com.sahbifit.api.gym.model.Gym;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api")
+@RequiredArgsConstructor
+public class GymController {
+
+    private final GymService gymService;
+
+    // --- SECTION 1: USER GYM MANAGEMENT ---
+    
+    /**
+     * (Mobile App) Get all approved gyms.
+     */
+    @GetMapping("/gyms")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<List<Gym>> getApprovedGyms() {
+        return ResponseEntity.ok(gymService.getApprovedGyms());
+    }
+
+    /**
+     * (Mobile App) Submit a new gym for review.
+     */
+    @PostMapping("/gyms/submit")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<Gym> submitGym(@RequestBody GymSubmissionDto dto, Principal principal) {
+        Gym submittedGym = gymService.submitGym(dto, principal.getName());
+        return new ResponseEntity<>(submittedGym, HttpStatus.CREATED);
+    }
+
+    // --- SECTION 2: ADMIN GYM MANAGEMENT ---
+
+    /**
+     * (Admin Dashboard) Create a new, pre-approved gym.
+     * Path: /api/admin/gyms
+     */
+    @PostMapping("/admin/gyms")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Gym> adminCreateGym(@RequestBody AdminGymDto dto) {
+        Gym createdGym = gymService.adminCreateGym(dto);
+        return new ResponseEntity<>(createdGym, HttpStatus.CREATED);
+    }
+
+    /**
+     * (Admin Dashboard) Approve a pending gym.
+     * Path: /api/admin/gyms/{gymId}/approve
+     */
+    @PutMapping("/admin/gyms/{gymId}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Gym> adminApproveGym(@PathVariable UUID gymId) {
+        Gym approvedGym = gymService.adminApproveGym(gymId);
+        return ResponseEntity.ok(approvedGym);
+    }
+
+    /**
+     * (Admin Dashboard) Get ALL gyms (approved, pending, etc.)
+     * Path: /api/admin/gyms
+     */
+    @GetMapping("/admin/gyms")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Gym>> adminGetAllGyms() {
+        return ResponseEntity.ok(gymService.adminGetAllGyms());
+    }
+
+    /**
+     * (Admin Dashboard) Get all PENDING gyms for review.
+     * Path: /api/admin/gyms/pending
+     */
+    @GetMapping("/admin/gyms/pending")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Gym>> adminGetPendingGyms() {
+        return ResponseEntity.ok(gymService.getPendingGyms());
+    }
+
+    /**
+     * (Admin Dashboard) Update an existing gym.
+     * Path: /api/admin/gyms/{gymId}
+     */
+    @PutMapping("/admin/gyms/{gymId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Gym> adminUpdateGym(@PathVariable UUID gymId, @RequestBody AdminGymDto dto) {
+        Gym updatedGym = gymService.adminUpdateGym(gymId, dto);
+        return ResponseEntity.ok(updatedGym);
+    }
+
+    /**
+     * (Admin Dashboard) Delete a gym (sets status to 'rejected').
+     * Path: /api/admin/gyms/{gymId}
+     */
+    @DeleteMapping("/admin/gyms/{gymId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> adminDeleteGym(@PathVariable UUID gymId) {
+        gymService.adminDeleteGym(gymId);
+        return ResponseEntity.noContent().build();
+    }
+}
+
+
+==================================================
+Path: GymService.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/gym/GymService.java
+package com.sahbifit.api.gym;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sahbifit.api.exception.ResourceNotFoundException;
+import com.sahbifit.api.gym.dto.AdminGymDto;
+import com.sahbifit.api.gym.dto.GymSubmissionDto;
+import com.sahbifit.api.gym.model.Gym;
+import com.sahbifit.api.gym.model.GymStatus;
+import com.sahbifit.api.gym.repository.GymRepository;
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class GymService {
+
+    private final GymRepository gymRepository;
+    private final UserRepository userRepository;
+
+    /**
+     * (Method 1) For Users: Get all approved gyms to list in the app.
+     */
+    @Transactional(readOnly = true)
+    public List<Gym> getApprovedGyms() {
+        return gymRepository.findByStatus(GymStatus.approved);
+    }
+
+    /**
+     * (Method 2) For Users: Submit a new gym for admin review.
+     * (MVP 7.5)
+     */
+    public Gym submitGym(GymSubmissionDto dto, String userPhoneNumber) {
+        User user = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Gym gym = new Gym();
+        gym.setName(dto.name());
+        gym.setAddress(dto.address());
+        // Note: Location (Point) is not set here per the plan
+        gym.setStatus(GymStatus.pending); // Set to pending for review
+        gym.setSubmittedByUser(user);
+
+        return gymRepository.save(gym);
+    }
+
+    /**
+     * (Method 3) For Admins: Create a new, pre-approved gym.
+     * (MVP 7.4)
+     */
+    public Gym adminCreateGym(AdminGymDto dto) {
+        Gym gym = new Gym();
+        gym.setName(dto.name());
+        gym.setAddress(dto.address());
+        gym.setStatus(GymStatus.approved); // Approved immediately
+        // submittedByUser is null for admin-created gyms
+
+        return gymRepository.save(gym);
+    }
+
+    /**
+     * (Method 4) For Admins: Approve a user-submitted gym.
+     * (MVP 7.5)
+     */
+    public Gym adminApproveGym(UUID gymId) {
+        Gym gym = gymRepository.findById(gymId)
+                .orElseThrow(() -> new ResourceNotFoundException("Gym not found with ID: " + gymId));
+        
+        gym.setStatus(GymStatus.approved);
+        
+        return gymRepository.save(gym);
+    }
+
+    /**
+     * (Method 5) For Admins: Get ALL gyms (pending, approved, rejected).
+     */
+    @Transactional(readOnly = true)
+    public List<Gym> adminGetAllGyms() {
+        return gymRepository.findAll();
+    }
+
+    /**
+     * (Method 6) For Admins: Update an existing gym.
+     */
+    public Gym adminUpdateGym(UUID gymId, AdminGymDto dto) {
+        Gym gym = gymRepository.findById(gymId)
+                .orElseThrow(() -> new ResourceNotFoundException("Gym not found with ID: " + gymId));
+        
+        gym.setName(dto.name());
+        gym.setAddress(dto.address());
+        // Add any other fields from AdminGymDto here
+        
+        return gymRepository.save(gym);
+    }
+
+    /**
+     * (Method 7) For Admins: Delete a gym (which triggers @SQLDelete -> status = 'rejected').
+     */
+    public void adminDeleteGym(UUID gymId) {
+        // This will find the gym and trigger the @SQLDelete annotation,
+        // which sets the status to 'rejected' instead of a hard delete.
+        gymRepository.deleteById(gymId);
+    }
+
+    /**
+     * (Method 8) For Admins: Get all gyms waiting for approval.
+     */
+    @Transactional(readOnly = true)
+    public List<Gym> getPendingGyms() {
+        return gymRepository.findByStatus(GymStatus.pending);
+    }
+}
+
+
+==================================================
+Path: AdminGymDto.java
+==================================================
+package com.sahbifit.api.gym.dto;
+
+public record AdminGymDto(
+    String name,
+    String address
+    // Add any other fields admins can set directly
+) {}
+
+
+==================================================
+Path: GymSubmissionDto.java
+==================================================
+package com.sahbifit.api.gym.dto;
+
+public record GymSubmissionDto(
+    String name,
+    String address
+    // We can add lat/lon here later if needed for Point mapping
+) {}
+
+
+==================================================
+Path: Gym.java
+==================================================
+package com.sahbifit.api.gym.model;
+
+import java.time.OffsetDateTime;
+import java.util.Set;
+import java.util.UUID;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Formula;
+import org.hibernate.type.SqlTypes;
+import org.locationtech.jts.geom.Point;
+
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.user.model.User;
+
+import jakarta.persistence.Column; 
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "gyms", indexes = { // <-- ADD "indexes" ATTRIBUTE
+    @Index(name = "idx_gym_submitted_by_user", columnList = "submitted_by_user_id")
+})
+@SQLDelete(sql = "UPDATE gyms SET status = 'rejected' WHERE gym_id = ?") // <-- 3. ADD THIS LINE
+@SQLRestriction("status != 'rejected'")
+public class Gym {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "gym_id")
+    private UUID gymId;
+
+    @Column(name = "name", nullable = false, length = 255)
+    private String name;
+
+    @Column(name = "address")
+    private String address;
+
+    @Column(name = "location", columnDefinition = "geography(Point, 4326)")
+    private Point location; 
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, columnDefinition = "gym_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private GymStatus status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "submitted_by_user_id")
+    private User submittedByUser;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
+    // --- NEW FIELD: MEMBER COUNT ---
+    /**
+     * Calculates the count of active users who have this gym
+     * set as their primary gym. This is calculated at the DB level.
+     */
+    @Formula("(SELECT COUNT(*) FROM users u WHERE u.primary_gym_id = gym_id AND u.status = 'active')")
+    private int memberCount;
+
+    // Beziehungen zu anderen Tabellen
+    @OneToMany(mappedBy = "primaryGym")
+    private Set<User> users;
+
+    @OneToMany(mappedBy = "gym")
+    private Set<Session> sessions;
+}
+
+
+==================================================
+Path: GymStatus.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/model/enums/GymStatus.java
+package com.sahbifit.api.gym.model;
+
+public enum GymStatus {
+    pending,
+    approved,
+    rejected
+}
+
+
+==================================================
+Path: GymRepository.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/gym/repository/GymRepository.java
+package com.sahbifit.api.gym.repository;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.sahbifit.api.gym.model.Gym;
+import com.sahbifit.api.gym.model.GymStatus;
+
+@Repository
+public interface GymRepository extends JpaRepository<Gym, UUID> {
+    // Spring Data JPA automatically provides the findById(UUID id) method
+    // which is used in your AuthService.
+    List<Gym> findByStatus(GymStatus status);
+}
+
+

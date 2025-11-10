@@ -1,0 +1,101 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sahbifit_mobile/features/tag/domain/enums/tag_type.dart';
+// Import the Tag entity
+import 'package:sahbifit_mobile/features/tag/domain/entities/tag.dart'; 
+// Assume theme components exist
+// import '../../../../../shared_widgets/theme_components.dart';
+import 'tags_cubit.dart';
+import 'tags_state.dart';
+
+class TagSelectionWidget extends StatefulWidget {
+  final TagType tagType;
+  final List<String> selectedTags; // List of tag IDs as Strings
+  final Function(List<String>) onTagsChanged;
+  final String title;
+  final String description;
+
+  const TagSelectionWidget({
+    super.key,
+    required this.tagType,
+    required this.selectedTags,
+    required this.onTagsChanged,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  State<TagSelectionWidget> createState() => _TagSelectionWidgetState();
+}
+
+class _TagSelectionWidgetState extends State<TagSelectionWidget> {
+  @override
+  void initState() {
+    super.initState();
+    // Load tags when the widget is first initialized
+    context.read<TagsCubit>().loadTags(widget.tagType);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<TagsCubit, TagsState>(
+      builder: (context, state) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.title,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              widget.description,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            if (state is TagsLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (state is TagsLoaded)
+              _buildTagGrid(state.tags)
+            else if (state is TagsError)
+              Text('Error: ${state.message}',
+                  style: const TextStyle(color: Colors.red))
+            else
+              const SizedBox.shrink(), // Handle TagsInitial
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTagGrid(List<Tag> tags) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: tags.map((tag) {
+        // `tag.id` is a String, matching `widget.selectedTags`
+        final isSelected = widget.selectedTags.contains(tag.id);
+        
+        return FilterChip(
+          label: Text(tag.name), // `tag.name` is a String
+          selected: isSelected,
+          onSelected: (selected) {
+            setState(() {
+              if (selected) {
+                widget.selectedTags.add(tag.id);
+              } else {
+                widget.selectedTags.remove(tag.id);
+              }
+              widget.onTagsChanged(widget.selectedTags);
+            });
+          },
+          selectedColor: Colors.red.withOpacity(0.2),
+          checkmarkColor: Colors.red,
+          labelStyle: TextStyle(
+            color: isSelected ? Colors.red : Colors.black87,
+          ),
+        );
+      }).toList(),
+    );
+  }
+}

@@ -1,0 +1,1189 @@
+﻿==================================================
+Path: session_remote_datasource.dart
+==================================================
+import 'package:sahbifit_mobile/features/session/data/models/create_session_model.dart';
+import 'package:sahbifit_mobile/features/session/data/models/mark_attendance_model.dart';
+import 'package:sahbifit_mobile/features/session/data/models/session_model.dart';
+import 'package:sahbifit_mobile/features/verification/domain/enums/verified_gender_enum.dart';
+
+/// Abstract interface for the session API.
+/// This will be implemented using Dio or Http.
+abstract class SessionRemoteDataSource {
+  /// Corresponds to [GET /api/sessions]
+  Future<List<SessionModel>> getActiveSessions(
+      {VerifiedGender? genderFilter});
+
+  /// Corresponds to [POST /api/sessions]
+  Future<SessionModel> createSession(CreateSessionModel createSessionModel);
+
+  /// Corresponds to [POST /api/sessions/{sessionId}/join]
+  Future<void> joinSession(String sessionId);
+
+  /// Corresponds to [PUT /api/sessions/attendance]
+  Future<void> markAttendance(MarkAttendanceModel markAttendanceModel);
+}
+
+/*
+// Example implementation using Dio (add to a different file)
+class SessionRemoteDataSourceImpl implements SessionRemoteDataSource {
+  final Dio dio;
+  SessionRemoteDataSourceImpl(this.dio);
+
+  @override
+  Future<List<SessionModel>> getActiveSessions({VerifiedGender? genderFilter}) async {
+    final Map<String, dynamic> queryParams = {};
+    if (genderFilter != null) {
+      queryParams['genderFilter'] = genderFilter.toJson();
+    }
+    
+    final response = await dio.get(
+      '/api/sessions',
+      queryParameters: queryParams,
+    );
+    
+    return (response.data as List)
+        .map((json) => SessionModel.fromJson(json))
+        .toList();
+  }
+
+  @override
+  Future<SessionModel> createSession(CreateSessionModel createSessionModel) async {
+    final response = await dio.post(
+      '/api/sessions',
+      data: createSessionModel.toJson(),
+    );
+    return SessionModel.fromJson(response.data);
+  }
+
+  @override
+  Future<void> joinSession(String sessionId) async {
+    await dio.post('/api/sessions/$sessionId/join');
+  }
+
+  @override
+  Future<void> markAttendance(MarkAttendanceModel markAttendanceModel) async {
+    await dio.put(
+      '/api/sessions/attendance',
+      data: markAttendanceModel.toJson(),
+    );
+  }
+}
+*/
+
+
+==================================================
+Path: create_session_model.dart
+==================================================
+
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:dartz/dartz.dart' ;
+import 'package:json_annotation/json_annotation.dart';
+import 'package:sahbifit_mobile/features/session/domain/enums/session_type.dart';
+
+/// Data Transfer Object (DTO) for creating a session.
+/// This maps directly to the backend's [CreateSessionDto.java].
+@freezed
+class CreateSessionModel with _$CreateSessionModel {
+  @JsonSerializable(
+    createFactory: false, // We only need toJson for sending data
+    fieldRename: FieldRename.none, // Java fields are already camelCase
+  )
+  const factory CreateSessionModel({
+    required String gymId,
+    required SessionType sessionType,
+    required String title,
+    required DateTime startTime,
+    required DateTime endTime,
+    required int maxParticipants,
+  }) = _CreateSessionModel;
+}
+
+
+==================================================
+Path: mark_attendance_model.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit_mobile/features/session/domain/enums/participant_status.dart';
+
+
+/// Data Transfer Object (DTO) for marking attendance.
+/// This maps directly to the backend's [MarkAttendanceDto.java].
+@freezed
+class MarkAttendanceModel with _$MarkAttendanceModel {
+  @JsonSerializable(
+    createFactory: false, // We only need toJson for sending data
+    fieldRename: FieldRename.none, // Java fields are already camelCase
+  )
+  const factory MarkAttendanceModel({
+    required String sessionId,
+    required String participantUserId,
+    required ParticipantStatus newStatus,
+  }) = _MarkAttendanceModel;
+}
+
+
+==================================================
+Path: session_model.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit_mobile/features/gym/data/models/gym_model.dart'; // Assuming you have this
+import 'package:sahbifit_mobile/features/user/data/models/user_model.dart'; // Assuming you have this
+import 'package:sahbifit_mobile/features/session/domain/entities/session.dart';
+
+/// Data model for a [Session], mapping directly to the API response
+/// and [Session.java] entity.
+@freezed
+class SessionModel with _$SessionModel {
+  @JsonSerializable(
+    createToJson: false, // We only need fromJson for receiving data
+    fieldRename: FieldRename.none, // Java fields are already camelCase
+  )
+  const factory SessionModel({
+    required String sessionId,
+    required UserModel creator,
+    required GymModel gym,
+    required SessionType sessionType,
+    required SessionStatus status,
+    required String title,
+    required DateTime startTime,
+    required DateTime endTime,
+    required int maxParticipants,
+    required int participantCount, // From the @Formula
+    String? firestoreChatId,
+    required bool isChatActive,
+    required bool isChatProcessed,
+  }) = _SessionModel;
+
+  factory SessionModel.fromJson(Map<String, dynamic> json) =>
+      _$SessionModelFromJson(json);
+}
+
+// Extension to map the Data-layer model to a Domain-layer entity
+extension SessionModelX on SessionModel {
+  /// Maps the [SessionModel] (data layer) to a [Session] (domain layer) entity.
+  Session toDomain() {
+    return Session(
+      sessionId: sessionId,
+      // Map nested models to their domain entities
+      creator: creator.toDomain(),
+      gym: gym.toDomain(),
+      sessionType: sessionType,
+      status: status,
+      title: title,
+      startTime: startTime,
+      endTime: endTime,
+      maxParticipants: maxParticipants,
+      participantCount: participantCount,
+      firestoreChatId: firestoreChatId,
+      isChatActive: isChatActive,
+    );
+  }
+}
+
+
+==================================================
+Path: session_participant_model.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit_mobile/features/user/data/models/user_model.dart'; // Assuming you have this
+import 'package:sahbifit_mobile/features/session/domain/entities/session_participant.dart';
+
+
+/// Data model for a [SessionParticipant], mapping to [SessionParticipant.java].
+/// This model is likely nested within a full session details response.
+@freezed
+class SessionParticipantModel with _$SessionParticipantModel {
+  @JsonSerializable(
+    createToJson: false, // We only need fromJson
+    fieldRename: FieldRename.none,
+  )
+  const factory SessionParticipantModel({
+    required UserModel user,
+    required ParticipantStatus status,
+  }) = _SessionParticipantModel;
+
+  factory SessionParticipantModel.fromJson(Map<String, dynamic> json) =>
+      _$SessionParticipantModelFromJson(json);
+}
+
+// Extension to map the Data-layer model to a Domain-layer entity
+extension SessionParticipantModelX on SessionParticipantModel {
+  /// Maps the [SessionParticipantModel] (data) to a [SessionParticipant] (domain).
+  /// This flattens the nested user object to match the UI's needs.
+  SessionParticipant toDomain() {
+    return SessionParticipant(
+      id: user.userId,
+      name: user.firstName, // Or user.fullName if you have it
+      avatarUrl: user.avatarUrl,
+      isVerified: user.isVerified,
+      status: status,
+    );
+  }
+}
+
+
+==================================================
+Path: session_repository_impl.dart
+==================================================
+import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart'; // Assuming you use Dio
+import 'package:sahbifit_mobile/core/errors/failure.dart';
+import 'package:sahbifit_mobile/core/utils/type_defs.dart';
+import 'package:sahbifit_mobile/features/session/data/datasources/session_remote_datasource.dart';
+import 'package:sahbifit_mobile/features/session/data/models/create_session_model.dart';
+import 'package:sahbifit_mobile/features/session/data/models/mark_attendance_model.dart';
+import 'package:sahbifit_mobile/features/session/data/models/session_model.dart';
+import 'package:sahbifit_mobile/features/session/domain/entities/session.dart';
+import 'package:sahbifit_mobile/features/session/domain/repositories/session_repository.dart';
+import 'package:sahbifit_mobile/features/verification/domain/enums/verified_gender_enum.dart';
+
+class SessionRepositoryImpl implements SessionRepository {
+  final SessionRemoteDataSource remoteDataSource;
+
+  SessionRepositoryImpl(this.remoteDataSource);
+
+  @override
+  Future<Result<List<Session>>> getActiveSessions(
+      {VerifiedGender? genderFilter}) async {
+    try {
+      final sessionModels =
+          await remoteDataSource.getActiveSessions(genderFilter: genderFilter);
+      // Map from Data Models to Domain Entities
+      final sessions = sessionModels.map((model) => model.toDomain()).toList();
+      return Right(sessions);
+    } on DioException catch (e) {
+      // Handle API errors
+      return Left(ServerFailure(e.message ?? 'Failed to fetch sessions'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<Session>> createSession(
+      CreateSessionModel createSessionModel) async {
+    try {
+      final sessionModel =
+          await remoteDataSource.createSession(createSessionModel);
+      // Map from Data Model to Domain Entity
+      return Right(sessionModel.toDomain());
+    } on DioException catch (e) {
+      // Handle specific backend errors (like "IllegalStateException")
+      if (e.response?.statusCode == 400 || e.response?.statusCode == 500) {
+        // You can parse the error response from Spring Boot
+        final errorMessage =
+            e.response?.data['message'] ?? 'Failed to create session.';
+        return Left(ServerFailure(errorMessage));
+      }
+      return Left(ServerFailure(e.message ?? 'Failed to create session'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void>> joinSession(String sessionId) async {
+    try {
+      await remoteDataSource.joinSession(sessionId);
+      return const Right(null);
+    } on DioException catch (e) {
+      // Handle specific backend errors
+      if (e.response?.statusCode == 400 || e.response?.statusCode == 500) {
+        final errorMessage =
+            e.response?.data['message'] ?? 'Failed to join session.';
+        return Left(ServerFailure(errorMessage));
+      }
+      return Left(ServerFailure(e.message ?? 'Failed to join session'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void>> markAttendance(
+      MarkAttendanceModel markAttendanceModel) async {
+    try {
+      await remoteDataSource.markAttendance(markAttendanceModel);
+      return const Right(null);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 403) {
+        return const Left(ServerFailure('You are not allowed to mark attendance.'));
+      }
+      return Left(ServerFailure(e.message ?? 'Failed to mark attendance'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+}
+
+
+==================================================
+Path: session.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit_mobile/features/gym/domain/entities/gym.dart'; // Stubbed
+import 'package:sahbifit_mobile/features/session/domain/entities/enums/session_status.dart';
+import 'package:sahbifit_mobile/features/session/domain/entities/enums/session_type.dart';
+import 'package:sahbifit_mobile/features/user/domain/entities/user.dart'; // Stubbed
+part 'session.freezed.dart';
+
+/// Clean domain entity for a Session.
+/// This is what the UI will consume.
+@freezed
+class Session with _$Session {
+  const factory Session({
+    required String sessionId,
+    required User creator,
+    required Gym gym,
+    required SessionType sessionType,
+    required SessionStatus status,
+    required String title,
+    required DateTime startTime,
+    required DateTime endTime,
+    required int maxParticipants,
+    required int participantCount,
+    String? firestoreChatId,
+    required bool isChatActive,
+  }) = _Session;
+}
+
+
+==================================================
+Path: session_participant.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit_mobile/features/session/domain/entities/enums/participant_status.dart';
+
+
+/// Clean domain entity for a SessionParticipant.
+/// This is flattened for the UI, as seen in [SessionParticipantList].
+@freezed
+class SessionParticipant with _$SessionParticipant {
+  const factory SessionParticipant({
+    required String id, // This is the User's ID
+    required String name,
+    String? avatarUrl,
+    required bool isVerified,
+    required ParticipantStatus status,
+  }) = _SessionParticipant;
+}
+
+// Helper extension for the UI
+extension ParticipantStatusX on ParticipantStatus {
+  String get displayName {
+    switch (this) {
+      case ParticipantStatus.joined:
+        return 'Joined';
+      case ParticipantStatus.attended:
+        return 'Attended';
+      case ParticipantStatus.noShow:
+        return 'No Show';
+      case ParticipantStatus.left:
+        return 'Left';
+    }
+  }
+}
+
+
+==================================================
+Path: participant_status.dart
+==================================================
+import 'package:json_annotation/json_annotation.dart';
+
+/// Enum for participant status.
+/// CRITICAL: The @JsonValue MUST match the string in [ParticipantStatus.java]
+enum ParticipantStatus {
+  @JsonValue('joined')
+  joined,
+
+  @JsonValue('attended')
+  attended,
+
+  @JsonValue('no_show')
+  noShow, // Dart enum name can be camelCase
+
+  @JsonValue('left')
+  left,
+}
+
+
+==================================================
+Path: session_status.dart
+==================================================
+import 'package:json_annotation/json_annotation.dart';
+
+/// Enum for session status.
+/// CRITICAL: The @JsonValue MUST match the string in [SessionStatus.java]
+enum SessionStatus {
+  @JsonValue('active')
+  active,
+
+  @JsonValue('cancelled')
+  cancelled,
+
+  @JsonValue('completed')
+  completed,
+}
+
+
+==================================================
+Path: session_type.dart
+==================================================
+import 'package:json_annotation/json_annotation.dart';
+
+/// Enum for session type.
+/// CRITICAL: The @JsonValue MUST match the string in [SessionType.java]
+enum SessionType {
+  @JsonValue('group')
+  group,
+
+  @JsonValue('one_on_one')
+  oneOnOne, // Dart enum name can be camelCase
+}
+
+
+==================================================
+Path: participant_status.dart
+==================================================
+enum ParticipantStatus {
+  joined,
+  attended,
+  noShow,
+  left,
+}
+
+
+==================================================
+Path: session_status.dart
+==================================================
+enum SessionStatus {
+  active,
+  cancelled,
+  completed,
+}
+
+
+==================================================
+Path: session_type.dart
+==================================================
+enum SessionType {
+  group,
+  oneOnOne,
+}
+
+
+==================================================
+Path: session_repository.dart
+==================================================
+import 'package:sahbifit_mobile/core/utils/type_defs.dart';
+import 'package:sahbifit_mobile/features/session/data/models/create_session_model.dart';
+import 'package:sahbifit_mobile/features/session/data/models/mark_attendance_model.dart';
+import 'package:sahbifit_mobile/features/session/domain/entities/session.dart';
+import 'package:sahbifit_mobile/features/verification/domain/enums/verified_gender_enum.dart';
+
+/// Abstract repository interface for the Domain layer.
+/// Defines *what* can be done, not *how*.
+abstract class SessionRepository {
+  /// Get the list of active sessions for the feed.
+  Future<Result<List<Session>>> getActiveSessions(
+      {VerifiedGender? genderFilter});
+
+  /// Create a new session.
+  Future<Result<Session>> createSession(CreateSessionModel createSessionModel);
+
+  /// Join an existing session.
+  Future<Result<void>> joinSession(String sessionId);
+
+  /// Mark a participant's attendance.
+  Future<Result<void>> markAttendance(MarkAttendanceModel markAttendanceModel);
+}
+
+
+==================================================
+Path: create_session.dart
+==================================================
+import 'package:sahbifit_mobile/core/utils/type_defs.dart';
+import 'package:sahbifit_mobile/features/session/data/models/create_session_model.dart';
+import 'package:sahbifit_mobile/features/session/domain/entities/session.dart';
+import 'package:sahbifit_mobile/features/session/domain/repositories/session_repository.dart';
+
+/// Use case for creating a session.
+class CreateSession {
+  final SessionRepository repository;
+
+  CreateSession(this.repository);
+
+  Future<Result<Session>> call(CreateSessionModel params) async {
+    return await repository.createSession(params);
+  }
+}
+
+
+==================================================
+Path: get_active_sessions.dart
+==================================================
+import 'package:sahbifit_mobile/core/utils/type_defs.dart';
+import 'package:sahbifit_mobile/features/session/domain/entities/session.dart';
+import 'package:sahbifit_mobile/features/session/domain/repositories/session_repository.dart';
+import 'package:sahbifit_mobile/features/verification/domain/enums/verified_gender_enum.dart';
+
+/// Use case for getting the active session feed.
+class GetActiveSessions {
+  final SessionRepository repository;
+
+  GetActiveSessions(this.repository);
+
+  Future<Result<List<Session>>> call(GetActiveSessionsParams params) async {
+    return await repository.getActiveSessions(
+        genderFilter: params.genderFilter);
+  }
+}
+
+class GetActiveSessionsParams {
+  final VerifiedGender? genderFilter;
+  const GetActiveSessionsParams({this.genderFilter});
+}
+
+
+==================================================
+Path: join_session.dart
+==================================================
+import 'package:sahbifit_mobile/core/utils/type_defs.dart';
+import 'package:sahbifit_mobile/features/session/domain/repositories/session_repository.dart';
+
+/// Use case for joining a session.
+class JoinSession {
+  final SessionRepository repository;
+
+  JoinSession(this.repository);
+
+  Future<Result<void>> call(String sessionId) async {
+    return await repository.joinSession(sessionId);
+  }
+}
+
+
+==================================================
+Path: mark_attendance.dart
+==================================================
+import 'package:sahbifit_mobile/core/utils/type_defs.dart';
+import 'package:sahbifit_mobile/features/session/data/models/mark_attendance_model.dart';
+import 'package:sahbifit_mobile/features/session/domain/repositories/session_repository.dart';
+
+/// Use case for marking attendance.
+class MarkAttendance {
+  final SessionRepository repository;
+
+  MarkAttendance(this.repository);
+
+  Future<Result<void>> call(MarkAttendanceModel params) async {
+    return await repository.markAttendance(params);
+  }
+}
+
+
+==================================================
+Path: session_feed_cubit.dart
+==================================================
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sahbifit_mobile/features/session/domain/usecases/get_active_sessions.dart';
+import 'package:sahbifit_mobile/features/session/presentation/cubit/session_feed_state.dart';
+import 'package:sahbifit_mobile/features/verification/domain/enums/verified_gender_enum.dart';
+
+class SessionFeedCubit extends Cubit<SessionFeedState> {
+  final GetActiveSessions _getActiveSessions;
+
+  SessionFeedCubit(this._getActiveSessions)
+      : super(const SessionFeedState.initial());
+
+  /// Fetches the active sessions from the repository.
+  Future<void> fetchActiveSessions({VerifiedGender? genderFilter}) async {
+    emit(const SessionFeedState.loading());
+
+    final params = GetActiveSessionsParams(genderFilter: genderFilter);
+    final result = await _getActiveSessions(params);
+
+    result.fold(
+      // On Failure
+      (failure) => emit(SessionFeedState.failure(failure.message)),
+      // On Success
+      (sessions) => emit(SessionFeedState.success(sessions)),
+    );
+  }
+}
+
+
+==================================================
+Path: session_feed_state.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit_mobile/features/session/domain/entities/session.dart';
+
+
+/// State for the session feed UI.
+@freezed
+class SessionFeedState with _$SessionFeedState {
+  const factory SessionFeedState.initial() = _Initial;
+  const factory SessionFeedState.loading() = _Loading;
+  const factory SessionFeedState.success(List<Session> sessions) = _Success;
+  const factory SessionFeedState.failure(String message) = _Failure;
+}
+
+
+==================================================
+Path: create_session_page.dart
+==================================================
+
+
+==================================================
+Path: mark_attendance_page.dart
+==================================================
+
+
+==================================================
+Path: session_details_page.dart
+==================================================
+
+
+==================================================
+Path: session_feed_page.dart
+==================================================
+
+
+==================================================
+Path: probation_locked_tooltip.dart
+==================================================
+import 'package:flutter/material.dart';
+import '../../../../shared_widgets/theme_components.dart';
+import '../../../../core/utils/icon_utils.dart';
+
+class ProbationLockedTooltip extends StatelessWidget {
+  final bool isGroupSession;
+  final VoidCallback? onViewAmbassadorSessions;
+
+  const ProbationLockedTooltip({
+    super.key,
+    required this.isGroupSession,
+    this.onViewAmbassadorSessions,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final message = isGroupSession
+        ? "Your profile verification is in progress. You can join sessions marked as 'Ambassador' while you wait."
+        : "Complete 3 successful group sessions to unlock 1-on-1 sessions.";
+
+    final actionText = isGroupSession ? "View Ambassador Sessions" : null;
+
+    return LockedFeature(
+      message: message,
+      icon: IconUtils.lockIcon,
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Row(
+              children: [
+                Icon(IconUtils.lockIcon, color: Colors.orange),
+                const SizedBox(width: 8),
+                Text('Feature Locked'),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(message),
+                if (isGroupSession) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    'Your verification is being processed and will be approved within 12 hours.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontStyle: FontStyle.italic,
+                        ),
+                  ),
+                ],
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Got It'),
+              ),
+              if (actionText != null && onViewAmbassadorSessions != null)
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    onViewAmbassadorSessions!();
+                  },
+                  child: Text(actionText),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+
+==================================================
+Path: reputation_gate_dialog.dart
+==================================================
+import 'package:flutter/material.dart';
+import '../../../../shared_widgets/primary_button.dart';
+import '../../../../core/utils/icon_utils.dart';
+
+class ReputationGateDialog extends StatelessWidget {
+  final int sessionsCompleted;
+  final int sessionsRequired;
+  final VoidCallback onClose;
+
+  const ReputationGateDialog({
+    super.key,
+    required this.sessionsCompleted,
+    required this.sessionsRequired,
+    required this.onClose,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final sessionsRemaining = sessionsRequired - sessionsCompleted;
+
+    return AlertDialog(
+      title: Row(
+        children: [
+          Icon(IconUtils.lockIcon, color: Colors.orange),
+          const SizedBox(width: 8),
+          Text('Build Your Reputation'),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'To unlock 1-on-1 sessions, you need to build trust in the community.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 16),
+          _buildProgressIndicator(context),
+          const SizedBox(height: 16),
+          Text(
+            'Complete $sessionsRemaining more group sessions to unlock this feature.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontStyle: FontStyle.italic,
+                ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: onClose,
+          child: Text('Close'),
+        ),
+        PrimaryButton(
+          text: 'Browse Group Sessions',
+          onPressed: () {
+            onClose();
+            // Navigate to group sessions
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProgressIndicator(BuildContext context) {
+    final progress = sessionsCompleted / sessionsRequired;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Progress: $sessionsCompleted/$sessionsRequired sessions',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        LinearProgressIndicator(
+          value: progress,
+          backgroundColor: Colors.grey[300],
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+        ),
+      ],
+    );
+  }
+}
+
+
+==================================================
+Path: session_card.dart
+==================================================
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:sahbifit_mobile/core/utils/icon_utils.dart' show IconUtils;
+import 'package:sahbifit_mobile/shared_widgets/primary_button.dart' show PrimaryButton;
+import '../../../../shared_widgets/smart_icon.dart';
+import '../../../../shared_widgets/theme_components.dart';
+class SessionCard extends StatelessWidget {
+  final String title;
+  final String gymName;
+  final DateTime dateTime;
+  final bool isGroupSession;
+  final bool isLocked;
+  final int participants;
+  final int maxParticipants;
+  final VoidCallback? onJoin;
+  final VoidCallback? onTap;
+
+  const SessionCard({
+    super.key,
+    required this.title,
+    required this.gymName,
+    required this.dateTime,
+    required this.isGroupSession,
+    this.isLocked = false,
+    this.participants = 0,
+    this.maxParticipants = 1,
+    this.onJoin,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SahbifitCard(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with session type and lock status
+          Row(
+            children: [
+              SessionTypeIndicator(
+                isGroupSession: isGroupSession,
+              ),
+              const Spacer(),
+              if (isLocked) 
+                Icon(
+                  IconUtils.lockIcon,
+                  color: Colors.grey,
+                  size: 16,
+                ),
+            ],
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Session title
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          
+          const SizedBox(height: 8),
+          
+          // Session details
+          Row(
+            children: [
+              SmartIcon(icon: IconUtils.gymIcon, size: 16),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  gymName,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 4),
+          
+          Row(
+            children: [
+              SmartIcon(icon: IconUtils.timeIcon, size: 16),
+              const SizedBox(width: 4),
+              Text(
+                '${DateFormat.jm().format(dateTime)} â€¢ ${DateFormat.MMMd().format(dateTime)}',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+          
+          if (isGroupSession) ...[
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                SmartIcon(icon: IconUtils.groupSessionIcon, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  '$participants/$maxParticipants participants',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          ],
+          
+          const SizedBox(height: 16),
+          
+          // Join button or locked state
+          if (isLocked)
+            LockedFeature(
+              message: isGroupSession 
+                  ? "Join Ambassador sessions while verification processes"
+                  : "Attend 3 group sessions to unlock 1-on-1 sessions",
+              onTap: () {
+                // Show tooltip with more info
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(isGroupSession
+                        ? "Your profile verification is in progress. You can join sessions marked as 'Ambassador'."
+                        : "Complete 3 successful group sessions to unlock 1-on-1 sessions."),
+                  ),
+                );
+              },
+            )
+          else
+            PrimaryButton(
+              text: 'Join Session',
+              onPressed: onJoin,
+              icon: IconUtils.joinIcon,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+
+==================================================
+Path: session_participant_list.dart
+==================================================
+import 'package:flutter/material.dart';
+import '../../../../../shared_widgets/theme_components.dart';
+import '../../../../../core/utils/icon_utils.dart';
+
+class SessionParticipantList extends StatelessWidget {
+  final List<SessionParticipant> participants;
+  final bool showAttendanceActions;
+  final Function(String, bool)? onAttendanceChanged;
+
+  const SessionParticipantList({
+    super.key,
+    required this.participants,
+    this.showAttendanceActions = false,
+    this.onAttendanceChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Participants (${participants.length})',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 16),
+        if (participants.isEmpty)
+          const Text('No participants yet')
+        else
+          ...participants.map((participant) => _buildParticipantCard(context, participant)),
+      ],
+    );
+  }
+
+  Widget _buildParticipantCard(BuildContext context, SessionParticipant participant) {
+    return SahbifitCard(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundImage: participant.avatarUrl != null
+                ? NetworkImage(participant.avatarUrl!)
+                : null,
+            child: participant.avatarUrl == null
+                ? const Icon(Icons.person)
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      participant.name,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    if (participant.isVerified) ...[
+                      const SizedBox(width: 4),
+                      Icon(IconUtils.verifiedBadge, size: 16, color: Colors.blue),
+                    ],
+                  ],
+                ),
+                Text(
+                  participant.status.displayName,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: _getStatusColor(participant.status),
+                      ),
+                ),
+              ],
+            ),
+          ),
+          if (showAttendanceActions && onAttendanceChanged != null)
+            _buildAttendanceToggle(participant),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAttendanceToggle(SessionParticipant participant) {
+    final isPresent = participant.status == ParticipantStatus.attended;
+    
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          isPresent ? 'Present' : 'Absent',
+          style: TextStyle(
+            color: isPresent ? Colors.green : Colors.red,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Switch(
+          value: isPresent,
+          onChanged: (value) {
+            onAttendanceChanged!(participant.id, value);
+          },
+          activeColor: Colors.green,
+        ),
+      ],
+    );
+  }
+
+  Color _getStatusColor(ParticipantStatus status) {
+    switch (status) {
+      case ParticipantStatus.attended:
+        return Colors.green;
+      case ParticipantStatus.registered:
+        return Colors.blue;
+      case ParticipantStatus.noShow:
+        return Colors.red;
+      case ParticipantStatus.pending:
+        return Colors.orange;
+    }
+  }
+}
+
+
+==================================================
+Path: session_type_toggle.dart
+==================================================
+import 'package:flutter/material.dart';
+import 'package:sahbifit_mobile/core/config/app_theme.dart';
+import '../../../../core/utils/theme_utils.dart';
+import '../../../../core/utils/icon_utils.dart';
+
+class SessionTypeToggle extends StatelessWidget {
+  final bool isGroupSession;
+  final ValueChanged<bool> onChanged;
+  final bool isEnabled;
+
+  const SessionTypeToggle({
+    super.key,
+    required this.isGroupSession,
+    required this.onChanged,
+    this.isEnabled = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppTheme.lightGrayUI,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          _buildToggleOption(
+            context,
+            isSelected: isGroupSession,
+            isGroup: true,
+            onTap: isEnabled ? () => onChanged(true) : null,
+          ),
+          _buildToggleOption(
+            context,
+            isSelected: !isGroupSession,
+            isGroup: false,
+            onTap: isEnabled ? () => onChanged(false) : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleOption(
+    BuildContext context, {
+    required bool isSelected,
+    required bool isGroup,
+    required VoidCallback? onTap,
+  }) {
+    final label = isGroup ? 'Group Session' : '1-on-1 Session';
+    final icon = isGroup ? IconUtils.groupSessionIcon : IconUtils.oneOnOneSessionIcon;
+    
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: isSelected
+                    ? ThemeUtils.getSessionTypeColor(isGroup)
+                    : AppTheme.disabledGray,
+                size: 20,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      color: isSelected ? AppTheme.primaryDarkGray : AppTheme.disabledGray,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+

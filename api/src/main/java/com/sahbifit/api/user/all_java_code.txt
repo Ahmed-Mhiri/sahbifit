@@ -1,0 +1,644 @@
+﻿==================================================
+Path: UserController.java
+==================================================
+package com.sahbifit.api.user;
+
+import java.security.Principal;
+import java.util.UUID;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.sahbifit.api.user.dto.UpdateFcmTokenDto;
+import com.sahbifit.api.user.dto.UpdateVisibilityDto;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/users")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserService userService;
+
+    // ... (Other user endpoints could be here, e.g., GET /api/users/me)
+
+    /**
+     * Endpoint to block another user.
+     * The blocking user is identified via JWT (Principal).
+     */
+    @PostMapping("/{userId}/block")
+    public ResponseEntity<Void> blockUser(
+            @PathVariable UUID userId,
+            Principal principal) {
+        
+        // principal.getName() contains the phone number of the authenticated user
+        userService.blockUser(principal.getName(), userId);
+        
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Updates the FCM push notification token for the currently authenticated user.
+     */
+    @PutMapping("/me/fcm-token")
+    public ResponseEntity<Void> updateFcmToken(
+            @Valid @RequestBody UpdateFcmTokenDto dto,
+            Principal principal) {
+        
+        userService.updateFcmToken(principal.getName(), dto);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Updates the profile visibility setting for the currently authenticated user.
+     */
+    @PutMapping("/me/visibility")
+    public ResponseEntity<Void> updateProfileVisibility(
+            @Valid @RequestBody UpdateVisibilityDto dto,
+            Principal principal) {
+        
+        userService.updateProfileVisibility(principal.getName(), dto);
+        return ResponseEntity.ok().build();
+    }
+}
+
+
+==================================================
+Path: UserService.java
+==================================================
+package com.sahbifit.api.user;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sahbifit.api.badge.model.Badge;
+import com.sahbifit.api.badge.model.UserBadge;
+import com.sahbifit.api.badge.model.UserBadgeId;
+import com.sahbifit.api.badge.repository.BadgeRepository;
+import com.sahbifit.api.badge.repository.UserBadgeRepository;
+import com.sahbifit.api.exception.ResourceNotFoundException;
+import com.sahbifit.api.user.dto.UpdateFcmTokenDto;
+import com.sahbifit.api.user.dto.UpdateVisibilityDto;
+import com.sahbifit.api.user.model.ProfileVisibility;
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.model.UserBlock;
+import com.sahbifit.api.user.model.UserBlockId;
+import com.sahbifit.api.user.model.UserStatus;
+import com.sahbifit.api.user.repository.UserBlockRepository;
+import com.sahbifit.api.user.repository.UserRepository;
+import com.sahbifit.api.verification.model.VerifiedGender;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final UserRepository userRepository;
+    private final UserBlockRepository userBlockRepository;
+    private final BadgeRepository badgeRepository;
+    private final UserBadgeRepository userBadgeRepository;
+
+    // Defines the limit for "No-Shows"
+    private static final int NO_SHOW_LIMIT = 3;
+    private static final String UNRELIABLE_BADGE_NAME = "UNRELIABLE";
+
+    /**
+     * Increases the counter for completed group sessions of a user.
+     * (MVP 3.5 Logic)
+     */
+    @Transactional
+    public void incrementGroupSessionCount(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+        
+        int newGroupCount = user.getGroupSessionCount() + 1;
+        user.setGroupSessionCount(newGroupCount);
+        userRepository.save(user);
+        
+        log.info("User {} group session count incremented to {}.", userId, newGroupCount);
+    }
+
+    /**
+     * Increases the "No-Show" counter for a user and applies a block if necessary.
+     * (MVP 5.4 & 5.5 Logic)
+     */
+    @Transactional
+    public void incrementNoShowCount(UUID userId) {
+        // 1. Find user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+
+        // 2. Increase counter
+        int newNoShowCount = user.getNoShowCount() + 1;
+        user.setNoShowCount(newNoShowCount);
+
+        // 3. Block check (MVP 5.5)
+        if (newNoShowCount >= NO_SHOW_LIMIT) {
+            // Block user
+            user.setStatus(UserStatus.suspended);
+            user.setSuspendedUntil(OffsetDateTime.now().plusDays(3)); // 3-day block
+            
+            // Reset counter after applying the block
+            user.setNoShowCount(0); 
+
+            log.warn("User {} suspended for 3 days due to {} no-shows.", userId, newNoShowCount);
+            
+            // --- NEW LOGIC ---
+            // 4. Award the "Unreliable" badge
+            try {
+                awardUnreliableBadge(user);
+            } catch (Exception e) {
+                log.error("Failed to award UNRELIABLE badge to user {}: {}", userId, e.getMessage());
+                // Don't fail the transaction, just log the error
+            }
+            // --- END NEW LOGIC ---
+
+        } else {
+            log.info("User {} 'no-show' count incremented to {}.", userId, newNoShowCount);
+        }
+
+        // 5. Save user
+        userRepository.save(user);
+    }
+
+    /**
+     * Awards the "UNRELIABLE" badge to a user
+     */
+    private void awardUnreliableBadge(User user) {
+        // Find the master "Unreliable" badge
+        Badge unreliableBadge = badgeRepository.findByBadgeName(UNRELIABLE_BADGE_NAME)
+                .orElseThrow(() -> new RuntimeException(UNRELIABLE_BADGE_NAME + " badge not found in database."));
+
+        // Create the composite key
+        UserBadgeId userBadgeId = new UserBadgeId();
+        userBadgeId.setUserId(user.getUserId());
+        userBadgeId.setBadgeId(unreliableBadge.getBadgeId());
+
+        // Check if user already has this badge
+        if (userBadgeRepository.existsById(userBadgeId)) {
+            return; // Already has it, do nothing
+        }
+
+        // Assign the badge
+        UserBadge newUserBadge = new UserBadge();
+        newUserBadge.setId(userBadgeId);
+        newUserBadge.setUser(user);
+        newUserBadge.setBadge(unreliableBadge);
+        
+        userBadgeRepository.save(newUserBadge);
+        log.info("Awarded {} badge to user {}", UNRELIABLE_BADGE_NAME, user.getUserId());
+    }
+
+    /**
+     * Allows a user to block another user.
+     * (MVP 4.2 Logic)
+     */
+    @Transactional
+    public void blockUser(String blockerPhoneNumber, UUID blockedUserId) {
+        // 1. Find blocker user
+        User blockerUser = userRepository.findByPhoneNumber(blockerPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", blockerPhoneNumber));
+
+        // 2. Find user to be blocked
+        User blockedUser = userRepository.findById(blockedUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", blockedUserId));
+
+        // 3. Prevent self-blocking
+        if (blockerUser.getUserId().equals(blockedUser.getUserId())) {
+            throw new IllegalArgumentException("A user cannot block themselves.");
+        }
+
+        // 4. Check if already blocked
+        boolean alreadyBlocked = userBlockRepository.existsByBlockerUserIdAndBlockedUserId(
+                blockerUser.getUserId(), blockedUser.getUserId());
+
+        if (alreadyBlocked) {
+            return;
+        }
+
+        // 5. Create UserBlock entity
+        UserBlockId blockId = new UserBlockId();
+        blockId.setBlockerUserId(blockerUser.getUserId());
+        blockId.setBlockedUserId(blockedUser.getUserId());
+
+        UserBlock newBlock = new UserBlock();
+        newBlock.setId(blockId);
+        newBlock.setBlocker(blockerUser);
+        newBlock.setBlocked(blockedUser);
+
+        // 6. Save block
+        userBlockRepository.save(newBlock);
+    }
+
+    @Transactional
+    public void updateFcmToken(String userPhoneNumber, UpdateFcmTokenDto dto) {
+        User user = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
+        
+        user.setPushNotificationToken(dto.fcmToken());
+        userRepository.save(user);
+        log.info("Updated FCM token for user: {}", user.getUserId());
+    }
+
+    @Transactional
+    public void updateProfileVisibility(String userPhoneNumber, UpdateVisibilityDto dto) {
+        User user = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
+
+        // Validation: You cannot set visibility to "same_gender" if you are not gender-verified.
+        if (dto.visibility() == ProfileVisibility.same_gender && 
+            user.getVerifiedGender() == VerifiedGender.not_verified) {
+            
+            throw new IllegalStateException("You must be gender-verified to use this privacy setting.");
+        }
+
+        user.setProfileVisibility(dto.visibility());
+        userRepository.save(user);
+        log.info("Updated profile visibility for user {} to {}", user.getUserId(), dto.visibility());
+    }
+}
+
+
+==================================================
+Path: UpdateFcmTokenDto.java
+==================================================
+package com.sahbifit.api.user.dto;
+
+import jakarta.validation.constraints.NotBlank;
+
+public record UpdateFcmTokenDto(
+    @NotBlank
+    String fcmToken
+) {}
+
+
+==================================================
+Path: UpdateVisibilityDto.java
+==================================================
+package com.sahbifit.api.user.dto;
+
+import com.sahbifit.api.user.model.ProfileVisibility;
+
+import jakarta.validation.constraints.NotNull;
+
+public record UpdateVisibilityDto(
+    @NotNull
+    ProfileVisibility visibility
+) {}
+
+
+==================================================
+Path: ProfileVisibility.java
+==================================================
+package com.sahbifit.api.user.model;
+
+public enum ProfileVisibility {
+    /** Everyone can see the profile. */
+    all,
+    
+    /** Only verified users of the same gender can see the profile. */
+    same_gender
+}
+
+
+==================================================
+Path: User.java
+==================================================
+package com.sahbifit.api.user.model;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.Set;
+import java.util.UUID;
+
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
+
+import com.sahbifit.api.badge.model.UserBadge;
+import com.sahbifit.api.gym.model.Gym;
+import com.sahbifit.api.rating.model.Rating;
+import com.sahbifit.api.report.model.Report;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.session.model.SessionParticipant;
+import com.sahbifit.api.tag.model.UserTag;
+import com.sahbifit.api.verification.model.VerificationStatus;
+import com.sahbifit.api.verification.model.VerifiedGender;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "users", indexes = {
+    @Index(name = "idx_user_primary_gym", columnList = "primary_gym_id"),
+    @Index(name = "idx_user_verification_status", columnList = "verification_status"),
+    @Index(name = "idx_user_role_status", columnList = "role, status"),
+    @Index(name = "idx_user_created_at", columnList = "created_at DESC")
+})
+@SQLDelete(sql = "UPDATE users SET status = 'banned', updated_at = CURRENT_TIMESTAMP WHERE user_id = ?")
+@SQLRestriction("status != 'banned'")
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "user_id")
+    private UUID userId;
+
+    @Column(name = "phone_number", nullable = false, unique = true, length = 20)
+    private String phoneNumber;
+
+    @Column(name = "password_hash", nullable = false)
+    private String password;
+
+    @Column(name = "is_phone_verified", nullable = false)
+    @ColumnDefault("false")
+    private boolean isPhoneVerified = false;
+
+    @Column(name = "sms_otp", length = 6)
+    private String smsOtp;
+
+    @Column(name = "sms_otp_expires_at")
+    private OffsetDateTime smsOtpExpiresAt;
+
+    @Column(name = "first_name", nullable = false, length = 100)
+    private String firstName;
+
+    @Column(name = "date_of_birth", nullable = false)
+    private LocalDate dateOfBirth;
+
+    @Column(name = "profile_photo_url")
+    private String profilePhotoUrl;
+
+    @Column(name = "verification_video_url")
+    private String verificationVideoUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "verification_status", nullable = false, columnDefinition = "verification_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerificationStatus verificationStatus = VerificationStatus.not_started;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "verified_gender", nullable = false, columnDefinition = "verified_gender")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerifiedGender verifiedGender = VerifiedGender.not_verified;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "profile_visibility", nullable = false, columnDefinition = "profile_visibility")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @ColumnDefault("'all'") // Default to 'all'
+    private ProfileVisibility profileVisibility = ProfileVisibility.all;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "primary_gym_id")
+    private Gym primaryGym;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, columnDefinition = "user_role")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private UserRole role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, columnDefinition = "user_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private UserStatus status;
+
+    @Column(name = "suspended_until")
+    private OffsetDateTime suspendedUntil;
+
+    @Column(name = "group_session_count", nullable = false)
+    @ColumnDefault("0")
+    private Integer groupSessionCount = 0;
+
+    @Column(name = "no_show_count", nullable = false)
+    @ColumnDefault("0")
+    private Integer noShowCount = 0;
+
+    @Column(name = "push_notification_token")
+    private String pushNotificationToken;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
+    // NEW FIELD: Dedicated timestamp for verification submission
+    @Column(name = "verification_submitted_at")
+    private OffsetDateTime verificationSubmittedAt;
+
+    @OneToMany(mappedBy = "submittedByUser")
+    private Set<Gym> submittedGyms;
+
+    @OneToMany(mappedBy = "creator")
+    private Set<Session> createdSessions;
+
+    @OneToMany(mappedBy = "user")
+    private Set<SessionParticipant> sessionParticipations;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    private Set<UserTag> userTags;
+
+    @OneToMany(mappedBy = "ratingBy")
+    private Set<Rating> givenRatings;
+
+    @OneToMany(mappedBy = "ratingFor")
+    private Set<Rating> receivedRatings;
+
+    @OneToMany(mappedBy = "reportedBy")
+    private Set<Report> filedReports;
+
+    @OneToMany(mappedBy = "reportedUser")
+    private Set<Report> receivedReports;
+
+    @OneToMany(mappedBy = "blocker")
+    private Set<UserBlock> blockedUsers;
+
+    @OneToMany(mappedBy = "blocked")
+    private Set<UserBlock> blockedByUsers;
+
+    @OneToMany(mappedBy = "user")
+    private Set<UserBadge> userBadges;
+}
+
+
+==================================================
+Path: UserBlock.java
+==================================================
+package com.sahbifit.api.user.model;
+
+import java.time.OffsetDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "user_blocks", indexes = { // <-- ADD THIS BLOCK
+    @Index(name = "idx_userblock_blocker", columnList = "blocker_user_id"),
+    @Index(name = "idx_userblock_blocked", columnList = "blocked_user_id")
+})
+public class UserBlock {
+
+    @EmbeddedId
+    private UserBlockId id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("blockerUserId")
+    @JoinColumn(name = "blocker_user_id")
+    private User blocker;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("blockedUserId")
+    @JoinColumn(name = "blocked_user_id")
+    private User blocked;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+}
+
+
+==================================================
+Path: UserBlockId.java
+==================================================
+package com.sahbifit.api.user.model;
+
+import java.io.Serializable;
+import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import lombok.Data;
+
+@Data
+@Embeddable
+public class UserBlockId implements Serializable {
+    
+    @Column(name = "blocker_user_id")
+    private UUID blockerUserId;
+
+    @Column(name = "blocked_user_id")
+    private UUID blockedUserId;
+}
+
+
+==================================================
+Path: UserRole.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/model/enums/UserRole.java
+package com.sahbifit.api.user.model;
+
+public enum UserRole {
+    member,
+    ambassador,
+    admin
+}
+
+
+==================================================
+Path: UserStatus.java
+==================================================
+package com.sahbifit.api.user.model;
+
+public enum UserStatus {
+    active,
+    suspended,
+    banned
+}
+
+
+==================================================
+Path: UserBlockRepository.java
+==================================================
+package com.sahbifit.api.user.repository;
+
+import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.sahbifit.api.user.model.UserBlock;
+import com.sahbifit.api.user.model.UserBlockId;
+
+@Repository
+public interface UserBlockRepository extends JpaRepository<UserBlock, UserBlockId> {
+
+    // Hilfsmethode, um zu prÃ¼fen, ob eine Blockierung bereits existiert
+    boolean existsByBlockerUserIdAndBlockedUserId(UUID blockerUserId, UUID blockedUserId);
+}
+
+
+==================================================
+Path: UserRepository.java
+==================================================
+package com.sahbifit.api.user.repository;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.verification.model.VerificationStatus;
+
+public interface UserRepository extends JpaRepository<User, UUID> {
+    
+    // Diese Methode ist entscheidend fÃ¼r den Login
+    Optional<User> findByPhoneNumber(String phoneNumber);
+    
+    // Add this method to fix the first error
+    List<User> findByVerificationStatus(VerificationStatus verificationStatus);
+
+    // Add to UserRepository.java
+    boolean existsByPhoneNumber(String phoneNumber);
+}
+
+

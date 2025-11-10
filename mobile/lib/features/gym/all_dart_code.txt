@@ -1,0 +1,426 @@
+﻿==================================================
+Path: gym_remote_datasource.dart
+==================================================
+import 'package:dio/dio.dart'; // Assuming you use Dio for HTTP
+import 'package:sahbifit_mobile/features/gym/data/models/gym_model.dart';
+import 'package:sahbifit_mobile/features/gym/data/models/gym_submission_model.dart';
+import 'package:sahbifit_mobile/core/errors/exceptions.dart';
+abstract class GymRemoteDataSource {
+  /// Calls the GET /api/gyms endpoint.
+  /// Throws a [ServerException] for all error codes.
+  Future<List<GymModel>> getApprovedGyms();
+
+  /// Calls the POST /api/gyms/submit endpoint.
+  /// Throws a [ServerException] for all error codes.
+  Future<void> submitGym(GymSubmissionModel submissionModel);
+}
+
+class GymRemoteDataSourceImpl implements GymRemoteDataSource {
+  final Dio dio;
+
+  GymRemoteDataSourceImpl({required this.dio});
+
+  @override
+  Future<List<GymModel>> getApprovedGyms() async {
+    try {
+      // This path matches GymController's @GetMapping("/gyms")
+      final response = await dio.get('/api/gyms');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> gymsJson = response.data as List;
+        return gymsJson
+            .map((json) => GymModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+      } else {
+        throw ServerException();
+      }
+    } catch (e) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> submitGym(GymSubmissionModel submissionModel) async {
+    try {
+      // This path matches GymController's @PostMapping("/gyms/submit")
+      final response = await dio.post(
+        '/api/gyms/submit',
+        data: submissionModel.toJson(),
+      );
+
+      // HttpStatus.CREATED is 201
+      if (response.statusCode != 201) {
+        throw ServerException();
+      }
+      // No return value needed, as per controller's ResponseEntity<Gym>
+      // We just care that it succeeded.
+    } catch (e) {
+      throw ServerException();
+    }
+  }
+}
+
+
+==================================================
+Path: gym_model.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:sahbifit_mobile/features/gym/domain/enums/gym_status.dart';
+import '../../domain/entities/gym.dart'; // We will create this
+
+class GymModel extends Gym {
+  const GymModel({
+    required super.id,
+    required super.name,
+    required super.address,
+    required super.memberCount,
+    required this.status, // The model has status, the entity might not
+  });
+
+  final GymStatus status;
+
+  factory GymModel.fromJson(Map<String, dynamic> json) {
+    return GymModel(
+      // Matches gymId from Gym.java
+      id: json['gymId'] as String, 
+      
+      // Matches name from Gym.java
+      name: json['name'] as String, 
+      
+      // Matches address from Gym.java
+      address: json['address'] as String? ?? '', 
+      
+      // Matches @Formula memberCount from Gym.java
+      // This directly implements MVP 6.2
+      memberCount: json['memberCount'] as int, 
+      
+      // Matches status from Gym.java
+      status: (json['status'] as String).toGymStatus(),
+    );
+  }
+
+  // Helper to convert string to enum
+}
+
+extension on String {
+  GymStatus toGymStatus() {
+    switch (this) {
+      case 'pending':
+        return GymStatus.pending;
+      case 'approved':
+        return GymStatus.approved;
+      case 'rejected':
+        return GymStatus.rejected;
+      default:
+        return GymStatus.pending; // Default fallback
+    }
+  }
+}
+
+
+==================================================
+Path: gym_submission_model.dart
+==================================================
+import 'package:equatable/equatable.dart';
+
+class GymSubmissionModel extends Equatable {
+  final String name;
+  final String address;
+
+  const GymSubmissionModel({
+    required this.name,
+    required this.address,
+  });
+
+  // Creates the JSON body for the POST request
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'address': address,
+    };
+  }
+
+  @override
+  List<Object?> get props => [name, address];
+}
+
+
+==================================================
+Path: gym_repository_impl.dart
+==================================================
+// Imports from external packages
+
+// Imports from your project (using package-relative paths is safer)
+import 'package:dartz/dartz.dart';
+import 'package:sahbifit_mobile/core/errors/exceptions.dart';
+import 'package:sahbifit_mobile/core/errors/failure.dart';
+import 'package:sahbifit_mobile/features/gym/domain/entities/gym.dart';
+import 'package:sahbifit_mobile/features/gym/domain/entities/gym_submission.dart';
+import 'package:sahbifit_mobile/features/gym/domain/repositories/gym_repository.dart';
+import 'package:sahbifit_mobile/features/gym/data/datasources/gym_remote_datasource.dart';
+import 'package:sahbifit_mobile/features/gym/data/models/gym_submission_model.dart';
+
+class GymRepositoryImpl implements GymRepository {
+  final GymRemoteDataSource remoteDataSource;
+  // You could add a localDataSource here for caching
+
+  GymRepositoryImpl({required this.remoteDataSource});
+
+  @override
+  Future<Either<Failure, List<Gym>>> getApprovedGyms() async {
+    try {
+      // The remoteDataSource returns GymModel, but the
+      // repository returns the domain entity Gym.
+      
+      // This line assumes that your `GymModel` class `extends` your `Gym` entity.
+      // e.g. class GymModel extends Gym { ... }
+      // If not, you must map the list:
+      // final gymModels = await remoteDataSource.getApprovedGyms();
+      // final List<Gym> gyms = gymModels.map((model) => model.toEntity()).toList();
+      final List<Gym> gyms = await remoteDataSource.getApprovedGyms();
+      
+      return Right(gyms);
+
+    } on ServerException {
+      // --- FIX ---
+      // You must provide an error message to ServerFailure.
+      return Left(ServerFailure('Failed to fetch gyms from the server.'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> submitGym(GymSubmission submission) async {
+    try {
+      // Convert domain entity to data model for the request
+      final submissionModel = GymSubmissionModel(
+        name: submission.name,
+        address: submission.address,
+      );
+      
+      await remoteDataSource.submitGym(submissionModel);
+      
+      // Using const Right(null) for a 'void' success is perfectly fine.
+      return const Right(null);
+
+    } on ServerException {
+      // --- FIX ---
+      // You must provide an error message to ServerFailure.
+      return Left(ServerFailure('Failed to submit gym. Please try again.'));
+    }
+  }
+}
+
+
+==================================================
+Path: gym.dart
+==================================================
+import 'package:equatable/equatable.dart';
+
+class Gym extends Equatable {
+  final String id;
+  final String name;
+  final String address;
+  final int memberCount; // For MVP 6.2
+
+  const Gym({
+    required this.id,
+    required this.name,
+    required this.address,
+    required this.memberCount,
+  });
+
+  @override
+  List<Object?> get props => [id, name, address, memberCount];
+}
+
+
+==================================================
+Path: gym_status.dart
+==================================================
+
+
+==================================================
+Path: gym_submission.dart
+==================================================
+import 'package:equatable/equatable.dart';
+
+class GymSubmission extends Equatable {
+  final String name;
+  final String address;
+
+  const GymSubmission({required this.name, required this.address});
+
+  @override
+  List<Object?> get props => [name, address];
+}
+
+
+==================================================
+Path: gym_status.dart
+==================================================
+// Defines the status of a gym
+enum GymStatus {
+  pending,
+  approved,
+  rejected,
+}
+
+
+==================================================
+Path: gym_repository.dart
+==================================================
+import 'package:dartz/dartz.dart';
+import 'package:sahbifit_mobile/features/gym/domain/entities/gym.dart';
+import 'package:sahbifit_mobile/features/gym/domain/entities/gym_submission.dart';
+
+import '../../../../../core/errors/failure.dart'; // Custom failure class
+
+
+abstract class GymRepository {
+  // Returns a list of approved Gyms for the picker
+  Future<Either<Failure, List<Gym>>> getApprovedGyms();
+  
+  // Submits a new gym for review (MVP 7.5)
+  Future<Either<Failure, void>> submitGym(GymSubmission submission);
+}
+
+
+==================================================
+Path: get_approved_gyms.dart
+==================================================
+import 'package:dartz/dartz.dart';
+import 'package:sahbifit_mobile/core/usecases/usecase.dart';
+import '../../../../../core/errors/failure.dart';
+import '../entities/gym.dart';
+import '../repositories/gym_repository.dart';
+
+class GetApprovedGyms implements UseCase<List<Gym>, NoParams> {
+  final GymRepository repository;
+
+  GetApprovedGyms(this.repository);
+
+  @override
+  Future<Either<Failure, List<Gym>>> call(NoParams params) async {
+    return await repository.getApprovedGyms();
+  }
+}
+
+
+==================================================
+Path: submit_gym.dart
+==================================================
+import 'package:dartz/dartz.dart';
+import 'package:equatable/equatable.dart';
+import 'package:sahbifit_mobile/core/usecases/usecase.dart';
+import '../../../../../core/errors/failure.dart';
+import '../entities/gym_submission.dart';
+import '../repositories/gym_repository.dart';
+
+class SubmitGym implements UseCase<void, SubmitGymParams> {
+  final GymRepository repository;
+
+  SubmitGym(this.repository);
+
+  @override
+  Future<Either<Failure, void>> call(SubmitGymParams params) async {
+    final submission = GymSubmission(
+      name: params.name,
+      address: params.address,
+    );
+    return await repository.submitGym(submission);
+  }
+}
+
+class SubmitGymParams extends Equatable {
+  final String name;
+  final String address;
+
+  const SubmitGymParams({required this.name, required this.address});
+
+  @override
+  List<Object?> get props => [name, address];
+}
+
+
+==================================================
+Path: gym_list_cubit.dart
+==================================================
+
+
+==================================================
+Path: gym_list_state.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import '../../domain/entities/gym.dart';
+
+abstract class GymListState extends Equatable {
+  const GymListState();
+
+  @override
+  List<Object> get props => [];
+}
+
+class GymListInitial extends GymListState {}
+
+class GymListLoading extends GymListState {}
+
+class GymListLoaded extends GymListState {
+  final List<Gym> gyms;
+
+  const GymListLoaded({required this.gyms});
+
+  @override
+  List<Object> get props => [gyms];
+}
+
+class GymListError extends GymListState {
+  final String message;
+
+  const GymListError({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+
+==================================================
+Path: gym_list_page.dart
+==================================================
+
+
+==================================================
+Path: submit_gym_page.dart
+==================================================
+
+
+==================================================
+Path: gym_picker.dart
+==================================================
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sahbifit_mobile/features/gym/presentation/cubit/gym_list_state.dart';
+import '../../../../../core/usecases/usecase.dart'; // For NoParams
+import '../../domain/usecases/get_approved_gyms.dart';
+
+class GymListCubit extends Cubit<GymListState> {
+  final GetApprovedGyms getApprovedGyms;
+
+  GymListCubit({required this.getApprovedGyms}) : super(GymListInitial());
+
+  Future<void> loadGyms() async {
+    emit(GymListLoading());
+    
+    final failureOrGyms = await getApprovedGyms(NoParams());
+    
+    failureOrGyms.fold(
+      (failure) => emit(GymListError(message: 'Failed to load gyms')),
+      (gyms) => emit(GymListLoaded(gyms: gyms)),
+    );
+  }
+}
+
+
+==================================================
+Path: gym_social_proof_widget.dart
+==================================================
+
+

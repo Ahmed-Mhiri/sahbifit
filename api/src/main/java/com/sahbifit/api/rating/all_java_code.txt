@@ -1,0 +1,446 @@
+﻿==================================================
+Path: RatingController.java
+==================================================
+// Path: src/main/java/com/sahbifit/api/rating/RatingController.java
+package com.sahbifit.api.rating;
+
+import java.security.Principal;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.sahbifit.api.rating.dto.CreateRatingDto;
+import com.sahbifit.api.rating.dto.PendingRatingDto;
+import com.sahbifit.api.rating.model.Rating;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/ratings")
+@RequiredArgsConstructor
+public class RatingController {
+
+    private final RatingService ratingService;
+
+    /**
+     * (MVP 5.1) Creates a new rating for a user after a session.
+     */
+    @PostMapping
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<Rating> createRating(@RequestBody CreateRatingDto dto, Principal principal) {
+        // principal.getName() contains the phone number of the logged-in user (the rater)
+        Rating newRating = ratingService.createRating(dto, principal.getName());
+        return new ResponseEntity<>(newRating, HttpStatus.CREATED);
+    }
+
+    /**
+     * (Optional) Retrieves all received ratings for a user profile.
+     */
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR', 'ADMIN')") // Anyone can view profile ratings
+    public ResponseEntity<List<Rating>> getRatingsForUser(@PathVariable UUID userId) {
+        List<Rating> ratings = ratingService.getRatingsForUser(userId);
+        return ResponseEntity.ok(ratings);
+    }
+
+    @GetMapping("/pending")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<List<PendingRatingDto>> getPendingRatings(Principal principal) {
+        List<PendingRatingDto> pendingRatings = ratingService.getPendingRatings(principal.getName());
+        return ResponseEntity.ok(pendingRatings);
+    }
+}
+
+
+==================================================
+Path: RatingNotifierService.java
+==================================================
+// Path: RatingNotifierService.java (NEW FILE)
+package com.sahbifit.api.rating;
+
+import com.sahbifit.api.external.push.PushNotificationService;
+import com.sahbifit.api.session.model.ParticipantStatus;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.session.model.SessionParticipant;
+import com.sahbifit.api.session.repository.SessionParticipantRepository;
+import com.sahbifit.api.session.repository.SessionRepository;
+import com.sahbifit.api.user.model.User;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class RatingNotifierService {
+
+    private final SessionRepository sessionRepository;
+    private final SessionParticipantRepository sessionParticipantRepository;
+    private final PushNotificationService pushNotificationService;
+
+    /**
+     * Runs every 15 minutes to check for completed sessions
+     * and trigger rating push notifications.
+     */
+    @Scheduled(fixedRate = 900000) // 900000ms = 15 minutes
+    @Transactional
+    public void triggerPendingRatings() {
+        log.info("Running pending rating notifier job...");
+
+        // 1. Find sessions that ended and haven't been processed
+        List<Session> sessionsToNotify = sessionRepository
+                .findCompletedSessionsPendingNotification(OffsetDateTime.now());
+
+        if (sessionsToNotify.isEmpty()) {
+            log.info("No sessions found for rating notification.");
+            return;
+        }
+
+        log.info("Found {} sessions to process for rating notifications.", sessionsToNotify.size());
+
+        for (Session session : sessionsToNotify) {
+            try {
+                // 2. Find all users who were marked as 'attended'
+                List<SessionParticipant> attendees = sessionParticipantRepository
+                        .findBySessionAndStatus(session, ParticipantStatus.attended);
+
+                // No need to send notifications if fewer than 2 people attended
+                if (attendees.size() < 2) {
+                    log.warn("Skipping session {} (not enough attendees)", session.getSessionId());
+                } else {
+                    // 3. Send a push notification to each attendee
+                    Set<User> attendeeUsers = attendees.stream()
+                            .map(SessionParticipant::getUser)
+                            .collect(Collectors.toSet());
+                    
+                    for (User user : attendeeUsers) {
+                        pushNotificationService.sendRatingReminder(user, session);
+                    }
+                }
+                
+                // 4. Mark the session as processed so we don't send notifications again
+                session.setRatingNotified(true);
+                sessionRepository.save(session);
+
+            } catch (Exception e) {
+                log.error("Failed to process rating notification for session {}: {}",
+                        session.getSessionId(), e.getMessage(), e);
+                // Continue to the next session
+            }
+        }
+
+        log.info("Rating notifier job finished.");
+    }
+}
+
+
+==================================================
+Path: RatingService.java
+==================================================
+// Path: src/main/java/com/sahbifit/api/rating/RatingService.java
+package com.sahbifit.api.rating;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sahbifit.api.exception.ResourceNotFoundException;
+import com.sahbifit.api.rating.dto.CreateRatingDto;
+import com.sahbifit.api.rating.dto.PendingRatingDto;
+import com.sahbifit.api.rating.model.Rating;
+import com.sahbifit.api.rating.repository.RatingRepository;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.session.model.SessionParticipantId;
+import com.sahbifit.api.session.repository.SessionParticipantRepository;
+import com.sahbifit.api.session.repository.SessionRepository;
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class RatingService {
+
+    private final RatingRepository ratingRepository;
+    private final UserRepository userRepository;
+    private final SessionRepository sessionRepository; // Required to find the session
+    private final SessionParticipantRepository sessionParticipantRepository;
+
+    /**
+     * (MVP 5.1) Creates a new rating of one user for another
+     * after a shared session.
+     */
+    public Rating createRating(CreateRatingDto dto, String raterPhoneNumber) {
+        // 1. Find user and session
+        User raterUser = userRepository.findByPhoneNumber(raterPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Rater (User) not found"));
+
+        User ratedUser = userRepository.findById(dto.ratedUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Rated User not found"));
+
+        Session session = sessionRepository.findById(dto.sessionId())
+                .orElseThrow(() -> new ResourceNotFoundException("Session not found"));
+
+        // Validation 0 (Rating yourself)
+        if (raterUser.getUserId().equals(ratedUser.getUserId())) {
+            throw new IllegalStateException("You cannot rate yourself.");
+        }
+
+        // Validation 1 (Participation)
+        SessionParticipantId raterId = new SessionParticipantId();
+        raterId.setSessionId(dto.sessionId());
+        raterId.setUserId(raterUser.getUserId());
+
+        SessionParticipantId ratedId = new SessionParticipantId();
+        ratedId.setSessionId(dto.sessionId());
+        ratedId.setUserId(dto.ratedUserId());
+
+        if (!sessionParticipantRepository.existsById(raterId) || !sessionParticipantRepository.existsById(ratedId)) {
+            throw new IllegalStateException("Both users must have participated in this session to rate each other.");
+        }
+
+        // Validation 2 (Duplicate rating)
+        boolean alreadyExists = ratingRepository.existsBySessionSessionIdAndRatingByUserIdAndRatingForUserId(
+                dto.sessionId(),
+                raterUser.getUserId(),
+                dto.ratedUserId()
+        );
+
+        if (alreadyExists) {
+            throw new IllegalStateException("You have already rated this user for this session.");
+        }
+
+        // 3. Create and save rating
+        Rating newRating = new Rating();
+        newRating.setSession(session);
+        newRating.setRatingBy(raterUser);
+        newRating.setRatingFor(ratedUser);
+        newRating.setRatingValue(dto.ratingValue());
+        newRating.setComment(dto.comment()); // Can be null
+
+        return ratingRepository.save(newRating);
+    }
+
+    /**
+     * (Optional) Retrieves all received ratings for a user.
+     */
+    @Transactional(readOnly = true)
+    public List<Rating> getRatingsForUser(UUID userId) {
+        // Ensure user exists before retrieving ratings
+        if (!userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException("User not found");
+        }
+        return ratingRepository.findByRatingForUserId(userId);
+    }
+
+    /**
+     * (MVP 5.2) Gets a list of users/sessions that the current user
+     * has attended but not yet rated - OPTIMIZED VERSION
+     */
+    @Transactional(readOnly = true)
+    public List<PendingRatingDto> getPendingRatings(String raterPhoneNumber) {
+        // Validate user exists
+        if (!userRepository.existsByPhoneNumber(raterPhoneNumber)) {
+            throw new ResourceNotFoundException("Rater (User) not found");
+        }
+        
+        // Single query to get all pending ratings
+        return ratingRepository.findPendingRatings(raterPhoneNumber);
+    }
+}
+
+
+==================================================
+Path: CreateRatingDto.java
+==================================================
+// Path: src/main/java/com/sahbifit/api/rating/dto/CreateRatingDto.java
+package com.sahbifit.api.rating.dto;
+
+import java.util.UUID;
+
+/**
+ * DTO for creating a new rating.
+ * (MVP 5.1)
+ */
+public record CreateRatingDto(
+    // The session in which the rating took place
+    UUID sessionId,
+    
+    // The user who is BEING rated
+    UUID ratedUserId,
+    
+    // The rating value (e.g., 1-5)
+    Short ratingValue,
+    
+    // An optional comment
+    String comment
+) {}
+
+
+==================================================
+Path: PendingRatingDto.java
+==================================================
+package com.sahbifit.api.rating.dto;
+
+import java.util.UUID;
+
+public record PendingRatingDto(
+    UUID sessionId,
+    String sessionTitle,
+    UUID userIdToRate,
+    String userNameToRate
+) {}
+
+
+==================================================
+Path: Rating.java
+==================================================
+// Path: src/main/java/com/sahbifit/api/rating/model/Rating.java
+package com.sahbifit.api.rating.model;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+import org.hibernate.annotations.Check;
+import org.hibernate.annotations.CreationTimestamp;
+
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.user.model.User;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "ratings", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"session_id", "rating_by_user_id", "rating_for_user_id"})
+}, indexes = { // <-- ADD THIS BLOCK
+    @Index(name = "idx_rating_session", columnList = "session_id"),
+    @Index(name = "idx_rating_rating_by", columnList = "rating_by_user_id"),
+    @Index(name = "idx_rating_rating_for", columnList = "rating_for_user_id")
+})
+@Check(constraints = "rating_by_user_id != rating_for_user_id")
+public class Rating {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "rating_id")
+    private UUID ratingId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_id", nullable = false)
+    private Session session;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rating_by_user_id", nullable = false)
+    private User ratingBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rating_for_user_id", nullable = false)
+    private User ratingFor;
+
+    @Column(name = "rating_value", nullable = false)
+    private Short ratingValue; // SMALLINT corresponds to Short
+
+    @Column(name = "comment")
+    private String comment;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+}
+
+
+==================================================
+Path: RatingRepository.java
+==================================================
+// Path: src/main/java/com/sahbifit/api/rating/repository/RatingRepository.java
+package com.sahbifit.api.rating.repository;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import com.sahbifit.api.rating.dto.PendingRatingDto;
+import com.sahbifit.api.rating.model.Rating;
+import com.sahbifit.api.user.model.User;
+
+@Repository
+public interface RatingRepository extends JpaRepository<Rating, UUID> {
+
+    /**
+     * Checks if a user has already rated another user for a specific session.
+     * Required by RatingService.createRating() (validation 2).
+     */
+    boolean existsBySessionSessionIdAndRatingByUserIdAndRatingForUserId(UUID sessionId, UUID raterId, UUID ratedId);
+
+    /**
+     * (Optional) Retrieves all ratings a user has received.
+     * Required by RatingService.getRatingsForUser().
+     */
+    List<Rating> findByRatingForUserId(UUID ratedUserId);
+
+    List<Rating> findByRatingBy(User user);
+
+    // Add this method to RatingRepository.java
+    @Query("""
+        SELECT new com.sahbifit.api.rating.dto.PendingRatingDto(
+            sp.session.sessionId, 
+            sp.session.title, 
+            op.user.userId, 
+            op.user.firstName
+        )
+        FROM SessionParticipant sp
+        JOIN SessionParticipant op ON sp.session = op.session
+        WHERE sp.user.phoneNumber = :userPhoneNumber
+        AND sp.status = 'attended'
+        AND op.user.userId != sp.user.userId
+        AND op.status = 'attended'
+        AND NOT EXISTS (
+            SELECT 1 FROM Rating r 
+            WHERE r.session = sp.session 
+            AND r.ratingBy = sp.user 
+            AND r.ratingFor = op.user
+        )
+        ORDER BY sp.session.startTime DESC
+    """)
+    List<PendingRatingDto> findPendingRatings(@Param("userPhoneNumber") String userPhoneNumber);
+}
+
+

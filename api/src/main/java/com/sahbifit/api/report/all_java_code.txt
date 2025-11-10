@@ -1,0 +1,303 @@
+﻿==================================================
+Path: ReportController.java
+==================================================
+package com.sahbifit.api.report;
+
+import java.security.Principal;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.sahbifit.api.report.dto.CreateReportDto;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/reports")
+@RequiredArgsConstructor
+public class ReportController {
+
+    private final ReportService reportService;
+
+    @PostMapping
+    public ResponseEntity<Void> createReport(
+            @Valid @RequestBody CreateReportDto createReportDto,
+            Principal principal) {
+        
+        reportService.createReport(createReportDto, principal.getName());
+        
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+}
+
+
+==================================================
+Path: ReportService.java
+==================================================
+package com.sahbifit.api.report;
+
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sahbifit.api.exception.ResourceNotFoundException;
+import com.sahbifit.api.report.dto.CreateReportDto;
+import com.sahbifit.api.report.model.Report;
+import com.sahbifit.api.report.model.ReportPriority;
+import com.sahbifit.api.report.model.ReportStatus;
+import com.sahbifit.api.report.repository.ReportRepository;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.session.repository.SessionRepository;
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.user.model.UserRole;
+import com.sahbifit.api.user.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class ReportService {
+
+    private static final Logger log = LoggerFactory.getLogger(ReportService.class);
+
+    private final ReportRepository reportRepository;
+    private final UserRepository userRepository;
+    private final SessionRepository sessionRepository; // Required for optional sessionId
+
+    // Defines the critical keywords
+    private static final Set<String> CRITICAL_KEYWORDS = Set.of(
+            "safety", "threat", "harassment", "gefahr", "bedrohung", "unsafe", 
+            "belÃ¤stigung", "gewalt", "violence", "stalking"
+    );
+
+    @Transactional
+    public void createReport(CreateReportDto dto, String reporterPhoneNumber) {
+        // 1. Find reporter
+        User reporterUser = userRepository.findByPhoneNumber(reporterPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", reporterPhoneNumber));
+
+        // 2. Find reported user
+        User reportedUser = userRepository.findById(dto.reportedUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", dto.reportedUserId()));
+
+        // 3. Find optional session
+        Session session = null;
+        if (dto.sessionId() != null) {
+            // We don't fail if the session ID is invalid, we just log it.
+            session = sessionRepository.findById(dto.sessionId()).orElse(null);
+            if (session == null) {
+                log.warn("Report created with invalid sessionId: {}", dto.sessionId());
+            }
+        }
+
+        // 4. Determine priority (MVP 7.2)
+        ReportPriority priority = determinePriority(dto.reason(), reporterUser);
+
+        // 5. Create report object
+        Report report = new Report();
+        report.setReportedBy(reporterUser);
+        report.setReportedUser(reportedUser);
+        report.setSession(session);
+        report.setReason(dto.reason());
+        report.setPriority(priority);
+        report.setStatus(ReportStatus.pending); // Default status
+
+        // 6. Save report
+        reportRepository.save(report);
+
+        // 7. (Optional) Immediate notification for critical priority
+        if (priority == ReportPriority.critical) {
+            log.warn("[SLEEP-SAFE TRIAGE] Critical report (ID: {}) from {} against {}. Reason: {}",
+                    report.getReportId(), reporterUser.getUserId(), reportedUser.getUserId(), dto.reason());
+            // Trigger event here, e.g., via ApplicationEventPublisher
+            // (e.g., publishEvent(new CriticalReportEvent(this, report));)
+        }
+    }
+
+    /**
+     * Determines the priority of a report based on keywords and the reporter's role.
+     * (MVP 7.2 logic)
+     */
+    private ReportPriority determinePriority(String reason, User reporter) {
+        String lowerCaseReason = reason.toLowerCase();
+
+        // 1. Check for critical keywords
+        boolean isCritical = CRITICAL_KEYWORDS.stream().anyMatch(lowerCaseReason::contains);
+        if (isCritical) {
+            return ReportPriority.critical;
+        }
+
+        // 2. Check reporter's role
+        if (reporter.getRole() == UserRole.ambassador || reporter.getRole() == UserRole.admin) {
+            return ReportPriority.high;
+        }
+
+        // 3. Otherwise
+        return ReportPriority.low;
+    }
+}
+
+
+==================================================
+Path: CreateReportDto.java
+==================================================
+package com.sahbifit.api.report.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import java.util.UUID;
+
+public record CreateReportDto(
+    @NotNull(message = "reportedUserId cannot be null")
+    UUID reportedUserId,
+    
+    @NotBlank(message = "Reason cannot be empty")
+    String reason,
+    
+    UUID sessionId
+) {}
+
+
+==================================================
+Path: Report.java
+==================================================
+// Pfad: src/main/java/com/sahbifit/api/report/model/Report.java
+package com.sahbifit.api.report.model;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+import org.hibernate.annotations.Check;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.user.model.User;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "reports", indexes = { // <-- ADD THIS BLOCK
+    @Index(name = "idx_report_reported_by", columnList = "reported_by_user_id"),
+    @Index(name = "idx_report_reported_user", columnList = "reported_user_id"),
+    @Index(name = "idx_report_session", columnList = "session_id")
+})
+@Check(constraints = "reported_by_user_id != reported_user_id")
+@SQLDelete(sql = "UPDATE reports SET status = 'dismissed' WHERE report_id = ?")
+@SQLRestriction("status != 'dismissed'")
+public class Report {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "report_id")
+    private UUID reportId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reported_by_user_id", nullable = false)
+    private User reportedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reported_user_id", nullable = false)
+    private User reportedUser;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_id") // Nullable
+    private Session session;
+
+    @Column(name = "reason", nullable = false)
+    private String reason;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "priority", nullable = false, columnDefinition = "report_priority")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private ReportPriority priority;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, columnDefinition = "report_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private ReportStatus status;
+
+    @Column(name = "resolution_notes")
+    private String resolutionNotes;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+}
+
+
+==================================================
+Path: ReportPriority.java
+==================================================
+package com.sahbifit.api.report.model;
+
+public enum ReportPriority {
+    low,
+    high,
+    critical
+}
+
+
+==================================================
+Path: ReportStatus.java
+==================================================
+package com.sahbifit.api.report.model;
+
+public enum ReportStatus {
+    pending,
+    resolved,
+    dismissed
+}
+
+
+==================================================
+Path: ReportRepository.java
+==================================================
+package com.sahbifit.api.report.repository;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.sahbifit.api.report.model.Report;
+import com.sahbifit.api.report.model.ReportStatus;
+
+@Repository
+public interface ReportRepository extends JpaRepository<Report, UUID> {
+    List<Report> findByStatusOrderByPriorityDesc(ReportStatus status);
+}
+
+

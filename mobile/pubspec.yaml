@@ -1,0 +1,93 @@
+name: sahbifit_mobile
+description: A new Flutter project.
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Core Services & Dependency Injection
+  get_it: ^9.0.5
+  injectable: ^2.6.0
+  dio: ^5.9.0
+  go_router: ^17.0.0
+  flutter_secure_storage: ^9.2.2
+  
+  # State Management
+  flutter_bloc: ^9.1.1
+
+  # Firebase Services
+  firebase_core: ^2.31.0   # <-- UPDATED
+  firebase_messaging: ^16.0.4
+  firebase_auth: ^6.1.2
+  cloud_firestore: ^4.17.3 # <-- UPDATED
+
+  # Utilities
+  equatable: ^2.0.7
+  intl: ^0.20.2
+  cached_network_image: ^3.4.1
+  image_picker: ^1.2.0
+  permission_handler: ^12.0.1
+
+  # JSON Serialization
+  json_annotation: ^4.8.1
+  
+  # Camera Packages (NEWLY ADDED)
+  camera: ^0.10.5+9
+  camera_android: ^0.10.8+13
+  camera_avfoundation: ^0.9.13+10
+
+  # UI & Styling
+  google_fonts: ^6.3.2
+  flutter_svg: ^2.2.2
+  badges: ^3.1.2
+  shimmer: ^3.0.0
+  
+  # Icon Packages - Smart Integration
+  icons_plus: ^5.0.0
+  font_awesome_flutter: ^10.12.0
+  dartz: ^0.10.1
+  freezed_annotation: ^3.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+  # Code Generators
+  injectable_generator: ^2.9.0
+  build_runner: ^2.4.11
+  json_serializable: ^6.7.1
+
+# Flutter configuration
+flutter:
+  uses-material-design: true
+
+  # Assets configuration - Only custom assets we actually need
+  assets:
+    - assets/images/
+    - assets/logo/
+    - assets/illustrations/  # For empty states and custom illustrations
+  
+  # Optimized Poppins font family
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins/Poppins-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/Poppins/Poppins-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Poppins/Poppins-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Poppins/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins/Poppins-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Poppins/Poppins-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Poppins/Poppins-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Poppins/Poppins-Black.ttf
+          weight: 900

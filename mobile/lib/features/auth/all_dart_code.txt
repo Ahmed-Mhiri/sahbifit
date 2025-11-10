@@ -1,0 +1,1035 @@
+﻿==================================================
+Path: auth_remote_datasource.dart
+==================================================
+import '../../../../core/constants/api_endpoints.dart';
+import '../models/login_request_model.dart';
+import '../models/register_request_model.dart';
+import '../models/verify_sms_request_model.dart';
+import '../models/resend_otp_request_model.dart';
+import '../models/auth_response_model.dart';
+
+abstract class AuthRemoteDataSource {
+  Future<AuthResponseModel> login(LoginRequestModel loginRequest);
+  Future<String> register(RegisterRequestModel registerRequest);
+  Future<String> verifySms(VerifySmsRequestModel verifySmsRequest);
+  Future<String> resendOtp(ResendOtpRequestModel resendOtpRequest);
+}
+
+class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
+  final ApiClient apiClient;
+
+  AuthRemoteDataSourceImpl({required this.apiClient});
+
+  @override
+  Future<AuthResponseModel> login(LoginRequestModel loginRequest) async {
+    final response = await apiClient.post(
+      ApiEndpoints.login,
+      data: loginRequest.toJson(),
+    );
+    return AuthResponseModel.fromJson(response.data);
+  }
+
+  @override
+  Future<String> register(RegisterRequestModel registerRequest) async {
+    final response = await apiClient.post(
+      ApiEndpoints.register,
+      data: registerRequest.toJson(),
+    );
+    return response.data as String;
+  }
+
+  @override
+  Future<String> verifySms(VerifySmsRequestModel verifySmsRequest) async {
+    final response = await apiClient.post(
+      ApiEndpoints.verifySms,
+      data: verifySmsRequest.toJson(),
+    );
+    return response.data as String;
+  }
+
+  @override
+  Future<String> resendOtp(ResendOtpRequestModel resendOtpRequest) async {
+    final response = await apiClient.post(
+      ApiEndpoints.resendOtp,
+      data: resendOtpRequest.toJson(),
+    );
+    return response.data as String;
+  }
+}
+
+
+==================================================
+Path: auth_response_model.dart
+==================================================
+import 'package:json_annotation/json_annotation.dart';
+
+part 'auth_response_model.g.dart';
+
+@JsonSerializable()
+class AuthResponseModel {
+  final String jwtToken;
+
+  AuthResponseModel({required this.jwtToken});
+
+  factory AuthResponseModel.fromJson(Map<String, dynamic> json) =>
+      _$AuthResponseModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AuthResponseModelToJson(this);
+}
+
+
+==================================================
+Path: login_request_model.dart
+==================================================
+import 'package:json_annotation/json_annotation.dart';
+
+part 'login_request_model.g.dart';
+
+@JsonSerializable()
+class LoginRequestModel {
+  final String phoneNumber;
+  final String password;
+
+  LoginRequestModel({
+    required this.phoneNumber,
+    required this.password,
+  });
+
+  factory LoginRequestModel.fromJson(Map<String, dynamic> json) =>
+      _$LoginRequestModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$LoginRequestModelToJson(this);
+}
+
+
+==================================================
+Path: register_request_model.dart
+==================================================
+import 'package:json_annotation/json_annotation.dart';
+
+part 'register_request_model.g.dart';
+
+@JsonSerializable()
+class RegisterRequestModel {
+  final String phoneNumber;
+  final String password;
+  final String recaptchaToken;
+  final String firstName;
+  final String dateOfBirth;
+  final String primaryGymId;
+  final String? profilePhotoUrl;
+  final List<int> goalTagIds;
+  final List<int> scheduleTagIds;
+
+  RegisterRequestModel({
+    required this.phoneNumber,
+    required this.password,
+    required this.recaptchaToken,
+    required this.firstName,
+    required this.dateOfBirth,
+    required this.primaryGymId,
+    this.profilePhotoUrl,
+    required this.goalTagIds,
+    required this.scheduleTagIds,
+  });
+
+  factory RegisterRequestModel.fromJson(Map<String, dynamic> json) =>
+      _$RegisterRequestModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$RegisterRequestModelToJson(this);
+}
+
+
+==================================================
+Path: resend_otp_request_model.dart
+==================================================
+import 'package:json_annotation/json_annotation.dart';
+
+part 'resend_otp_request_model.g.dart';
+
+@JsonSerializable()
+class ResendOtpRequestModel {
+  final String phoneNumber;
+  final String recaptchaToken;
+
+  ResendOtpRequestModel({
+    required this.phoneNumber,
+    required this.recaptchaToken,
+  });
+
+  factory ResendOtpRequestModel.fromJson(Map<String, dynamic> json) =>
+      _$ResendOtpRequestModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ResendOtpRequestModelToJson(this);
+}
+
+
+==================================================
+Path: verify_sms_request_model.dart
+==================================================
+import 'package:json_annotation/json_annotation.dart';
+
+part 'verify_sms_request_model.g.dart';
+
+@JsonSerializable()
+class VerifySmsRequestModel {
+  final String phoneNumber;
+  final String otp;
+
+  VerifySmsRequestModel({
+    required this.phoneNumber,
+    required this.otp,
+  });
+
+  factory VerifySmsRequestModel.fromJson(Map<String, dynamic> json) =>
+      _$VerifySmsRequestModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerifySmsRequestModelToJson(this);
+}
+
+
+==================================================
+Path: auth_repository_impl.dart
+==================================================
+// Import the model from the login_user.dart file, or wherever it is defined
+import 'package:sahbifit_mobile/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:sahbifit_mobile/features/auth/data/models/login_request_model.dart';
+import 'package:sahbifit_mobile/features/auth/data/models/register_request_model.dart';
+import 'package:sahbifit_mobile/features/auth/data/models/resend_otp_request_model.dart';
+import 'package:sahbifit_mobile/features/auth/data/models/verify_sms_request_model.dart';
+import 'package:sahbifit_mobile/features/auth/domain/repositories/auth_repository.dart';
+
+import '../models/auth_response_model.dart'; 
+
+class AuthRepositoryImpl implements AuthRepository {
+  final AuthRemoteDataSource remoteDataSource;
+
+  AuthRepositoryImpl({required this.remoteDataSource});
+
+  // Helper function to ensure phone number is in backend format
+  String _stripCountryCode(String phoneNumber) {
+    if (phoneNumber.startsWith('+216')) {
+      return phoneNumber.substring(4); // Removes '+216'
+    }
+    // Add other prefixes if necessary, e.g., '00216'
+    if (phoneNumber.startsWith('00216')) {
+      return phoneNumber.substring(5); // Removes '00216'
+    }
+    // Assume it's already in the correct format if it doesn't match
+    return phoneNumber;
+  }
+
+  @override
+  Future<AuthResponseModel> login(String phoneNumber, String password) async {
+    final formattedPhoneNumber = _stripCountryCode(phoneNumber);
+    final request = LoginRequestModel(
+      phoneNumber: formattedPhoneNumber,
+      password: password,
+    );
+    return await remoteDataSource.login(request);
+  }
+
+  @override
+  Future<String> register({
+    required String phoneNumber,
+    required String password,
+    required String recaptchaToken,
+    required String firstName,
+    required String dateOfBirth,
+    required String primaryGymId,
+    String? profilePhotoUrl,
+    required List<int> goalTagIds,
+    required List<int> scheduleTagIds,
+  }) async {
+    final formattedPhoneNumber = _stripCountryCode(phoneNumber);
+    final request = RegisterRequestModel(
+      phoneNumber: formattedPhoneNumber,
+      password: password,
+      recaptchaToken: recaptchaToken,
+      firstName: firstName,
+      dateOfBirth: dateOfBirth,
+      primaryGymId: primaryGymId,
+      profilePhotoUrl: profilePhotoUrl,
+      goalTagIds: goalTagIds,
+      scheduleTagIds: scheduleTagIds,
+    );
+    return await remoteDataSource.register(request);
+  }
+
+  @override
+  Future<String> verifySms(String phoneNumber, String otp) async {
+    final formattedPhoneNumber = _stripCountryCode(phoneNumber);
+    final request = VerifySmsRequestModel(
+      phoneNumber: formattedPhoneNumber,
+      otp: otp,
+    );
+    return await remoteDataSource.verifySms(request);
+  }
+
+  @override
+  Future<String> resendOtp(String phoneNumber, String recaptchaToken) async {
+    final formattedPhoneNumber = _stripCountryCode(phoneNumber);
+    final request = ResendOtpRequestModel(
+      phoneNumber: formattedPhoneNumber,
+      recaptchaToken: recaptchaToken,
+    );
+    return await remoteDataSource.resendOtp(request);
+  }
+}
+
+
+==================================================
+Path: auth_token.dart
+==================================================
+class AuthToken {
+  final String token;
+  final DateTime expiresAt;
+
+  AuthToken({
+    required this.token,
+    required this.expiresAt,
+  });
+
+  bool get isExpired => DateTime.now().isAfter(expiresAt);
+
+  Map<String, dynamic> toJson() => {
+        'token': token,
+        'expiresAt': expiresAt.toIso8601String(),
+      };
+
+  factory AuthToken.fromJson(Map<String, dynamic> json) => AuthToken(
+        token: json['token'],
+        expiresAt: DateTime.parse(json['expiresAt']),
+      );
+}
+
+
+==================================================
+Path: auth_repository.dart
+==================================================
+
+import 'package:sahbifit_mobile/features/auth/data/models/auth_response_model.dart';
+
+abstract class AuthRepository {
+  Future<AuthResponseModel> login(String phoneNumber, String password);
+  Future<String> register({
+    required String phoneNumber,
+    required String password,
+    required String recaptchaToken,
+    required String firstName,
+    required String dateOfBirth,
+    required String primaryGymId,
+    String? profilePhotoUrl,
+    required List<int> goalTagIds,
+    required List<int> scheduleTagIds,
+  });
+  Future<String> verifySms(String phoneNumber, String otp);
+  Future<String> resendOtp(String phoneNumber, String recaptchaToken);
+}
+
+
+==================================================
+Path: login_user.dart
+==================================================
+import '../repositories/auth_repository.dart';
+
+class LoginUser {
+  final AuthRepository repository;
+
+  LoginUser({required this.repository});
+
+  Future<String> call(String phoneNumber, String password) async {
+    final response = await repository.login(phoneNumber, password);
+    return response.jwtToken;
+  }
+}
+
+
+==================================================
+Path: register_user.dart
+==================================================
+import '../repositories/auth_repository.dart';
+
+class RegisterUser {
+  final AuthRepository repository;
+
+  RegisterUser({required this.repository});
+
+  Future<String> call({
+    required String phoneNumber,
+    required String password,
+    required String recaptchaToken,
+    required String firstName,
+    required String dateOfBirth,
+    required String primaryGymId,
+    String? profilePhotoUrl,
+    required List<int> goalTagIds,
+    required List<int> scheduleTagIds,
+  }) async {
+    return await repository.register(
+      phoneNumber: phoneNumber,
+      password: password,
+      recaptchaToken: recaptchaToken,
+      firstName: firstName,
+      dateOfBirth: dateOfBirth,
+      primaryGymId: primaryGymId,
+      profilePhotoUrl: profilePhotoUrl,
+      goalTagIds: goalTagIds,
+      scheduleTagIds: scheduleTagIds,
+    );
+  }
+}
+
+
+==================================================
+Path: resend_otp.dart
+==================================================
+import '../repositories/auth_repository.dart';
+
+class ResendOtp {
+  final AuthRepository repository;
+
+  ResendOtp({required this.repository});
+
+  Future<String> call(String phoneNumber, String recaptchaToken) async {
+    return await repository.resendOtp(phoneNumber, recaptchaToken);
+  }
+}
+
+
+==================================================
+Path: verify_sms.dart
+==================================================
+import '../repositories/auth_repository.dart';
+
+class VerifySms {
+  final AuthRepository repository;
+
+  VerifySms({required this.repository});
+
+  Future<String> call(String phoneNumber, String otp) async {
+    return await repository.verifySms(phoneNumber, otp);
+  }
+}
+
+
+==================================================
+Path: auth_bloc.dart
+==================================================
+import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:sahbifit_mobile/features/auth/domain/usecases/login_user.dart';
+import 'package:sahbifit_mobile/features/auth/domain/usecases/register_user.dart';
+import 'package:sahbifit_mobile/features/auth/domain/usecases/resend_otp.dart';
+import 'package:sahbifit_mobile/features/auth/domain/usecases/verify_sms.dart';
+
+part 'auth_event.dart';
+part 'auth_state.dart';
+
+class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  final LoginUser loginUser;
+  final RegisterUser registerUser;
+  final VerifySms verifySms;
+  final ResendOtp resendOtp;
+
+  AuthBloc({
+    required this.loginUser,
+    required this.registerUser,
+    required this.verifySms,
+    required this.resendOtp,
+  }) : super(AuthInitial()) {
+    on<LoginRequested>(_onLoginRequested);
+    on<RegisterRequested>(_onRegisterRequested);
+    on<VerifySmsRequested>(_onVerifySmsRequested);
+    on<ResendOtpRequested>(_onResendOtpRequested);
+    on<LogoutRequested>(_onLogoutRequested);
+  }
+
+  Future<void> _onLoginRequested(
+    LoginRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final token = await loginUser(event.phoneNumber, event.password);
+      emit(AuthAuthenticated(token: token));
+    } catch (e) {
+      emit(AuthError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onRegisterRequested(
+    RegisterRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final message = await registerUser.call(
+        phoneNumber: event.phoneNumber,
+        password: event.password,
+        recaptchaToken: event.recaptchaToken,
+        firstName: event.firstName,
+        dateOfBirth: event.dateOfBirth,
+        primaryGymId: event.primaryGymId,
+        profilePhotoUrl: event.profilePhotoUrl,
+        goalTagIds: event.goalTagIds,
+        scheduleTagIds: event.scheduleTagIds,
+      );
+      emit(RegistrationSuccess(message: message));
+      emit(AuthUnverified(phoneNumber: event.phoneNumber));
+    } catch (e) {
+      emit(AuthError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onVerifySmsRequested(
+    VerifySmsRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final message = await verifySms(event.phoneNumber, event.otp);
+      emit(VerificationSuccess(message: message));
+      emit(AuthUnauthenticated());
+    } catch (e) {
+      emit(AuthError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onResendOtpRequested(
+    ResendOtpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final message = await resendOtp(event.phoneNumber, event.recaptchaToken);
+      emit(OtpResent(message: message));
+    } catch (e) {
+      emit(AuthError(message: e.toString()));
+    }
+  }
+
+  void _onLogoutRequested(
+    LogoutRequested event,
+    Emitter<AuthState> emit,
+  ) {
+    emit(AuthUnauthenticated());
+  }
+}
+
+
+==================================================
+Path: auth_event.dart
+==================================================
+part of 'auth_bloc.dart';
+
+abstract class AuthEvent extends Equatable {
+  const AuthEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+class LoginRequested extends AuthEvent {
+  final String phoneNumber;
+  final String password;
+
+  const LoginRequested({
+    required this.phoneNumber,
+    required this.password,
+  });
+
+  @override
+  List<Object> get props => [phoneNumber, password];
+}
+
+class RegisterRequested extends AuthEvent {
+  final String phoneNumber;
+  final String password;
+  final String recaptchaToken;
+  final String firstName;
+  final String dateOfBirth;
+  final String primaryGymId;
+  final String? profilePhotoUrl;
+  final List<int> goalTagIds;
+  final List<int> scheduleTagIds;
+
+  const RegisterRequested({
+    required this.phoneNumber,
+    required this.password,
+    required this.recaptchaToken,
+    required this.firstName,
+    required this.dateOfBirth,
+    required this.primaryGymId,
+    this.profilePhotoUrl,
+    required this.goalTagIds,
+    required this.scheduleTagIds,
+  });
+
+  @override
+  List<Object> get props => [
+        phoneNumber,
+        password,
+        recaptchaToken,
+        firstName,
+        dateOfBirth,
+        primaryGymId,
+        goalTagIds,
+        scheduleTagIds,
+      ];
+}
+
+class VerifySmsRequested extends AuthEvent {
+  final String phoneNumber;
+  final String otp;
+
+  const VerifySmsRequested({
+    required this.phoneNumber,
+    required this.otp,
+  });
+
+  @override
+  List<Object> get props => [phoneNumber, otp];
+}
+
+class ResendOtpRequested extends AuthEvent {
+  final String phoneNumber;
+  final String recaptchaToken;
+
+  const ResendOtpRequested({
+    required this.phoneNumber,
+    required this.recaptchaToken,
+  });
+
+  @override
+  List<Object> get props => [phoneNumber, recaptchaToken];
+}
+
+class LogoutRequested extends AuthEvent {}
+
+
+==================================================
+Path: auth_state.dart
+==================================================
+part of 'auth_bloc.dart';
+
+abstract class AuthState extends Equatable {
+  const AuthState();
+
+  @override
+  List<Object> get props => [];
+}
+
+class AuthInitial extends AuthState {}
+
+class AuthLoading extends AuthState {}
+
+class AuthAuthenticated extends AuthState {
+  final String token;
+
+  const AuthAuthenticated({required this.token});
+
+  @override
+  List<Object> get props => [token];
+}
+
+class AuthUnverified extends AuthState {
+  final String phoneNumber;
+
+  const AuthUnverified({required this.phoneNumber});
+
+  @override
+  List<Object> get props => [phoneNumber];
+}
+
+class AuthUnauthenticated extends AuthState {}
+
+class AuthError extends AuthState {
+  final String message;
+
+  const AuthError({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+class RegistrationSuccess extends AuthState {
+  final String message;
+
+  const RegistrationSuccess({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+class VerificationSuccess extends AuthState {
+  final String message;
+
+  const VerificationSuccess({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+class OtpResent extends AuthState {
+  final String message;
+
+  const OtpResent({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+
+==================================================
+Path: login_page.dart
+==================================================
+
+
+==================================================
+Path: register_page.dart
+==================================================
+
+
+==================================================
+Path: verify_sms_page.dart
+==================================================
+
+
+==================================================
+Path: login_form.dart
+==================================================
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../shared_widgets/primary_button.dart';
+import '../../../../../shared_widgets/loading_spinner.dart';
+import '../bloc/auth_bloc.dart';
+
+class LoginForm extends StatefulWidget {
+  const LoginForm({super.key});
+
+  @override
+  State<LoginForm> createState() => _LoginFormState();
+}
+
+class _LoginFormState extends State<LoginForm> {
+  final _formKey = GlobalKey<FormState>();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  bool _obscurePassword = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+      },
+      builder: (context, state) {
+        return Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _phoneController,
+                decoration: const InputDecoration(
+                  labelText: 'Phone Number',
+                  hintText: '+216 XX XXX XXX',
+                  prefixIcon: Icon(Icons.phone),
+                ),
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your phone number';
+                  }
+                  if (!value.startsWith('+216')) {
+                    return 'Please enter a valid Tunisian number';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  prefixIcon: const Icon(Icons.lock),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
+                ),
+                obscureText: _obscurePassword,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your password';
+                  }
+                  if (value.length < 8) { // CHANGED: 6 to 8
+                    return 'Password must be at least 8 characters'; // CHANGED: Updated text
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+              if (state is AuthLoading)
+                const LoadingSpinner()
+              else
+                PrimaryButton(
+                  text: 'Sign In',
+                  onPressed: _submitForm,
+                ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () {
+                  // Navigate to forgot password
+                },
+                child: const Text('Forgot Password?'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      context.read<AuthBloc>().add(
+            LoginRequested(
+              phoneNumber: _phoneController.text,
+              password: _passwordController.text,
+            ),
+          );
+    }
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+}
+
+
+==================================================
+Path: profile_setup_form.dart
+==================================================
+
+
+==================================================
+Path: register_form_step_1.dart
+==================================================
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../../../../../shared_widgets/primary_button.dart';
+import '../../../../../shared_widgets/image_picker_widget.dart';
+
+class RegisterFormStep1 extends StatefulWidget {
+  final Function(Map<String, dynamic>) onStepCompleted;
+  final Map<String, dynamic>? initialData;
+
+  const RegisterFormStep1({
+    super.key,
+    required this.onStepCompleted,
+    this.initialData,
+  });
+
+  @override
+  State<RegisterFormStep1> createState() => _RegisterFormStep1State();
+}
+
+class _RegisterFormStep1State extends State<RegisterFormStep1> {
+  final _formKey = GlobalKey<FormState>();
+  final _firstNameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _dateOfBirthController = TextEditingController();
+
+  String? _selectedImagePath;
+  DateTime? _selectedDateOfBirth;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialData != null) {
+      _firstNameController.text = widget.initialData!['firstName'] ?? '';
+      _phoneController.text = widget.initialData!['phoneNumber'] ?? '';
+      _selectedImagePath = widget.initialData!['imagePath'];
+      
+      if (widget.initialData!['dateOfBirth'] != null) {
+        _selectedDateOfBirth = DateTime.parse(widget.initialData!['dateOfBirth']);
+        _dateOfBirthController.text = DateFormat('yyyy-MM-dd').format(_selectedDateOfBirth!);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          ImagePickerWidget(
+            onImageSelected: (image) {
+              setState(() {
+                _selectedImagePath = image?.path;
+              });
+            },
+            initialImageUrl: _selectedImagePath,
+            title: 'Profile Photo',
+          ),
+          const SizedBox(height: 24),
+          TextFormField(
+            controller: _firstNameController,
+            decoration: const InputDecoration(
+              labelText: 'First Name',
+              hintText: 'Enter your first name',
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your first name';
+              }
+              if (value.length < 2) {
+                return 'Name must be at least 2 characters';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _dateOfBirthController,
+            decoration: const InputDecoration(
+              labelText: 'Date of Birth',
+              hintText: 'YYYY-MM-DD',
+              suffixIcon: Icon(Icons.calendar_today),
+            ),
+            readOnly: true,
+            onTap: _selectDate,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please select your date of birth';
+              }
+              if (_selectedDateOfBirth == null) {
+                return 'Please select a valid date of birth';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _phoneController,
+            decoration: const InputDecoration(
+              labelText: 'Phone Number',
+              hintText: '+216 XX XXX XXX',
+            ),
+            keyboardType: TextInputType.phone,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your phone number';
+              }
+              if (!value.startsWith('+216')) {
+                return 'Please enter a valid Tunisian number';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _passwordController,
+            decoration: const InputDecoration(
+              labelText: 'Password',
+            ),
+            obscureText: true,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a password';
+              }
+              if (value.length < 8) { // CHANGED: 6 to 8
+                return 'Password must be at least 8 characters'; // CHANGED: Updated text
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _confirmPasswordController,
+            decoration: const InputDecoration(
+              labelText: 'Confirm Password',
+            ),
+            obscureText: true,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please confirm your password';
+              }
+              if (value != _passwordController.text) {
+                return 'Passwords do not match';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 32),
+          PrimaryButton(
+            text: 'Continue to Gym Selection',
+            onPressed: _submitForm,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDateOfBirth ?? DateTime(2000),
+      firstDate: DateTime(1920),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _selectedDateOfBirth) {
+      setState(() {
+        _selectedDateOfBirth = picked;
+        _dateOfBirthController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
+  }
+
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      widget.onStepCompleted({
+        'firstName': _firstNameController.text,
+        'dateOfBirth': _dateOfBirthController.text,
+        'phoneNumber': _phoneController.text,
+        'password': _passwordController.text,
+        'imagePath': _selectedImagePath,
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _phoneController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _dateOfBirthController.dispose();
+    super.dispose();
+  }
+}
+
+
+==================================================
+Path: sms_otp_input.dart
+==================================================
+
+

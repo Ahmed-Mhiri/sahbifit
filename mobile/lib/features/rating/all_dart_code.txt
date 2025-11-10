@@ -1,0 +1,261 @@
+﻿==================================================
+Path: rating_remote_datasource.dart
+==================================================
+
+
+==================================================
+Path: create_rating_model.dart
+==================================================
+
+
+==================================================
+Path: pending_rating_model.dart
+==================================================
+
+
+==================================================
+Path: rating_model.dart
+==================================================
+
+
+==================================================
+Path: rating_repository_impl.dart
+==================================================
+
+
+==================================================
+Path: pending_rating.dart
+==================================================
+
+
+==================================================
+Path: rating.dart
+==================================================
+
+
+==================================================
+Path: rating_repository.dart
+==================================================
+
+
+==================================================
+Path: create_rating.dart
+==================================================
+
+
+==================================================
+Path: get_pending_ratings.dart
+==================================================
+
+
+==================================================
+Path: get_ratings_for_user.dart
+==================================================
+
+
+==================================================
+Path: pending_rating_bloc.dart
+==================================================
+
+
+==================================================
+Path: pending_rating_event.dart
+==================================================
+
+
+==================================================
+Path: pending_rating_state.dart
+==================================================
+
+
+==================================================
+Path: pending_ratings_page.dart
+==================================================
+
+
+==================================================
+Path: create_rating_dialog.dart
+==================================================
+import 'package:flutter/material.dart';
+import '../../../../../shared_widgets/primary_button.dart';
+import 'rating_stars.dart';
+
+class CreateRatingDialog extends StatefulWidget {
+  final String userName;
+  final String sessionTitle;
+  final Function(int, String) onSubmitRating;
+
+  const CreateRatingDialog({
+    super.key,
+    required this.userName,
+    required this.sessionTitle,
+    required this.onSubmitRating,
+  });
+
+  @override
+  State<CreateRatingDialog> createState() => _CreateRatingDialogState();
+}
+
+class _CreateRatingDialogState extends State<CreateRatingDialog> {
+  int _selectedRating = 0;
+  final TextEditingController _commentController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Rate ${widget.userName}',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.sessionTitle,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: RatingStars(
+                  rating: _selectedRating,
+                  onRatingChanged: (rating) {
+                    setState(() {
+                      _selectedRating = rating;
+                    });
+                  },
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 24),
+              TextFormField(
+                controller: _commentController,
+                decoration: const InputDecoration(
+                  labelText: 'Optional Comment',
+                  hintText: 'Share your experience...',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+                validator: (value) {
+                  if (_selectedRating == 0) {
+                    return 'Please select a rating';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: PrimaryButton(
+                      text: 'Submit Rating',
+                      onPressed: _submitRating,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _submitRating() {
+    if (_formKey.currentState!.validate()) {
+      widget.onSubmitRating(_selectedRating, _commentController.text.trim());
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+}
+
+
+==================================================
+Path: rating_stars.dart
+==================================================
+import 'package:flutter/material.dart';
+import '../../../../../core/utils/icon_utils.dart';
+
+class RatingStars extends StatelessWidget {
+  final int rating;
+  final Function(int) onRatingChanged;
+  final double size;
+  final bool interactive;
+
+  const RatingStars({
+    super.key,
+    required this.rating,
+    required this.onRatingChanged,
+    this.size = 24,
+    this.interactive = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(5, (index) {
+        final starRating = index + 1;
+        return GestureDetector(
+          onTap: interactive ? () => onRatingChanged(starRating) : null,
+          child: Icon(
+            starRating <= rating
+                ? IconUtils.starIcon
+                : IconUtils.starOutlineIcon,
+            color: Colors.amber,
+            size: size,
+          ),
+        );
+      }),
+    );
+  }
+}
+
+class StaticRatingStars extends StatelessWidget {
+  final double rating;
+  final double size;
+
+  const StaticRatingStars({
+    super.key,
+    required this.rating,
+    this.size = 16,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(5, (index) {
+        if (index < rating.floor()) {
+          return Icon(IconUtils.starIcon, color: Colors.amber, size: size);
+        } else if (index == rating.floor() && rating % 1 != 0) {
+          return Icon(IconUtils.starHalfIcon, color: Colors.amber, size: size);
+        } else {
+          return Icon(IconUtils.starOutlineIcon, color: Colors.amber, size: size);
+        }
+      }),
+    );
+  }
+}
+
+

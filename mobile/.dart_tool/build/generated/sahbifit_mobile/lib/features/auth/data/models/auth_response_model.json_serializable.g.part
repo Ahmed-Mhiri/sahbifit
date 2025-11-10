@@ -1,0 +1,13 @@
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+AuthResponseModel _$AuthResponseModelFromJson(Map<String, dynamic> json) =>
+    AuthResponseModel(
+      jwtToken: json['jwtToken'] as String,
+    );
+
+Map<String, dynamic> _$AuthResponseModelToJson(AuthResponseModel instance) =>
+    <String, dynamic>{
+      'jwtToken': instance.jwtToken,
+    };
