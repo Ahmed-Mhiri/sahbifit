@@ -6,7 +6,8 @@ part of 'gym_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_GymModel _$GymModelFromJson(Map<String, dynamic> json) => _GymModel(
+_$GymModelImpl _$$GymModelImplFromJson(Map<String, dynamic> json) =>
+    _$GymModelImpl(
       gymId: json['gymId'] as String,
       name: json['name'] as String,
       address: json['address'] as String?,
@@ -14,7 +15,8 @@ _GymModel _$GymModelFromJson(Map<String, dynamic> json) => _GymModel(
       memberCount: (json['memberCount'] as num).toInt(),
     );
 
-Map<String, dynamic> _$GymModelToJson(_GymModel instance) => <String, dynamic>{
+Map<String, dynamic> _$$GymModelImplToJson(_$GymModelImpl instance) =>
+    <String, dynamic>{
       'gymId': instance.gymId,
       'name': instance.name,
       'address': instance.address,

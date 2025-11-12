@@ -6,15 +6,17 @@ part of 'message_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_MessageModel _$MessageModelFromJson(Map<String, dynamic> json) =>
-    _MessageModel(
+_$MessageModelImpl _$$MessageModelImplFromJson(Map<String, dynamic> json) =>
+    _$MessageModelImpl(
       senderId: json['sender_id'] as String,
       text: json['text'] as String,
       timestamp: _$JsonConverterFromJson<Object, DateTime?>(
-          json['timestamp'], const TimestampConverter().fromJson),
+        json['timestamp'],
+        const TimestampConverter().fromJson,
+      ),
     );
 
-Map<String, dynamic> _$MessageModelToJson(_MessageModel instance) =>
+Map<String, dynamic> _$$MessageModelImplToJson(_$MessageModelImpl instance) =>
     <String, dynamic>{
       'sender_id': instance.senderId,
       'text': instance.text,
@@ -24,5 +26,4 @@ Map<String, dynamic> _$MessageModelToJson(_MessageModel instance) =>
 Value? _$JsonConverterFromJson<Json, Value>(
   Object? json,
   Value? Function(Json json) fromJson,
-) =>
-    json == null ? null : fromJson(json as Json);
+) => json == null ? null : fromJson(json as Json);

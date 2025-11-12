@@ -6,8 +6,8 @@ part of 'session_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_SessionModel _$SessionModelFromJson(Map<String, dynamic> json) =>
-    _SessionModel(
+_$SessionModelImpl _$$SessionModelImplFromJson(Map<String, dynamic> json) =>
+    _$SessionModelImpl(
       sessionId: json['sessionId'] as String,
       title: json['title'] as String,
       sessionType: $enumDecode(_$SessionTypeEnumMap, json['sessionType']),
@@ -20,7 +20,7 @@ _SessionModel _$SessionModelFromJson(Map<String, dynamic> json) =>
       gym: GymModel.fromJson(json['gym'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$SessionModelToJson(_SessionModel instance) =>
+Map<String, dynamic> _$$SessionModelImplToJson(_$SessionModelImpl instance) =>
     <String, dynamic>{
       'sessionId': instance.sessionId,
       'title': instance.title,

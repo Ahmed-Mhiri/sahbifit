@@ -2,20 +2,20 @@
 // JsonSerializableGenerator
 // **************************************************************************
 
-_RatingSessionModel _$RatingSessionModelFromJson(Map<String, dynamic> json) =>
-    _RatingSessionModel(
-      sessionId: json['sessionId'] as String,
-    );
+_$RatingSessionModelImpl _$$RatingSessionModelImplFromJson(
+  Map<String, dynamic> json,
+) => _$RatingSessionModelImpl(sessionId: json['sessionId'] as String);
 
-Map<String, dynamic> _$RatingSessionModelToJson(_RatingSessionModel instance) =>
-    <String, dynamic>{
-      'sessionId': instance.sessionId,
-    };
+Map<String, dynamic> _$$RatingSessionModelImplToJson(
+  _$RatingSessionModelImpl instance,
+) => <String, dynamic>{'sessionId': instance.sessionId};
 
-_RatingModel _$RatingModelFromJson(Map<String, dynamic> json) => _RatingModel(
+_$RatingModelImpl _$$RatingModelImplFromJson(Map<String, dynamic> json) =>
+    _$RatingModelImpl(
       ratingId: json['ratingId'] as String,
-      session:
-          RatingSessionModel.fromJson(json['session'] as Map<String, dynamic>),
+      session: RatingSessionModel.fromJson(
+        json['session'] as Map<String, dynamic>,
+      ),
       ratingBy: UserModel.fromJson(json['ratingBy'] as Map<String, dynamic>),
       ratingFor: UserModel.fromJson(json['ratingFor'] as Map<String, dynamic>),
       ratingValue: (json['ratingValue'] as num).toInt(),
@@ -23,7 +23,7 @@ _RatingModel _$RatingModelFromJson(Map<String, dynamic> json) => _RatingModel(
       createdAt: json['createdAt'] as String,
     );
 
-Map<String, dynamic> _$RatingModelToJson(_RatingModel instance) =>
+Map<String, dynamic> _$$RatingModelImplToJson(_$RatingModelImpl instance) =>
     <String, dynamic>{
       'ratingId': instance.ratingId,
       'session': instance.session.toJson(),

@@ -1,5 +1,5 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,275 +9,140 @@ part of 'user_block_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
-// dart format off
 T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
+
+UserBlockIdModel _$UserBlockIdModelFromJson(Map<String, dynamic> json) {
+  return _UserBlockIdModel.fromJson(json);
+}
 
 /// @nodoc
 mixin _$UserBlockIdModel {
-  String get blockerUserId;
-  String get blockedUserId;
+  String get blockerUserId => throw _privateConstructorUsedError;
+  String get blockedUserId => throw _privateConstructorUsedError;
+
+  /// Serializes this UserBlockIdModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of UserBlockIdModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
   $UserBlockIdModelCopyWith<UserBlockIdModel> get copyWith =>
-      _$UserBlockIdModelCopyWithImpl<UserBlockIdModel>(
-          this as UserBlockIdModel, _$identity);
-
-  /// Serializes this UserBlockIdModel to a JSON map.
-  Map<String, dynamic> toJson();
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is UserBlockIdModel &&
-            (identical(other.blockerUserId, blockerUserId) ||
-                other.blockerUserId == blockerUserId) &&
-            (identical(other.blockedUserId, blockedUserId) ||
-                other.blockedUserId == blockedUserId));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(runtimeType, blockerUserId, blockedUserId);
-
-  @override
-  String toString() {
-    return 'UserBlockIdModel(blockerUserId: $blockerUserId, blockedUserId: $blockedUserId)';
-  }
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract mixin class $UserBlockIdModelCopyWith<$Res> {
+abstract class $UserBlockIdModelCopyWith<$Res> {
   factory $UserBlockIdModelCopyWith(
-          UserBlockIdModel value, $Res Function(UserBlockIdModel) _then) =
-      _$UserBlockIdModelCopyWithImpl;
+    UserBlockIdModel value,
+    $Res Function(UserBlockIdModel) then,
+  ) = _$UserBlockIdModelCopyWithImpl<$Res, UserBlockIdModel>;
   @useResult
   $Res call({String blockerUserId, String blockedUserId});
 }
 
 /// @nodoc
-class _$UserBlockIdModelCopyWithImpl<$Res>
+class _$UserBlockIdModelCopyWithImpl<$Res, $Val extends UserBlockIdModel>
     implements $UserBlockIdModelCopyWith<$Res> {
-  _$UserBlockIdModelCopyWithImpl(this._self, this._then);
+  _$UserBlockIdModelCopyWithImpl(this._value, this._then);
 
-  final UserBlockIdModel _self;
-  final $Res Function(UserBlockIdModel) _then;
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 
   /// Create a copy of UserBlockIdModel
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? blockerUserId = null,
-    Object? blockedUserId = null,
-  }) {
-    return _then(_self.copyWith(
-      blockerUserId: null == blockerUserId
-          ? _self.blockerUserId
-          : blockerUserId // ignore: cast_nullable_to_non_nullable
-              as String,
-      blockedUserId: null == blockedUserId
-          ? _self.blockedUserId
-          : blockedUserId // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+  $Res call({Object? blockerUserId = null, Object? blockedUserId = null}) {
+    return _then(
+      _value.copyWith(
+            blockerUserId: null == blockerUserId
+                ? _value.blockerUserId
+                : blockerUserId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            blockedUserId: null == blockedUserId
+                ? _value.blockedUserId
+                : blockedUserId // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
   }
 }
 
-/// Adds pattern-matching-related methods to [UserBlockIdModel].
-extension UserBlockIdModelPatterns on UserBlockIdModel {
-  /// A variant of `map` that fallback to returning `orElse`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
+/// @nodoc
+abstract class _$$UserBlockIdModelImplCopyWith<$Res>
+    implements $UserBlockIdModelCopyWith<$Res> {
+  factory _$$UserBlockIdModelImplCopyWith(
+    _$UserBlockIdModelImpl value,
+    $Res Function(_$UserBlockIdModelImpl) then,
+  ) = __$$UserBlockIdModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String blockerUserId, String blockedUserId});
+}
 
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>(
-    TResult Function(_UserBlockIdModel value)? $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _UserBlockIdModel() when $default != null:
-        return $default(_that);
-      case _:
-        return orElse();
-    }
-  }
+/// @nodoc
+class __$$UserBlockIdModelImplCopyWithImpl<$Res>
+    extends _$UserBlockIdModelCopyWithImpl<$Res, _$UserBlockIdModelImpl>
+    implements _$$UserBlockIdModelImplCopyWith<$Res> {
+  __$$UserBlockIdModelImplCopyWithImpl(
+    _$UserBlockIdModelImpl _value,
+    $Res Function(_$UserBlockIdModelImpl) _then,
+  ) : super(_value, _then);
 
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// Callbacks receives the raw object, upcasted.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case final Subclass2 value:
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>(
-    TResult Function(_UserBlockIdModel value) $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _UserBlockIdModel():
-        return $default(_that);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
-
-  /// A variant of `map` that fallback to returning `null`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>(
-    TResult? Function(_UserBlockIdModel value)? $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _UserBlockIdModel() when $default != null:
-        return $default(_that);
-      case _:
-        return null;
-    }
-  }
-
-  /// A variant of `when` that fallback to an `orElse` callback.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>(
-    TResult Function(String blockerUserId, String blockedUserId)? $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _UserBlockIdModel() when $default != null:
-        return $default(_that.blockerUserId, _that.blockedUserId);
-      case _:
-        return orElse();
-    }
-  }
-
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// As opposed to `map`, this offers destructuring.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case Subclass2(:final field2):
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>(
-    TResult Function(String blockerUserId, String blockedUserId) $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _UserBlockIdModel():
-        return $default(_that.blockerUserId, _that.blockedUserId);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
-
-  /// A variant of `when` that fallback to returning `null`
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(String blockerUserId, String blockedUserId)? $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _UserBlockIdModel() when $default != null:
-        return $default(_that.blockerUserId, _that.blockedUserId);
-      case _:
-        return null;
-    }
+  /// Create a copy of UserBlockIdModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? blockerUserId = null, Object? blockedUserId = null}) {
+    return _then(
+      _$UserBlockIdModelImpl(
+        blockerUserId: null == blockerUserId
+            ? _value.blockerUserId
+            : blockerUserId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        blockedUserId: null == blockedUserId
+            ? _value.blockedUserId
+            : blockedUserId // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
-class _UserBlockIdModel implements UserBlockIdModel {
-  const _UserBlockIdModel(
-      {required this.blockerUserId, required this.blockedUserId});
-  factory _UserBlockIdModel.fromJson(Map<String, dynamic> json) =>
-      _$UserBlockIdModelFromJson(json);
+class _$UserBlockIdModelImpl implements _UserBlockIdModel {
+  const _$UserBlockIdModelImpl({
+    required this.blockerUserId,
+    required this.blockedUserId,
+  });
+
+  factory _$UserBlockIdModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$UserBlockIdModelImplFromJson(json);
 
   @override
   final String blockerUserId;
   @override
   final String blockedUserId;
 
-  /// Create a copy of UserBlockIdModel
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  _$UserBlockIdModelCopyWith<_UserBlockIdModel> get copyWith =>
-      __$UserBlockIdModelCopyWithImpl<_UserBlockIdModel>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$UserBlockIdModelToJson(
-      this,
-    );
+  String toString() {
+    return 'UserBlockIdModel(blockerUserId: $blockerUserId, blockedUserId: $blockedUserId)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _UserBlockIdModel &&
+            other is _$UserBlockIdModelImpl &&
             (identical(other.blockerUserId, blockerUserId) ||
                 other.blockerUserId == blockerUserId) &&
             (identical(other.blockedUserId, blockedUserId) ||
@@ -288,103 +153,81 @@ class _UserBlockIdModel implements UserBlockIdModel {
   @override
   int get hashCode => Object.hash(runtimeType, blockerUserId, blockedUserId);
 
+  /// Create a copy of UserBlockIdModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  String toString() {
-    return 'UserBlockIdModel(blockerUserId: $blockerUserId, blockedUserId: $blockedUserId)';
+  @pragma('vm:prefer-inline')
+  _$$UserBlockIdModelImplCopyWith<_$UserBlockIdModelImpl> get copyWith =>
+      __$$UserBlockIdModelImplCopyWithImpl<_$UserBlockIdModelImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$UserBlockIdModelImplToJson(this);
   }
 }
 
-/// @nodoc
-abstract mixin class _$UserBlockIdModelCopyWith<$Res>
-    implements $UserBlockIdModelCopyWith<$Res> {
-  factory _$UserBlockIdModelCopyWith(
-          _UserBlockIdModel value, $Res Function(_UserBlockIdModel) _then) =
-      __$UserBlockIdModelCopyWithImpl;
+abstract class _UserBlockIdModel implements UserBlockIdModel {
+  const factory _UserBlockIdModel({
+    required final String blockerUserId,
+    required final String blockedUserId,
+  }) = _$UserBlockIdModelImpl;
+
+  factory _UserBlockIdModel.fromJson(Map<String, dynamic> json) =
+      _$UserBlockIdModelImpl.fromJson;
+
   @override
-  @useResult
-  $Res call({String blockerUserId, String blockedUserId});
-}
-
-/// @nodoc
-class __$UserBlockIdModelCopyWithImpl<$Res>
-    implements _$UserBlockIdModelCopyWith<$Res> {
-  __$UserBlockIdModelCopyWithImpl(this._self, this._then);
-
-  final _UserBlockIdModel _self;
-  final $Res Function(_UserBlockIdModel) _then;
+  String get blockerUserId;
+  @override
+  String get blockedUserId;
 
   /// Create a copy of UserBlockIdModel
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @pragma('vm:prefer-inline')
-  $Res call({
-    Object? blockerUserId = null,
-    Object? blockedUserId = null,
-  }) {
-    return _then(_UserBlockIdModel(
-      blockerUserId: null == blockerUserId
-          ? _self.blockerUserId
-          : blockerUserId // ignore: cast_nullable_to_non_nullable
-              as String,
-      blockedUserId: null == blockedUserId
-          ? _self.blockedUserId
-          : blockedUserId // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
-  }
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$UserBlockIdModelImplCopyWith<_$UserBlockIdModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+UserBlockModel _$UserBlockModelFromJson(Map<String, dynamic> json) {
+  return _UserBlockModel.fromJson(json);
 }
 
 /// @nodoc
 mixin _$UserBlockModel {
-  UserBlockIdModel get id;
-  UserModel get blocker; // The user who did the blocking
-  UserModel get blocked; // The user who was blocked
-  String get createdAt;
+  UserBlockIdModel get id => throw _privateConstructorUsedError;
+  UserModel get blocker =>
+      throw _privateConstructorUsedError; // The user who did the blocking
+  UserModel get blocked =>
+      throw _privateConstructorUsedError; // The user who was blocked
+  String get createdAt => throw _privateConstructorUsedError;
+
+  /// Serializes this UserBlockModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of UserBlockModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
   $UserBlockModelCopyWith<UserBlockModel> get copyWith =>
-      _$UserBlockModelCopyWithImpl<UserBlockModel>(
-          this as UserBlockModel, _$identity);
-
-  /// Serializes this UserBlockModel to a JSON map.
-  Map<String, dynamic> toJson();
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is UserBlockModel &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.blocker, blocker) || other.blocker == blocker) &&
-            (identical(other.blocked, blocked) || other.blocked == blocked) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(runtimeType, id, blocker, blocked, createdAt);
-
-  @override
-  String toString() {
-    return 'UserBlockModel(id: $id, blocker: $blocker, blocked: $blocked, createdAt: $createdAt)';
-  }
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract mixin class $UserBlockModelCopyWith<$Res> {
+abstract class $UserBlockModelCopyWith<$Res> {
   factory $UserBlockModelCopyWith(
-          UserBlockModel value, $Res Function(UserBlockModel) _then) =
-      _$UserBlockModelCopyWithImpl;
+    UserBlockModel value,
+    $Res Function(UserBlockModel) then,
+  ) = _$UserBlockModelCopyWithImpl<$Res, UserBlockModel>;
   @useResult
-  $Res call(
-      {UserBlockIdModel id,
-      UserModel blocker,
-      UserModel blocked,
-      String createdAt});
+  $Res call({
+    UserBlockIdModel id,
+    UserModel blocker,
+    UserModel blocked,
+    String createdAt,
+  });
 
   $UserBlockIdModelCopyWith<$Res> get id;
   $UserModelCopyWith<$Res> get blocker;
@@ -392,12 +235,14 @@ abstract mixin class $UserBlockModelCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$UserBlockModelCopyWithImpl<$Res>
+class _$UserBlockModelCopyWithImpl<$Res, $Val extends UserBlockModel>
     implements $UserBlockModelCopyWith<$Res> {
-  _$UserBlockModelCopyWithImpl(this._self, this._then);
+  _$UserBlockModelCopyWithImpl(this._value, this._then);
 
-  final UserBlockModel _self;
-  final $Res Function(UserBlockModel) _then;
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 
   /// Create a copy of UserBlockModel
   /// with the given fields replaced by the non-null parameter values.
@@ -409,24 +254,27 @@ class _$UserBlockModelCopyWithImpl<$Res>
     Object? blocked = null,
     Object? createdAt = null,
   }) {
-    return _then(_self.copyWith(
-      id: null == id
-          ? _self.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as UserBlockIdModel,
-      blocker: null == blocker
-          ? _self.blocker
-          : blocker // ignore: cast_nullable_to_non_nullable
-              as UserModel,
-      blocked: null == blocked
-          ? _self.blocked
-          : blocked // ignore: cast_nullable_to_non_nullable
-              as UserModel,
-      createdAt: null == createdAt
-          ? _self.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as UserBlockIdModel,
+            blocker: null == blocker
+                ? _value.blocker
+                : blocker // ignore: cast_nullable_to_non_nullable
+                      as UserModel,
+            blocked: null == blocked
+                ? _value.blocked
+                : blocked // ignore: cast_nullable_to_non_nullable
+                      as UserModel,
+            createdAt: null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of UserBlockModel
@@ -434,8 +282,8 @@ class _$UserBlockModelCopyWithImpl<$Res>
   @override
   @pragma('vm:prefer-inline')
   $UserBlockIdModelCopyWith<$Res> get id {
-    return $UserBlockIdModelCopyWith<$Res>(_self.id, (value) {
-      return _then(_self.copyWith(id: value));
+    return $UserBlockIdModelCopyWith<$Res>(_value.id, (value) {
+      return _then(_value.copyWith(id: value) as $Val);
     });
   }
 
@@ -444,8 +292,8 @@ class _$UserBlockModelCopyWithImpl<$Res>
   @override
   @pragma('vm:prefer-inline')
   $UserModelCopyWith<$Res> get blocker {
-    return $UserModelCopyWith<$Res>(_self.blocker, (value) {
-      return _then(_self.copyWith(blocker: value));
+    return $UserModelCopyWith<$Res>(_value.blocker, (value) {
+      return _then(_value.copyWith(blocker: value) as $Val);
     });
   }
 
@@ -454,221 +302,113 @@ class _$UserBlockModelCopyWithImpl<$Res>
   @override
   @pragma('vm:prefer-inline')
   $UserModelCopyWith<$Res> get blocked {
-    return $UserModelCopyWith<$Res>(_self.blocked, (value) {
-      return _then(_self.copyWith(blocked: value));
+    return $UserModelCopyWith<$Res>(_value.blocked, (value) {
+      return _then(_value.copyWith(blocked: value) as $Val);
     });
   }
 }
 
-/// Adds pattern-matching-related methods to [UserBlockModel].
-extension UserBlockModelPatterns on UserBlockModel {
-  /// A variant of `map` that fallback to returning `orElse`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
+/// @nodoc
+abstract class _$$UserBlockModelImplCopyWith<$Res>
+    implements $UserBlockModelCopyWith<$Res> {
+  factory _$$UserBlockModelImplCopyWith(
+    _$UserBlockModelImpl value,
+    $Res Function(_$UserBlockModelImpl) then,
+  ) = __$$UserBlockModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    UserBlockIdModel id,
+    UserModel blocker,
+    UserModel blocked,
+    String createdAt,
+  });
 
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>(
-    TResult Function(_UserBlockModel value)? $default, {
-    required TResult orElse(),
+  @override
+  $UserBlockIdModelCopyWith<$Res> get id;
+  @override
+  $UserModelCopyWith<$Res> get blocker;
+  @override
+  $UserModelCopyWith<$Res> get blocked;
+}
+
+/// @nodoc
+class __$$UserBlockModelImplCopyWithImpl<$Res>
+    extends _$UserBlockModelCopyWithImpl<$Res, _$UserBlockModelImpl>
+    implements _$$UserBlockModelImplCopyWith<$Res> {
+  __$$UserBlockModelImplCopyWithImpl(
+    _$UserBlockModelImpl _value,
+    $Res Function(_$UserBlockModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of UserBlockModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? blocker = null,
+    Object? blocked = null,
+    Object? createdAt = null,
   }) {
-    final _that = this;
-    switch (_that) {
-      case _UserBlockModel() when $default != null:
-        return $default(_that);
-      case _:
-        return orElse();
-    }
-  }
-
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// Callbacks receives the raw object, upcasted.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case final Subclass2 value:
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>(
-    TResult Function(_UserBlockModel value) $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _UserBlockModel():
-        return $default(_that);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
-
-  /// A variant of `map` that fallback to returning `null`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>(
-    TResult? Function(_UserBlockModel value)? $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _UserBlockModel() when $default != null:
-        return $default(_that);
-      case _:
-        return null;
-    }
-  }
-
-  /// A variant of `when` that fallback to an `orElse` callback.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>(
-    TResult Function(UserBlockIdModel id, UserModel blocker, UserModel blocked,
-            String createdAt)?
-        $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _UserBlockModel() when $default != null:
-        return $default(
-            _that.id, _that.blocker, _that.blocked, _that.createdAt);
-      case _:
-        return orElse();
-    }
-  }
-
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// As opposed to `map`, this offers destructuring.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case Subclass2(:final field2):
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>(
-    TResult Function(UserBlockIdModel id, UserModel blocker, UserModel blocked,
-            String createdAt)
-        $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _UserBlockModel():
-        return $default(
-            _that.id, _that.blocker, _that.blocked, _that.createdAt);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
-
-  /// A variant of `when` that fallback to returning `null`
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(UserBlockIdModel id, UserModel blocker, UserModel blocked,
-            String createdAt)?
-        $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _UserBlockModel() when $default != null:
-        return $default(
-            _that.id, _that.blocker, _that.blocked, _that.createdAt);
-      case _:
-        return null;
-    }
+    return _then(
+      _$UserBlockModelImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as UserBlockIdModel,
+        blocker: null == blocker
+            ? _value.blocker
+            : blocker // ignore: cast_nullable_to_non_nullable
+                  as UserModel,
+        blocked: null == blocked
+            ? _value.blocked
+            : blocked // ignore: cast_nullable_to_non_nullable
+                  as UserModel,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
-class _UserBlockModel implements UserBlockModel {
-  const _UserBlockModel(
-      {required this.id,
-      required this.blocker,
-      required this.blocked,
-      required this.createdAt});
-  factory _UserBlockModel.fromJson(Map<String, dynamic> json) =>
-      _$UserBlockModelFromJson(json);
+class _$UserBlockModelImpl implements _UserBlockModel {
+  const _$UserBlockModelImpl({
+    required this.id,
+    required this.blocker,
+    required this.blocked,
+    required this.createdAt,
+  });
+
+  factory _$UserBlockModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$UserBlockModelImplFromJson(json);
 
   @override
   final UserBlockIdModel id;
   @override
   final UserModel blocker;
-// The user who did the blocking
+  // The user who did the blocking
   @override
   final UserModel blocked;
-// The user who was blocked
+  // The user who was blocked
   @override
   final String createdAt;
 
-  /// Create a copy of UserBlockModel
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  _$UserBlockModelCopyWith<_UserBlockModel> get copyWith =>
-      __$UserBlockModelCopyWithImpl<_UserBlockModel>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$UserBlockModelToJson(
-      this,
-    );
+  String toString() {
+    return 'UserBlockModel(id: $id, blocker: $blocker, blocked: $blocked, createdAt: $createdAt)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _UserBlockModel &&
+            other is _$UserBlockModelImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.blocker, blocker) || other.blocker == blocker) &&
             (identical(other.blocked, blocked) || other.blocked == blocked) &&
@@ -680,101 +420,47 @@ class _UserBlockModel implements UserBlockModel {
   @override
   int get hashCode => Object.hash(runtimeType, id, blocker, blocked, createdAt);
 
+  /// Create a copy of UserBlockModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  String toString() {
-    return 'UserBlockModel(id: $id, blocker: $blocker, blocked: $blocked, createdAt: $createdAt)';
+  @pragma('vm:prefer-inline')
+  _$$UserBlockModelImplCopyWith<_$UserBlockModelImpl> get copyWith =>
+      __$$UserBlockModelImplCopyWithImpl<_$UserBlockModelImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$UserBlockModelImplToJson(this);
   }
 }
 
-/// @nodoc
-abstract mixin class _$UserBlockModelCopyWith<$Res>
-    implements $UserBlockModelCopyWith<$Res> {
-  factory _$UserBlockModelCopyWith(
-          _UserBlockModel value, $Res Function(_UserBlockModel) _then) =
-      __$UserBlockModelCopyWithImpl;
-  @override
-  @useResult
-  $Res call(
-      {UserBlockIdModel id,
-      UserModel blocker,
-      UserModel blocked,
-      String createdAt});
+abstract class _UserBlockModel implements UserBlockModel {
+  const factory _UserBlockModel({
+    required final UserBlockIdModel id,
+    required final UserModel blocker,
+    required final UserModel blocked,
+    required final String createdAt,
+  }) = _$UserBlockModelImpl;
+
+  factory _UserBlockModel.fromJson(Map<String, dynamic> json) =
+      _$UserBlockModelImpl.fromJson;
 
   @override
-  $UserBlockIdModelCopyWith<$Res> get id;
+  UserBlockIdModel get id;
   @override
-  $UserModelCopyWith<$Res> get blocker;
+  UserModel get blocker; // The user who did the blocking
   @override
-  $UserModelCopyWith<$Res> get blocked;
+  UserModel get blocked; // The user who was blocked
+  @override
+  String get createdAt;
+
+  /// Create a copy of UserBlockModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$UserBlockModelImplCopyWith<_$UserBlockModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
-
-/// @nodoc
-class __$UserBlockModelCopyWithImpl<$Res>
-    implements _$UserBlockModelCopyWith<$Res> {
-  __$UserBlockModelCopyWithImpl(this._self, this._then);
-
-  final _UserBlockModel _self;
-  final $Res Function(_UserBlockModel) _then;
-
-  /// Create a copy of UserBlockModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $Res call({
-    Object? id = null,
-    Object? blocker = null,
-    Object? blocked = null,
-    Object? createdAt = null,
-  }) {
-    return _then(_UserBlockModel(
-      id: null == id
-          ? _self.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as UserBlockIdModel,
-      blocker: null == blocker
-          ? _self.blocker
-          : blocker // ignore: cast_nullable_to_non_nullable
-              as UserModel,
-      blocked: null == blocked
-          ? _self.blocked
-          : blocked // ignore: cast_nullable_to_non_nullable
-              as UserModel,
-      createdAt: null == createdAt
-          ? _self.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
-  }
-
-  /// Create a copy of UserBlockModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $UserBlockIdModelCopyWith<$Res> get id {
-    return $UserBlockIdModelCopyWith<$Res>(_self.id, (value) {
-      return _then(_self.copyWith(id: value));
-    });
-  }
-
-  /// Create a copy of UserBlockModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $UserModelCopyWith<$Res> get blocker {
-    return $UserModelCopyWith<$Res>(_self.blocker, (value) {
-      return _then(_self.copyWith(blocker: value));
-    });
-  }
-
-  /// Create a copy of UserBlockModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $UserModelCopyWith<$Res> get blocked {
-    return $UserModelCopyWith<$Res>(_self.blocked, (value) {
-      return _then(_self.copyWith(blocked: value));
-    });
-  }
-}
-
-// dart format on

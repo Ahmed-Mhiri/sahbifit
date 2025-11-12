@@ -1,5 +1,5 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,67 +9,60 @@ part of 'message_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
-// dart format off
 T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
+
+MessageModel _$MessageModelFromJson(Map<String, dynamic> json) {
+  return _MessageModel.fromJson(json);
+}
 
 /// @nodoc
 mixin _$MessageModel {
   @JsonKey(ignore: true)
-  String? get id; // We'll get the ID from the doc snapshot
-  String get senderId;
-  String get text; // When reading, 'timestamp' will be a Timestamp.
-// When writing, we'll set this to null so the server generates it.
-  DateTime? get timestamp;
+  String? get id => throw _privateConstructorUsedError; // We'll get the ID from the doc snapshot
+  String get senderId => throw _privateConstructorUsedError;
+  String get text =>
+      throw _privateConstructorUsedError; // When reading, 'timestamp' will be a Timestamp.
+  // When writing, this will be null and replaced by toFirestore
+  DateTime? get timestamp => throw _privateConstructorUsedError;
+
+  /// Serializes this MessageModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of MessageModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
   $MessageModelCopyWith<MessageModel> get copyWith =>
-      _$MessageModelCopyWithImpl<MessageModel>(
-          this as MessageModel, _$identity);
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is MessageModel &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.senderId, senderId) ||
-                other.senderId == senderId) &&
-            (identical(other.text, text) || other.text == text) &&
-            (identical(other.timestamp, timestamp) ||
-                other.timestamp == timestamp));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, id, senderId, text, timestamp);
-
-  @override
-  String toString() {
-    return 'MessageModel(id: $id, senderId: $senderId, text: $text, timestamp: $timestamp)';
-  }
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract mixin class $MessageModelCopyWith<$Res> {
+abstract class $MessageModelCopyWith<$Res> {
   factory $MessageModelCopyWith(
-          MessageModel value, $Res Function(MessageModel) _then) =
-      _$MessageModelCopyWithImpl;
+    MessageModel value,
+    $Res Function(MessageModel) then,
+  ) = _$MessageModelCopyWithImpl<$Res, MessageModel>;
   @useResult
-  $Res call(
-      {@JsonKey(ignore: true) String? id,
-      String senderId,
-      String text,
-      DateTime? timestamp});
+  $Res call({
+    @JsonKey(ignore: true) String? id,
+    String senderId,
+    String text,
+    DateTime? timestamp,
+  });
 }
 
 /// @nodoc
-class _$MessageModelCopyWithImpl<$Res> implements $MessageModelCopyWith<$Res> {
-  _$MessageModelCopyWithImpl(this._self, this._then);
+class _$MessageModelCopyWithImpl<$Res, $Val extends MessageModel>
+    implements $MessageModelCopyWith<$Res> {
+  _$MessageModelCopyWithImpl(this._value, this._then);
 
-  final MessageModel _self;
-  final $Res Function(MessageModel) _then;
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 
   /// Create a copy of MessageModel
   /// with the given fields replaced by the non-null parameter values.
@@ -81,228 +74,129 @@ class _$MessageModelCopyWithImpl<$Res> implements $MessageModelCopyWith<$Res> {
     Object? text = null,
     Object? timestamp = freezed,
   }) {
-    return _then(_self.copyWith(
-      id: freezed == id
-          ? _self.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String?,
-      senderId: null == senderId
-          ? _self.senderId
-          : senderId // ignore: cast_nullable_to_non_nullable
-              as String,
-      text: null == text
-          ? _self.text
-          : text // ignore: cast_nullable_to_non_nullable
-              as String,
-      timestamp: freezed == timestamp
-          ? _self.timestamp
-          : timestamp // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
+    return _then(
+      _value.copyWith(
+            id: freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            senderId: null == senderId
+                ? _value.senderId
+                : senderId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            text: null == text
+                ? _value.text
+                : text // ignore: cast_nullable_to_non_nullable
+                      as String,
+            timestamp: freezed == timestamp
+                ? _value.timestamp
+                : timestamp // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+          )
+          as $Val,
+    );
   }
 }
 
-/// Adds pattern-matching-related methods to [MessageModel].
-extension MessageModelPatterns on MessageModel {
-  /// A variant of `map` that fallback to returning `orElse`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
+/// @nodoc
+abstract class _$$MessageModelImplCopyWith<$Res>
+    implements $MessageModelCopyWith<$Res> {
+  factory _$$MessageModelImplCopyWith(
+    _$MessageModelImpl value,
+    $Res Function(_$MessageModelImpl) then,
+  ) = __$$MessageModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    @JsonKey(ignore: true) String? id,
+    String senderId,
+    String text,
+    DateTime? timestamp,
+  });
+}
 
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>(
-    TResult Function(_MessageModel value)? $default, {
-    required TResult orElse(),
+/// @nodoc
+class __$$MessageModelImplCopyWithImpl<$Res>
+    extends _$MessageModelCopyWithImpl<$Res, _$MessageModelImpl>
+    implements _$$MessageModelImplCopyWith<$Res> {
+  __$$MessageModelImplCopyWithImpl(
+    _$MessageModelImpl _value,
+    $Res Function(_$MessageModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of MessageModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = freezed,
+    Object? senderId = null,
+    Object? text = null,
+    Object? timestamp = freezed,
   }) {
-    final _that = this;
-    switch (_that) {
-      case _MessageModel() when $default != null:
-        return $default(_that);
-      case _:
-        return orElse();
-    }
-  }
-
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// Callbacks receives the raw object, upcasted.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case final Subclass2 value:
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>(
-    TResult Function(_MessageModel value) $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _MessageModel():
-        return $default(_that);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
-
-  /// A variant of `map` that fallback to returning `null`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>(
-    TResult? Function(_MessageModel value)? $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _MessageModel() when $default != null:
-        return $default(_that);
-      case _:
-        return null;
-    }
-  }
-
-  /// A variant of `when` that fallback to an `orElse` callback.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>(
-    TResult Function(@JsonKey(ignore: true) String? id, String senderId,
-            String text, DateTime? timestamp)?
-        $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _MessageModel() when $default != null:
-        return $default(_that.id, _that.senderId, _that.text, _that.timestamp);
-      case _:
-        return orElse();
-    }
-  }
-
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// As opposed to `map`, this offers destructuring.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case Subclass2(:final field2):
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>(
-    TResult Function(@JsonKey(ignore: true) String? id, String senderId,
-            String text, DateTime? timestamp)
-        $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _MessageModel():
-        return $default(_that.id, _that.senderId, _that.text, _that.timestamp);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
-
-  /// A variant of `when` that fallback to returning `null`
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(@JsonKey(ignore: true) String? id, String senderId,
-            String text, DateTime? timestamp)?
-        $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _MessageModel() when $default != null:
-        return $default(_that.id, _that.senderId, _that.text, _that.timestamp);
-      case _:
-        return null;
-    }
+    return _then(
+      _$MessageModelImpl(
+        id: freezed == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        senderId: null == senderId
+            ? _value.senderId
+            : senderId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        text: null == text
+            ? _value.text
+            : text // ignore: cast_nullable_to_non_nullable
+                  as String,
+        timestamp: freezed == timestamp
+            ? _value.timestamp
+            : timestamp // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 @JsonSerializable(
-    fieldRename: FieldRename.snake, converters: [TimestampConverter()])
-class _MessageModel extends MessageModel {
-  const _MessageModel(
-      {@JsonKey(ignore: true) this.id,
-      required this.senderId,
-      required this.text,
-      required this.timestamp})
-      : super._();
+  fieldRename: FieldRename.snake,
+  converters: [TimestampConverter()],
+)
+class _$MessageModelImpl extends _MessageModel {
+  const _$MessageModelImpl({
+    @JsonKey(ignore: true) this.id,
+    required this.senderId,
+    required this.text,
+    required this.timestamp,
+  }) : super._();
+
+  factory _$MessageModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$MessageModelImplFromJson(json);
 
   @override
   @JsonKey(ignore: true)
   final String? id;
-// We'll get the ID from the doc snapshot
+  // We'll get the ID from the doc snapshot
   @override
   final String senderId;
   @override
   final String text;
-// When reading, 'timestamp' will be a Timestamp.
-// When writing, we'll set this to null so the server generates it.
+  // When reading, 'timestamp' will be a Timestamp.
+  // When writing, this will be null and replaced by toFirestore
   @override
   final DateTime? timestamp;
 
-  /// Create a copy of MessageModel
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  _$MessageModelCopyWith<_MessageModel> get copyWith =>
-      __$MessageModelCopyWithImpl<_MessageModel>(this, _$identity);
+  String toString() {
+    return 'MessageModel(id: $id, senderId: $senderId, text: $text, timestamp: $timestamp)';
+  }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _MessageModel &&
+            other is _$MessageModelImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.senderId, senderId) ||
                 other.senderId == senderId) &&
@@ -311,67 +205,51 @@ class _MessageModel extends MessageModel {
                 other.timestamp == timestamp));
   }
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, senderId, text, timestamp);
 
+  /// Create a copy of MessageModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  String toString() {
-    return 'MessageModel(id: $id, senderId: $senderId, text: $text, timestamp: $timestamp)';
+  @pragma('vm:prefer-inline')
+  _$$MessageModelImplCopyWith<_$MessageModelImpl> get copyWith =>
+      __$$MessageModelImplCopyWithImpl<_$MessageModelImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$MessageModelImplToJson(this);
   }
 }
 
-/// @nodoc
-abstract mixin class _$MessageModelCopyWith<$Res>
-    implements $MessageModelCopyWith<$Res> {
-  factory _$MessageModelCopyWith(
-          _MessageModel value, $Res Function(_MessageModel) _then) =
-      __$MessageModelCopyWithImpl;
+abstract class _MessageModel extends MessageModel {
+  const factory _MessageModel({
+    @JsonKey(ignore: true) final String? id,
+    required final String senderId,
+    required final String text,
+    required final DateTime? timestamp,
+  }) = _$MessageModelImpl;
+  const _MessageModel._() : super._();
+
+  factory _MessageModel.fromJson(Map<String, dynamic> json) =
+      _$MessageModelImpl.fromJson;
+
   @override
-  @useResult
-  $Res call(
-      {@JsonKey(ignore: true) String? id,
-      String senderId,
-      String text,
-      DateTime? timestamp});
-}
-
-/// @nodoc
-class __$MessageModelCopyWithImpl<$Res>
-    implements _$MessageModelCopyWith<$Res> {
-  __$MessageModelCopyWithImpl(this._self, this._then);
-
-  final _MessageModel _self;
-  final $Res Function(_MessageModel) _then;
+  @JsonKey(ignore: true)
+  String? get id; // We'll get the ID from the doc snapshot
+  @override
+  String get senderId;
+  @override
+  String get text; // When reading, 'timestamp' will be a Timestamp.
+  // When writing, this will be null and replaced by toFirestore
+  @override
+  DateTime? get timestamp;
 
   /// Create a copy of MessageModel
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @pragma('vm:prefer-inline')
-  $Res call({
-    Object? id = freezed,
-    Object? senderId = null,
-    Object? text = null,
-    Object? timestamp = freezed,
-  }) {
-    return _then(_MessageModel(
-      id: freezed == id
-          ? _self.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String?,
-      senderId: null == senderId
-          ? _self.senderId
-          : senderId // ignore: cast_nullable_to_non_nullable
-              as String,
-      text: null == text
-          ? _self.text
-          : text // ignore: cast_nullable_to_non_nullable
-              as String,
-      timestamp: freezed == timestamp
-          ? _self.timestamp
-          : timestamp // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
-  }
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$MessageModelImplCopyWith<_$MessageModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
-
-// dart format on

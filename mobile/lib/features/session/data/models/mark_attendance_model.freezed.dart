@@ -1,5 +1,5 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,69 +9,56 @@ part of 'mark_attendance_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
-// dart format off
 T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
+
+MarkAttendanceModel _$MarkAttendanceModelFromJson(Map<String, dynamic> json) {
+  return _MarkAttendanceModel.fromJson(json);
+}
 
 /// @nodoc
 mixin _$MarkAttendanceModel {
-  String get sessionId;
-  String get participantUserId;
+  String get sessionId => throw _privateConstructorUsedError;
+  String get participantUserId => throw _privateConstructorUsedError;
   @JsonKey(name: 'newStatus')
-  ParticipantStatus get status;
+  ParticipantStatus get status => throw _privateConstructorUsedError;
+
+  /// Serializes this MarkAttendanceModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of MarkAttendanceModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
   $MarkAttendanceModelCopyWith<MarkAttendanceModel> get copyWith =>
-      _$MarkAttendanceModelCopyWithImpl<MarkAttendanceModel>(
-          this as MarkAttendanceModel, _$identity);
-
-  /// Serializes this MarkAttendanceModel to a JSON map.
-  Map<String, dynamic> toJson();
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is MarkAttendanceModel &&
-            (identical(other.sessionId, sessionId) ||
-                other.sessionId == sessionId) &&
-            (identical(other.participantUserId, participantUserId) ||
-                other.participantUserId == participantUserId) &&
-            (identical(other.status, status) || other.status == status));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, sessionId, participantUserId, status);
-
-  @override
-  String toString() {
-    return 'MarkAttendanceModel(sessionId: $sessionId, participantUserId: $participantUserId, status: $status)';
-  }
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract mixin class $MarkAttendanceModelCopyWith<$Res> {
+abstract class $MarkAttendanceModelCopyWith<$Res> {
   factory $MarkAttendanceModelCopyWith(
-          MarkAttendanceModel value, $Res Function(MarkAttendanceModel) _then) =
-      _$MarkAttendanceModelCopyWithImpl;
+    MarkAttendanceModel value,
+    $Res Function(MarkAttendanceModel) then,
+  ) = _$MarkAttendanceModelCopyWithImpl<$Res, MarkAttendanceModel>;
   @useResult
-  $Res call(
-      {String sessionId,
-      String participantUserId,
-      @JsonKey(name: 'newStatus') ParticipantStatus status});
+  $Res call({
+    String sessionId,
+    String participantUserId,
+    @JsonKey(name: 'newStatus') ParticipantStatus status,
+  });
 }
 
 /// @nodoc
-class _$MarkAttendanceModelCopyWithImpl<$Res>
+class _$MarkAttendanceModelCopyWithImpl<$Res, $Val extends MarkAttendanceModel>
     implements $MarkAttendanceModelCopyWith<$Res> {
-  _$MarkAttendanceModelCopyWithImpl(this._self, this._then);
+  _$MarkAttendanceModelCopyWithImpl(this._value, this._then);
 
-  final MarkAttendanceModel _self;
-  final $Res Function(MarkAttendanceModel) _then;
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 
   /// Create a copy of MarkAttendanceModel
   /// with the given fields replaced by the non-null parameter values.
@@ -82,196 +69,91 @@ class _$MarkAttendanceModelCopyWithImpl<$Res>
     Object? participantUserId = null,
     Object? status = null,
   }) {
-    return _then(_self.copyWith(
-      sessionId: null == sessionId
-          ? _self.sessionId
-          : sessionId // ignore: cast_nullable_to_non_nullable
-              as String,
-      participantUserId: null == participantUserId
-          ? _self.participantUserId
-          : participantUserId // ignore: cast_nullable_to_non_nullable
-              as String,
-      status: null == status
-          ? _self.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as ParticipantStatus,
-    ));
+    return _then(
+      _value.copyWith(
+            sessionId: null == sessionId
+                ? _value.sessionId
+                : sessionId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            participantUserId: null == participantUserId
+                ? _value.participantUserId
+                : participantUserId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            status: null == status
+                ? _value.status
+                : status // ignore: cast_nullable_to_non_nullable
+                      as ParticipantStatus,
+          )
+          as $Val,
+    );
   }
 }
 
-/// Adds pattern-matching-related methods to [MarkAttendanceModel].
-extension MarkAttendanceModelPatterns on MarkAttendanceModel {
-  /// A variant of `map` that fallback to returning `orElse`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
+/// @nodoc
+abstract class _$$MarkAttendanceModelImplCopyWith<$Res>
+    implements $MarkAttendanceModelCopyWith<$Res> {
+  factory _$$MarkAttendanceModelImplCopyWith(
+    _$MarkAttendanceModelImpl value,
+    $Res Function(_$MarkAttendanceModelImpl) then,
+  ) = __$$MarkAttendanceModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String sessionId,
+    String participantUserId,
+    @JsonKey(name: 'newStatus') ParticipantStatus status,
+  });
+}
 
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>(
-    TResult Function(_MarkAttendanceModel value)? $default, {
-    required TResult orElse(),
+/// @nodoc
+class __$$MarkAttendanceModelImplCopyWithImpl<$Res>
+    extends _$MarkAttendanceModelCopyWithImpl<$Res, _$MarkAttendanceModelImpl>
+    implements _$$MarkAttendanceModelImplCopyWith<$Res> {
+  __$$MarkAttendanceModelImplCopyWithImpl(
+    _$MarkAttendanceModelImpl _value,
+    $Res Function(_$MarkAttendanceModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of MarkAttendanceModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sessionId = null,
+    Object? participantUserId = null,
+    Object? status = null,
   }) {
-    final _that = this;
-    switch (_that) {
-      case _MarkAttendanceModel() when $default != null:
-        return $default(_that);
-      case _:
-        return orElse();
-    }
-  }
-
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// Callbacks receives the raw object, upcasted.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case final Subclass2 value:
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>(
-    TResult Function(_MarkAttendanceModel value) $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _MarkAttendanceModel():
-        return $default(_that);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
-
-  /// A variant of `map` that fallback to returning `null`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>(
-    TResult? Function(_MarkAttendanceModel value)? $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _MarkAttendanceModel() when $default != null:
-        return $default(_that);
-      case _:
-        return null;
-    }
-  }
-
-  /// A variant of `when` that fallback to an `orElse` callback.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>(
-    TResult Function(String sessionId, String participantUserId,
-            @JsonKey(name: 'newStatus') ParticipantStatus status)?
-        $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _MarkAttendanceModel() when $default != null:
-        return $default(_that.sessionId, _that.participantUserId, _that.status);
-      case _:
-        return orElse();
-    }
-  }
-
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// As opposed to `map`, this offers destructuring.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case Subclass2(:final field2):
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>(
-    TResult Function(String sessionId, String participantUserId,
-            @JsonKey(name: 'newStatus') ParticipantStatus status)
-        $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _MarkAttendanceModel():
-        return $default(_that.sessionId, _that.participantUserId, _that.status);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
-
-  /// A variant of `when` that fallback to returning `null`
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(String sessionId, String participantUserId,
-            @JsonKey(name: 'newStatus') ParticipantStatus status)?
-        $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _MarkAttendanceModel() when $default != null:
-        return $default(_that.sessionId, _that.participantUserId, _that.status);
-      case _:
-        return null;
-    }
+    return _then(
+      _$MarkAttendanceModelImpl(
+        sessionId: null == sessionId
+            ? _value.sessionId
+            : sessionId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        participantUserId: null == participantUserId
+            ? _value.participantUserId
+            : participantUserId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        status: null == status
+            ? _value.status
+            : status // ignore: cast_nullable_to_non_nullable
+                  as ParticipantStatus,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
-class _MarkAttendanceModel implements MarkAttendanceModel {
-  const _MarkAttendanceModel(
-      {required this.sessionId,
-      required this.participantUserId,
-      @JsonKey(name: 'newStatus') required this.status});
-  factory _MarkAttendanceModel.fromJson(Map<String, dynamic> json) =>
-      _$MarkAttendanceModelFromJson(json);
+class _$MarkAttendanceModelImpl implements _MarkAttendanceModel {
+  const _$MarkAttendanceModelImpl({
+    required this.sessionId,
+    required this.participantUserId,
+    @JsonKey(name: 'newStatus') required this.status,
+  });
+
+  factory _$MarkAttendanceModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$MarkAttendanceModelImplFromJson(json);
 
   @override
   final String sessionId;
@@ -281,27 +163,16 @@ class _MarkAttendanceModel implements MarkAttendanceModel {
   @JsonKey(name: 'newStatus')
   final ParticipantStatus status;
 
-  /// Create a copy of MarkAttendanceModel
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  _$MarkAttendanceModelCopyWith<_MarkAttendanceModel> get copyWith =>
-      __$MarkAttendanceModelCopyWithImpl<_MarkAttendanceModel>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$MarkAttendanceModelToJson(
-      this,
-    );
+  String toString() {
+    return 'MarkAttendanceModel(sessionId: $sessionId, participantUserId: $participantUserId, status: $status)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _MarkAttendanceModel &&
+            other is _$MarkAttendanceModelImpl &&
             (identical(other.sessionId, sessionId) ||
                 other.sessionId == sessionId) &&
             (identical(other.participantUserId, participantUserId) ||
@@ -314,58 +185,45 @@ class _MarkAttendanceModel implements MarkAttendanceModel {
   int get hashCode =>
       Object.hash(runtimeType, sessionId, participantUserId, status);
 
+  /// Create a copy of MarkAttendanceModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  String toString() {
-    return 'MarkAttendanceModel(sessionId: $sessionId, participantUserId: $participantUserId, status: $status)';
+  @pragma('vm:prefer-inline')
+  _$$MarkAttendanceModelImplCopyWith<_$MarkAttendanceModelImpl> get copyWith =>
+      __$$MarkAttendanceModelImplCopyWithImpl<_$MarkAttendanceModelImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$MarkAttendanceModelImplToJson(this);
   }
 }
 
-/// @nodoc
-abstract mixin class _$MarkAttendanceModelCopyWith<$Res>
-    implements $MarkAttendanceModelCopyWith<$Res> {
-  factory _$MarkAttendanceModelCopyWith(_MarkAttendanceModel value,
-          $Res Function(_MarkAttendanceModel) _then) =
-      __$MarkAttendanceModelCopyWithImpl;
+abstract class _MarkAttendanceModel implements MarkAttendanceModel {
+  const factory _MarkAttendanceModel({
+    required final String sessionId,
+    required final String participantUserId,
+    @JsonKey(name: 'newStatus') required final ParticipantStatus status,
+  }) = _$MarkAttendanceModelImpl;
+
+  factory _MarkAttendanceModel.fromJson(Map<String, dynamic> json) =
+      _$MarkAttendanceModelImpl.fromJson;
+
   @override
-  @useResult
-  $Res call(
-      {String sessionId,
-      String participantUserId,
-      @JsonKey(name: 'newStatus') ParticipantStatus status});
-}
-
-/// @nodoc
-class __$MarkAttendanceModelCopyWithImpl<$Res>
-    implements _$MarkAttendanceModelCopyWith<$Res> {
-  __$MarkAttendanceModelCopyWithImpl(this._self, this._then);
-
-  final _MarkAttendanceModel _self;
-  final $Res Function(_MarkAttendanceModel) _then;
+  String get sessionId;
+  @override
+  String get participantUserId;
+  @override
+  @JsonKey(name: 'newStatus')
+  ParticipantStatus get status;
 
   /// Create a copy of MarkAttendanceModel
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @pragma('vm:prefer-inline')
-  $Res call({
-    Object? sessionId = null,
-    Object? participantUserId = null,
-    Object? status = null,
-  }) {
-    return _then(_MarkAttendanceModel(
-      sessionId: null == sessionId
-          ? _self.sessionId
-          : sessionId // ignore: cast_nullable_to_non_nullable
-              as String,
-      participantUserId: null == participantUserId
-          ? _self.participantUserId
-          : participantUserId // ignore: cast_nullable_to_non_nullable
-              as String,
-      status: null == status
-          ? _self.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as ParticipantStatus,
-    ));
-  }
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$MarkAttendanceModelImplCopyWith<_$MarkAttendanceModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
-
-// dart format on

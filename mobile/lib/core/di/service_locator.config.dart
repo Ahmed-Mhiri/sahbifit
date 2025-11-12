@@ -1,5 +1,5 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format width=80
+// GENERATED CODE - DO NOT MODIFY BY HAND
 
 // **************************************************************************
 // InjectableConfigGenerator
@@ -104,107 +104,149 @@ _i174.GetIt $initGetIt(
   String? environment,
   _i526.EnvironmentFilter? environmentFilter,
 }) {
-  final gh = _i526.GetItHelper(
-    getIt,
-    environment,
-    environmentFilter,
-  );
+  final gh = _i526.GetItHelper(getIt, environment, environmentFilter);
   final firebaseModule = _$FirebaseModule();
   final storageModule = _$StorageModule();
   gh.lazySingleton<_i974.FirebaseFirestore>(() => firebaseModule.firestore);
   gh.lazySingleton<_i558.FlutterSecureStorage>(() => storageModule.storage);
   gh.lazySingleton<_i535.SecureStorageService>(
-      () => _i535.SecureStorageService(gh<_i558.FlutterSecureStorage>()));
+    () => _i535.SecureStorageService(gh<_i558.FlutterSecureStorage>()),
+  );
   gh.lazySingleton<_i367.AuthInterceptor>(
-      () => _i367.AuthInterceptor(gh<_i535.SecureStorageService>()));
+    () => _i367.AuthInterceptor(gh<_i535.SecureStorageService>()),
+  );
   gh.lazySingleton<_i277.ApiClient>(
-      () => _i277.ApiClient(gh<_i367.AuthInterceptor>()));
+    () => _i277.ApiClient(gh<_i367.AuthInterceptor>()),
+  );
   gh.factory<_i159.ChatRemoteDatasource>(
-      () => _i159.ChatRemoteDatasourceImpl(gh<_i974.FirebaseFirestore>()));
+    () => _i159.ChatRemoteDatasourceImpl(gh<_i974.FirebaseFirestore>()),
+  );
   gh.factory<_i501.TagRemoteDatasource>(
-      () => _i501.TagRemoteDatasourceImpl(gh<_i277.ApiClient>()));
+    () => _i501.TagRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
   gh.factory<_i478.SessionRemoteDatasource>(
-      () => _i446.SessionRemoteDatasourceImpl(gh<_i277.ApiClient>()));
+    () => _i446.SessionRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
   gh.factory<_i708.UserRemoteDatasource>(
-      () => _i708.UserRemoteDatasourceImpl(gh<_i277.ApiClient>()));
+    () => _i708.UserRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
   gh.factory<_i548.ReportRemoteDatasource>(
-      () => _i548.ReportRemoteDatasourceImpl(gh<_i277.ApiClient>()));
+    () => _i548.ReportRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
   gh.factory<_i23.ReportRepository>(
-      () => _i420.ReportRepositoryImpl(gh<_i548.ReportRemoteDatasource>()));
+    () => _i420.ReportRepositoryImpl(gh<_i548.ReportRemoteDatasource>()),
+  );
   gh.factory<_i775.CreateReport>(
-      () => _i775.CreateReport(gh<_i23.ReportRepository>()));
+    () => _i775.CreateReport(gh<_i23.ReportRepository>()),
+  );
   gh.factory<_i237.UserRepository>(
-      () => _i664.UserRepositoryImpl(gh<_i708.UserRemoteDatasource>()));
+    () => _i664.UserRepositoryImpl(gh<_i708.UserRemoteDatasource>()),
+  );
   gh.factory<_i602.GymRemoteDatasource>(
-      () => _i602.GymRemoteDatasourceImpl(gh<_i277.ApiClient>()));
+    () => _i602.GymRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
   gh.factory<_i552.VerificationRemoteDatasource>(
-      () => _i552.VerificationRemoteDatasourceImpl(gh<_i277.ApiClient>()));
+    () => _i552.VerificationRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
   gh.factory<_i225.GymRepository>(
-      () => _i689.GymRepositoryImpl(gh<_i602.GymRemoteDatasource>()));
+    () => _i689.GymRepositoryImpl(gh<_i602.GymRemoteDatasource>()),
+  );
   gh.factory<_i420.ChatRepository>(
-      () => _i504.ChatRepositoryImpl(gh<_i159.ChatRemoteDatasource>()));
+    () => _i504.ChatRepositoryImpl(gh<_i159.ChatRemoteDatasource>()),
+  );
   gh.factory<_i701.TagRepository>(
-      () => _i454.TagRepositoryImpl(gh<_i501.TagRemoteDatasource>()));
+    () => _i454.TagRepositoryImpl(gh<_i501.TagRemoteDatasource>()),
+  );
   gh.factory<_i521.GetTagsByType>(
-      () => _i521.GetTagsByType(gh<_i701.TagRepository>()));
+    () => _i521.GetTagsByType(gh<_i701.TagRepository>()),
+  );
   gh.factory<_i696.BlockUser>(
-      () => _i696.BlockUser(gh<_i237.UserRepository>()));
+    () => _i696.BlockUser(gh<_i237.UserRepository>()),
+  );
   gh.factory<_i667.GetMyProfile>(
-      () => _i667.GetMyProfile(gh<_i237.UserRepository>()));
+    () => _i667.GetMyProfile(gh<_i237.UserRepository>()),
+  );
   gh.factory<_i497.GetUserProfile>(
-      () => _i497.GetUserProfile(gh<_i237.UserRepository>()));
+    () => _i497.GetUserProfile(gh<_i237.UserRepository>()),
+  );
   gh.factory<_i652.UpdateFcmToken>(
-      () => _i652.UpdateFcmToken(gh<_i237.UserRepository>()));
+    () => _i652.UpdateFcmToken(gh<_i237.UserRepository>()),
+  );
   gh.factory<_i544.UpdateProfileVisibility>(
-      () => _i544.UpdateProfileVisibility(gh<_i237.UserRepository>()));
+    () => _i544.UpdateProfileVisibility(gh<_i237.UserRepository>()),
+  );
   gh.factory<_i193.RatingRemoteDatasource>(
-      () => _i193.RatingRemoteDatasourceImpl(gh<_i277.ApiClient>()));
+    () => _i193.RatingRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
   gh.factory<_i738.SessionRepository>(
-      () => _i1021.SessionRepositoryImpl(gh<_i478.SessionRemoteDatasource>()));
+    () => _i1021.SessionRepositoryImpl(gh<_i478.SessionRemoteDatasource>()),
+  );
   gh.factory<_i161.AuthRemoteDatasource>(
-      () => _i161.AuthRemoteDatasourceImpl(gh<_i277.ApiClient>()));
+    () => _i161.AuthRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
   gh.factory<_i338.GetApprovedGyms>(
-      () => _i338.GetApprovedGyms(gh<_i225.GymRepository>()));
+    () => _i338.GetApprovedGyms(gh<_i225.GymRepository>()),
+  );
   gh.factory<_i82.SubmitGym>(() => _i82.SubmitGym(gh<_i225.GymRepository>()));
   gh.factory<_i583.GetChatStream>(
-      () => _i583.GetChatStream(gh<_i420.ChatRepository>()));
+    () => _i583.GetChatStream(gh<_i420.ChatRepository>()),
+  );
   gh.factory<_i76.SendMessage>(
-      () => _i76.SendMessage(gh<_i420.ChatRepository>()));
+    () => _i76.SendMessage(gh<_i420.ChatRepository>()),
+  );
   gh.factory<_i1027.RatingRepository>(
-      () => _i874.RatingRepositoryImpl(gh<_i193.RatingRemoteDatasource>()));
+    () => _i874.RatingRepositoryImpl(gh<_i193.RatingRemoteDatasource>()),
+  );
   gh.factory<_i831.CreateSession>(
-      () => _i831.CreateSession(gh<_i738.SessionRepository>()));
+    () => _i831.CreateSession(gh<_i738.SessionRepository>()),
+  );
   gh.factory<_i51.GetActiveSessions>(
-      () => _i51.GetActiveSessions(gh<_i738.SessionRepository>()));
+    () => _i51.GetActiveSessions(gh<_i738.SessionRepository>()),
+  );
   gh.factory<_i170.JoinSession>(
-      () => _i170.JoinSession(gh<_i738.SessionRepository>()));
+    () => _i170.JoinSession(gh<_i738.SessionRepository>()),
+  );
   gh.factory<_i690.MarkAttendance>(
-      () => _i690.MarkAttendance(gh<_i738.SessionRepository>()));
-  gh.factory<_i1070.VerificationRepository>(() =>
-      _i306.VerificationRepositoryImpl(
-          gh<_i552.VerificationRemoteDatasource>()));
-  gh.factory<_i787.AuthRepository>(() => _i153.AuthRepositoryImpl(
-        gh<_i161.AuthRemoteDatasource>(),
-        gh<_i535.SecureStorageService>(),
-      ));
+    () => _i690.MarkAttendance(gh<_i738.SessionRepository>()),
+  );
+  gh.factory<_i1070.VerificationRepository>(
+    () => _i306.VerificationRepositoryImpl(
+      gh<_i552.VerificationRemoteDatasource>(),
+    ),
+  );
+  gh.factory<_i787.AuthRepository>(
+    () => _i153.AuthRepositoryImpl(
+      gh<_i161.AuthRemoteDatasource>(),
+      gh<_i535.SecureStorageService>(),
+    ),
+  );
   gh.factory<_i482.GetVerificationStatus>(
-      () => _i482.GetVerificationStatus(gh<_i1070.VerificationRepository>()));
+    () => _i482.GetVerificationStatus(gh<_i1070.VerificationRepository>()),
+  );
   gh.factory<_i573.SubmitVerificationVideo>(
-      () => _i573.SubmitVerificationVideo(gh<_i1070.VerificationRepository>()));
+    () => _i573.SubmitVerificationVideo(gh<_i1070.VerificationRepository>()),
+  );
   gh.factory<_i694.CreateRating>(
-      () => _i694.CreateRating(gh<_i1027.RatingRepository>()));
+    () => _i694.CreateRating(gh<_i1027.RatingRepository>()),
+  );
   gh.factory<_i396.GetPendingRatings>(
-      () => _i396.GetPendingRatings(gh<_i1027.RatingRepository>()));
+    () => _i396.GetPendingRatings(gh<_i1027.RatingRepository>()),
+  );
   gh.factory<_i809.GetRatingsForUser>(
-      () => _i809.GetRatingsForUser(gh<_i1027.RatingRepository>()));
+    () => _i809.GetRatingsForUser(gh<_i1027.RatingRepository>()),
+  );
   gh.factory<_i778.LoginUser>(
-      () => _i778.LoginUser(gh<_i787.AuthRepository>()));
+    () => _i778.LoginUser(gh<_i787.AuthRepository>()),
+  );
   gh.factory<_i198.RegisterUser>(
-      () => _i198.RegisterUser(gh<_i787.AuthRepository>()));
+    () => _i198.RegisterUser(gh<_i787.AuthRepository>()),
+  );
   gh.factory<_i152.ResendOtp>(
-      () => _i152.ResendOtp(gh<_i787.AuthRepository>()));
+    () => _i152.ResendOtp(gh<_i787.AuthRepository>()),
+  );
   gh.factory<_i699.VerifySms>(
-      () => _i699.VerifySms(gh<_i787.AuthRepository>()));
+    () => _i699.VerifySms(gh<_i787.AuthRepository>()),
+  );
   return getIt;
 }
 

@@ -6,16 +6,16 @@ part of 'verify_sms_request_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_VerifySmsRequestModel _$VerifySmsRequestModelFromJson(
-        Map<String, dynamic> json) =>
-    _VerifySmsRequestModel(
-      phoneNumber: json['phoneNumber'] as String,
-      otp: json['otp'] as String,
-    );
+_$VerifySmsRequestModelImpl _$$VerifySmsRequestModelImplFromJson(
+  Map<String, dynamic> json,
+) => _$VerifySmsRequestModelImpl(
+  phoneNumber: json['phoneNumber'] as String,
+  otp: json['otp'] as String,
+);
 
-Map<String, dynamic> _$VerifySmsRequestModelToJson(
-        _VerifySmsRequestModel instance) =>
-    <String, dynamic>{
-      'phoneNumber': instance.phoneNumber,
-      'otp': instance.otp,
-    };
+Map<String, dynamic> _$$VerifySmsRequestModelImplToJson(
+  _$VerifySmsRequestModelImpl instance,
+) => <String, dynamic>{
+  'phoneNumber': instance.phoneNumber,
+  'otp': instance.otp,
+};

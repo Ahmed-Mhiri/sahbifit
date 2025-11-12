@@ -6,16 +6,23 @@ part of 'user_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
+_$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
+    _$UserModelImpl(
       userId: json['userId'] as String,
       firstName: json['firstName'] as String,
       profilePhotoUrl: json['profilePhotoUrl'] as String?,
-      verificationStatus:
-          $enumDecode(_$VerificationStatusEnumMap, json['verificationStatus']),
-      verifiedGender:
-          $enumDecode(_$VerifiedGenderEnumMap, json['verifiedGender']),
-      profileVisibility:
-          $enumDecode(_$ProfileVisibilityEnumMap, json['profileVisibility']),
+      verificationStatus: $enumDecode(
+        _$VerificationStatusEnumMap,
+        json['verificationStatus'],
+      ),
+      verifiedGender: $enumDecode(
+        _$VerifiedGenderEnumMap,
+        json['verifiedGender'],
+      ),
+      profileVisibility: $enumDecode(
+        _$ProfileVisibilityEnumMap,
+        json['profileVisibility'],
+      ),
       role: $enumDecode(_$UserRoleEnumMap, json['role']),
       status: $enumDecode(_$UserStatusEnumMap, json['status']),
       groupSessionCount: (json['groupSessionCount'] as num).toInt(),
@@ -23,29 +30,30 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
       primaryGym: json['primaryGym'] == null
           ? null
           : GymModel.fromJson(json['primaryGym'] as Map<String, dynamic>),
-      userBadges: (json['userBadges'] as List<dynamic>?)
+      userBadges:
+          (json['userBadges'] as List<dynamic>?)
               ?.map((e) => BadgeModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
     );
 
-Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
-    <String, dynamic>{
-      'userId': instance.userId,
-      'firstName': instance.firstName,
-      'profilePhotoUrl': instance.profilePhotoUrl,
-      'verificationStatus':
-          _$VerificationStatusEnumMap[instance.verificationStatus]!,
-      'verifiedGender': _$VerifiedGenderEnumMap[instance.verifiedGender]!,
-      'profileVisibility':
-          _$ProfileVisibilityEnumMap[instance.profileVisibility]!,
-      'role': _$UserRoleEnumMap[instance.role]!,
-      'status': _$UserStatusEnumMap[instance.status]!,
-      'groupSessionCount': instance.groupSessionCount,
-      'noShowCount': instance.noShowCount,
-      'primaryGym': instance.primaryGym?.toJson(),
-      'userBadges': instance.userBadges.map((e) => e.toJson()).toList(),
-    };
+Map<String, dynamic> _$$UserModelImplToJson(
+  _$UserModelImpl instance,
+) => <String, dynamic>{
+  'userId': instance.userId,
+  'firstName': instance.firstName,
+  'profilePhotoUrl': instance.profilePhotoUrl,
+  'verificationStatus':
+      _$VerificationStatusEnumMap[instance.verificationStatus]!,
+  'verifiedGender': _$VerifiedGenderEnumMap[instance.verifiedGender]!,
+  'profileVisibility': _$ProfileVisibilityEnumMap[instance.profileVisibility]!,
+  'role': _$UserRoleEnumMap[instance.role]!,
+  'status': _$UserStatusEnumMap[instance.status]!,
+  'groupSessionCount': instance.groupSessionCount,
+  'noShowCount': instance.noShowCount,
+  'primaryGym': instance.primaryGym?.toJson(),
+  'userBadges': instance.userBadges.map((e) => e.toJson()).toList(),
+};
 
 const _$VerificationStatusEnumMap = {
   VerificationStatus.notStarted: 'not_started',

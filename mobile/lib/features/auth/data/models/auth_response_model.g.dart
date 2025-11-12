@@ -6,12 +6,10 @@ part of 'auth_response_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_AuthResponseModel _$AuthResponseModelFromJson(Map<String, dynamic> json) =>
-    _AuthResponseModel(
-      jwtToken: json['jwtToken'] as String,
-    );
+_$AuthResponseModelImpl _$$AuthResponseModelImplFromJson(
+  Map<String, dynamic> json,
+) => _$AuthResponseModelImpl(jwtToken: json['jwtToken'] as String);
 
-Map<String, dynamic> _$AuthResponseModelToJson(_AuthResponseModel instance) =>
-    <String, dynamic>{
-      'jwtToken': instance.jwtToken,
-    };
+Map<String, dynamic> _$$AuthResponseModelImplToJson(
+  _$AuthResponseModelImpl instance,
+) => <String, dynamic>{'jwtToken': instance.jwtToken};
