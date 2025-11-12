@@ -1,0 +1,404 @@
+﻿==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\report\data\datasources\report_remote_datasource.dart
+==================================================
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/api/api_client.dart';
+import 'package:sahbifit/core/constants/api_endpoints.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/features/report/data/models/create_report_model.dart';
+
+abstract class ReportRemoteDatasource {
+  Future<void> createReport(CreateReportModel request);
+}
+
+@Injectable(as: ReportRemoteDatasource)
+class ReportRemoteDatasourceImpl implements ReportRemoteDatasource {
+  final ApiClient _apiClient;
+
+  ReportRemoteDatasourceImpl(this._apiClient);
+
+  @override
+  Future<void> createReport(CreateReportModel request) async {
+    try {
+      await _apiClient.dio.post(
+        ApiEndpoints.reports,
+        data: request.toJson(),
+      );
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\report\data\models\create_report_model.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'create_report_model.freezed.dart';
+part 'create_report_model.g.dart';
+
+@freezed
+class CreateReportModel with _$CreateReportModel {
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  const factory CreateReportModel({
+    required String reportedUserId,
+    required String reason,
+    String? sessionId, // This is nullable in your DTO
+  }) = _CreateReportModel;
+
+  factory CreateReportModel.fromJson(Map<String, dynamic> json) =>
+      _$CreateReportModelFromJson(json);
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\report\data\models\create_report_model.freezed.dart
+==================================================
+// coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'create_report_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
+
+CreateReportModel _$CreateReportModelFromJson(Map<String, dynamic> json) {
+  return _CreateReportModel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$CreateReportModel {
+  String get reportedUserId => throw _privateConstructorUsedError;
+  String get reason => throw _privateConstructorUsedError;
+  String? get sessionId => throw _privateConstructorUsedError;
+
+  /// Serializes this CreateReportModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of CreateReportModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $CreateReportModelCopyWith<CreateReportModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $CreateReportModelCopyWith<$Res> {
+  factory $CreateReportModelCopyWith(
+    CreateReportModel value,
+    $Res Function(CreateReportModel) then,
+  ) = _$CreateReportModelCopyWithImpl<$Res, CreateReportModel>;
+  @useResult
+  $Res call({String reportedUserId, String reason, String? sessionId});
+}
+
+/// @nodoc
+class _$CreateReportModelCopyWithImpl<$Res, $Val extends CreateReportModel>
+    implements $CreateReportModelCopyWith<$Res> {
+  _$CreateReportModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of CreateReportModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? reportedUserId = null,
+    Object? reason = null,
+    Object? sessionId = freezed,
+  }) {
+    return _then(
+      _value.copyWith(
+            reportedUserId: null == reportedUserId
+                ? _value.reportedUserId
+                : reportedUserId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            reason: null == reason
+                ? _value.reason
+                : reason // ignore: cast_nullable_to_non_nullable
+                      as String,
+            sessionId: freezed == sessionId
+                ? _value.sessionId
+                : sessionId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$CreateReportModelImplCopyWith<$Res>
+    implements $CreateReportModelCopyWith<$Res> {
+  factory _$$CreateReportModelImplCopyWith(
+    _$CreateReportModelImpl value,
+    $Res Function(_$CreateReportModelImpl) then,
+  ) = __$$CreateReportModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String reportedUserId, String reason, String? sessionId});
+}
+
+/// @nodoc
+class __$$CreateReportModelImplCopyWithImpl<$Res>
+    extends _$CreateReportModelCopyWithImpl<$Res, _$CreateReportModelImpl>
+    implements _$$CreateReportModelImplCopyWith<$Res> {
+  __$$CreateReportModelImplCopyWithImpl(
+    _$CreateReportModelImpl _value,
+    $Res Function(_$CreateReportModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of CreateReportModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? reportedUserId = null,
+    Object? reason = null,
+    Object? sessionId = freezed,
+  }) {
+    return _then(
+      _$CreateReportModelImpl(
+        reportedUserId: null == reportedUserId
+            ? _value.reportedUserId
+            : reportedUserId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        reason: null == reason
+            ? _value.reason
+            : reason // ignore: cast_nullable_to_non_nullable
+                  as String,
+        sessionId: freezed == sessionId
+            ? _value.sessionId
+            : sessionId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
+class _$CreateReportModelImpl implements _CreateReportModel {
+  const _$CreateReportModelImpl({
+    required this.reportedUserId,
+    required this.reason,
+    this.sessionId,
+  });
+
+  factory _$CreateReportModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$CreateReportModelImplFromJson(json);
+
+  @override
+  final String reportedUserId;
+  @override
+  final String reason;
+  @override
+  final String? sessionId;
+
+  @override
+  String toString() {
+    return 'CreateReportModel(reportedUserId: $reportedUserId, reason: $reason, sessionId: $sessionId)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$CreateReportModelImpl &&
+            (identical(other.reportedUserId, reportedUserId) ||
+                other.reportedUserId == reportedUserId) &&
+            (identical(other.reason, reason) || other.reason == reason) &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, reportedUserId, reason, sessionId);
+
+  /// Create a copy of CreateReportModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$CreateReportModelImplCopyWith<_$CreateReportModelImpl> get copyWith =>
+      __$$CreateReportModelImplCopyWithImpl<_$CreateReportModelImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$CreateReportModelImplToJson(this);
+  }
+}
+
+abstract class _CreateReportModel implements CreateReportModel {
+  const factory _CreateReportModel({
+    required final String reportedUserId,
+    required final String reason,
+    final String? sessionId,
+  }) = _$CreateReportModelImpl;
+
+  factory _CreateReportModel.fromJson(Map<String, dynamic> json) =
+      _$CreateReportModelImpl.fromJson;
+
+  @override
+  String get reportedUserId;
+  @override
+  String get reason;
+  @override
+  String? get sessionId;
+
+  /// Create a copy of CreateReportModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$CreateReportModelImplCopyWith<_$CreateReportModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\report\data\models\create_report_model.g.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'create_report_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$CreateReportModelImpl _$$CreateReportModelImplFromJson(
+  Map<String, dynamic> json,
+) => _$CreateReportModelImpl(
+  reportedUserId: json['reportedUserId'] as String,
+  reason: json['reason'] as String,
+  sessionId: json['sessionId'] as String?,
+);
+
+Map<String, dynamic> _$$CreateReportModelImplToJson(
+  _$CreateReportModelImpl instance,
+) => <String, dynamic>{
+  'reportedUserId': instance.reportedUserId,
+  'reason': instance.reason,
+  'sessionId': instance.sessionId,
+};
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\report\data\repositories\report_repository_impl.dart
+==================================================
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/features/report/data/datasources/report_remote_datasource.dart';
+import 'package:sahbifit/features/report/data/models/create_report_model.dart';
+import 'package:sahbifit/features/report/domain/repositories/report_repository.dart';
+
+@Injectable(as: ReportRepository)
+class ReportRepositoryImpl implements ReportRepository {
+  final ReportRemoteDatasource _remoteDatasource;
+
+  ReportRepositoryImpl(this._remoteDatasource);
+
+  @override
+  Future<void> createReport({
+    required String reportedUserId,
+    required String reason,
+    String? sessionId,
+  }) async {
+    try {
+      final requestModel = CreateReportModel(
+        reportedUserId: reportedUserId,
+        reason: reason,
+        sessionId: sessionId,
+      );
+      await _remoteDatasource.createReport(requestModel);
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\report\domain\repositories\report_repository.dart
+==================================================
+abstract class ReportRepository {
+  Future<void> createReport({
+    required String reportedUserId,
+    required String reason,
+    String? sessionId,
+  });
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\report\domain\usecases\create_report.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/report/domain/repositories/report_repository.dart';
+
+@injectable
+class CreateReport implements UseCase<void, CreateReportParams> {
+  final ReportRepository _repository;
+
+  CreateReport(this._repository);
+
+  @override
+  Future<void> call(CreateReportParams params) async {
+    return _repository.createReport(
+      reportedUserId: params.reportedUserId,
+      reason: params.reason,
+      sessionId: params.sessionId,
+    );
+  }
+}
+
+class CreateReportParams extends Equatable {
+  final String reportedUserId;
+  final String reason;
+  final String? sessionId;
+
+  const CreateReportParams({
+    required this.reportedUserId,
+    required this.reason,
+    this.sessionId,
+  });
+
+  @override
+  List<Object?> get props => [reportedUserId, reason, sessionId];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\report\presentation\cubit\report_cubit.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\report\presentation\cubit\report_state.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\report\presentation\pages\report_user_page.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\report\presentation\widgets\report_form.dart
+==================================================
+

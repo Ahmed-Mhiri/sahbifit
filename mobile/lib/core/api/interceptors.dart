@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
-
+import 'package:sahbifit/app/bloc/app_bloc.dart'; // <-- 1. Import AppBloc
+import 'package:sahbifit/core/di/service_locator.dart'; // <-- 2. Import getIt
 import 'package:sahbifit/core/services/secure_storage_service.dart';
 
 @lazySingleton
@@ -28,15 +29,17 @@ class AuthInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.response?.statusCode == 401) {
-      // 401 Unauthorized error
-      print('--- 401 Unauthorized ---');
-      
-      // TODO: In Phase 2, this is where you'll trigger a logout.
-      // For example, you might have a global AppBloc and add:
-      // getIt<AppBloc>().add(const AppEvent.logoutRequested());
-      
-      // We can also clear the token
-      _storageService.deleteToken();
+      print('--- 401 Unauthorized: Dispatching LogoutRequested ---');
+
+      // 3. THIS IS THE CHANGE
+      // Use getIt to find the globally registered AppBloc
+      // and add the logout event. The AppBloc will handle
+      // deleting the token and updating the app's state.
+      try {
+        getIt<AppBloc>().add(const AppEvent.logoutRequested());
+      } catch (e) {
+        print('Failed to get AppBloc from getIt to dispatch logout: $e');
+      }
     }
     return super.onError(err, handler);
   }

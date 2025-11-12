@@ -1,0 +1,646 @@
+﻿==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\data\datasources\chat_remote_datasource.dart
+==================================================
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/features/chat/data/models/message_model.dart';
+
+abstract class ChatRemoteDatasource {
+  Stream<List<MessageModel>> getChatStream(String sessionId);
+  Future<void> sendMessage(String sessionId, MessageModel message);
+}
+
+@Injectable(as: ChatRemoteDatasource)
+class ChatRemoteDatasourceImpl implements ChatRemoteDatasource {
+  final FirebaseFirestore _firestore;
+
+  ChatRemoteDatasourceImpl(this._firestore);
+
+  // Your backend's FirebaseChatService.java creates docs in "session_chats"
+  static const String _collection = 'session_chats';
+  static const String _subCollection = 'messages';
+
+  @override
+  Stream<List<MessageModel>> getChatStream(String sessionId) {
+    // 1. Get the collection of messages for the given session
+    final collectionRef = _firestore
+        .collection(_collection)
+        .doc(sessionId)
+        .collection(_subCollection)
+        .orderBy('timestamp', descending: true); // Order by time
+
+    // 2. Get a stream of snapshots
+    return collectionRef.snapshots().map((querySnapshot) {
+      // 3. For each snapshot, map the documents into MessageModels
+      return querySnapshot.docs
+          .map((doc) => MessageModel.fromSnapshot(doc))
+          .toList();
+    });
+  }
+
+  @override
+  Future<void> sendMessage(String sessionId, MessageModel message) async {
+    // 1. Get the reference to the "messages" subcollection
+    final collectionRef = _firestore
+        .collection(_collection)
+        .doc(sessionId)
+        .collection(_subCollection);
+
+    // 2. Add the new message
+    // We use .toFirestore() to convert the model to a map
+    // and add the server-side timestamp.
+    await collectionRef.add(message.toFirestore());
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\data\models\message_model.dart
+==================================================
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit/features/chat/domain/entities/message.dart'; // Ensure this path is correct
+
+part 'message_model.freezed.dart';
+part 'message_model.g.dart';
+
+@freezed
+class MessageModel with _$MessageModel {
+  const MessageModel._();
+
+  @JsonSerializable(
+    fieldRename: FieldRename.snake, // Firestore often uses snake_case
+    converters: [TimestampConverter()], // Use our custom converter
+  )
+  const factory MessageModel({
+    @JsonKey(ignore: true) String? id, // We'll get the ID from the doc snapshot
+    required String senderId,
+    required String text,
+    // When reading, 'timestamp' will be a Timestamp.
+    // When writing, this will be null and replaced by toFirestore
+    required DateTime? timestamp,
+  }) = _MessageModel;
+
+  /// Special factory for creating a model to *send* to Firestore
+  /// This sets the timestamp to null, so we can use a server timestamp.
+  factory MessageModel.forSending({
+    required String senderId,
+    required String text,
+  }) =>
+      MessageModel(
+        senderId: senderId,
+        text: text,
+        timestamp: null, // Will be replaced by server timestamp
+      );
+
+  /// Factory for creating a model from a Firestore snapshot
+  factory MessageModel.fromSnapshot(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    // Use the generated fromJson factory, then add the doc ID
+    return MessageModel.fromJson(data).copyWith(id: doc.id);
+  }
+
+  /// Factory for creating a model from a JSON map (required by freezed)
+  /// This is the line that fixes the error.
+  factory MessageModel.fromJson(Map<String, dynamic> json) =>
+      _$MessageModelFromJson(json);
+
+  /// Converts this model into a Map to *write* to Firestore
+  Map<String, dynamic> toFirestore() {
+    // toJson() will now exist thanks to the .fromJson factory being added
+    // and build_runner being run.
+    final json = toJson();
+
+    // Replace our null timestamp with the server's command
+    json['timestamp'] = FieldValue.serverTimestamp();
+    
+    // Don't write the 'id' field back into the document data
+    json.remove('id'); 
+    
+    return json;
+  }
+
+  // Converts the data-layer model to a domain-layer entity
+  Message toEntity() {
+    return Message(
+      messageId: id ?? '', // Use the ID from the snapshot
+      senderId: senderId,
+      text: text,
+      timestamp: timestamp ?? DateTime.now(), // Fallback if timestamp is null
+    );
+  }
+}
+
+// This is the custom converter for handling Firestore Timestamps
+class TimestampConverter implements JsonConverter<DateTime?, Object> {
+  const TimestampConverter();
+
+  @override
+  DateTime? fromJson(Object json) {
+    if (json is Timestamp) {
+      return json.toDate();
+    }
+    // Handle cases where it might already be null
+    if (json == null) {
+      return null;
+    }
+    // You could add more robust parsing here if needed, e.g., from String
+    return null;
+  }
+
+  @override
+  Object toJson(DateTime? time) {
+    // If a time is provided, convert it to a Timestamp
+    if (time != null) {
+      return Timestamp.fromDate(time);
+    }
+    // If time is null, we intend to use a server timestamp.
+    // The `toFirestore` method handles this explicitly, but setting
+    // it here ensures consistency if toJson() were called directly.
+    return FieldValue.serverTimestamp();
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\data\models\message_model.freezed.dart
+==================================================
+// coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'message_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
+
+MessageModel _$MessageModelFromJson(Map<String, dynamic> json) {
+  return _MessageModel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$MessageModel {
+  @JsonKey(ignore: true)
+  String? get id => throw _privateConstructorUsedError; // We'll get the ID from the doc snapshot
+  String get senderId => throw _privateConstructorUsedError;
+  String get text =>
+      throw _privateConstructorUsedError; // When reading, 'timestamp' will be a Timestamp.
+  // When writing, this will be null and replaced by toFirestore
+  DateTime? get timestamp => throw _privateConstructorUsedError;
+
+  /// Serializes this MessageModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of MessageModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $MessageModelCopyWith<MessageModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $MessageModelCopyWith<$Res> {
+  factory $MessageModelCopyWith(
+    MessageModel value,
+    $Res Function(MessageModel) then,
+  ) = _$MessageModelCopyWithImpl<$Res, MessageModel>;
+  @useResult
+  $Res call({
+    @JsonKey(ignore: true) String? id,
+    String senderId,
+    String text,
+    DateTime? timestamp,
+  });
+}
+
+/// @nodoc
+class _$MessageModelCopyWithImpl<$Res, $Val extends MessageModel>
+    implements $MessageModelCopyWith<$Res> {
+  _$MessageModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of MessageModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = freezed,
+    Object? senderId = null,
+    Object? text = null,
+    Object? timestamp = freezed,
+  }) {
+    return _then(
+      _value.copyWith(
+            id: freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            senderId: null == senderId
+                ? _value.senderId
+                : senderId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            text: null == text
+                ? _value.text
+                : text // ignore: cast_nullable_to_non_nullable
+                      as String,
+            timestamp: freezed == timestamp
+                ? _value.timestamp
+                : timestamp // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$MessageModelImplCopyWith<$Res>
+    implements $MessageModelCopyWith<$Res> {
+  factory _$$MessageModelImplCopyWith(
+    _$MessageModelImpl value,
+    $Res Function(_$MessageModelImpl) then,
+  ) = __$$MessageModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    @JsonKey(ignore: true) String? id,
+    String senderId,
+    String text,
+    DateTime? timestamp,
+  });
+}
+
+/// @nodoc
+class __$$MessageModelImplCopyWithImpl<$Res>
+    extends _$MessageModelCopyWithImpl<$Res, _$MessageModelImpl>
+    implements _$$MessageModelImplCopyWith<$Res> {
+  __$$MessageModelImplCopyWithImpl(
+    _$MessageModelImpl _value,
+    $Res Function(_$MessageModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of MessageModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = freezed,
+    Object? senderId = null,
+    Object? text = null,
+    Object? timestamp = freezed,
+  }) {
+    return _then(
+      _$MessageModelImpl(
+        id: freezed == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        senderId: null == senderId
+            ? _value.senderId
+            : senderId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        text: null == text
+            ? _value.text
+            : text // ignore: cast_nullable_to_non_nullable
+                  as String,
+        timestamp: freezed == timestamp
+            ? _value.timestamp
+            : timestamp // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+@JsonSerializable(
+  fieldRename: FieldRename.snake,
+  converters: [TimestampConverter()],
+)
+class _$MessageModelImpl extends _MessageModel {
+  const _$MessageModelImpl({
+    @JsonKey(ignore: true) this.id,
+    required this.senderId,
+    required this.text,
+    required this.timestamp,
+  }) : super._();
+
+  factory _$MessageModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$MessageModelImplFromJson(json);
+
+  @override
+  @JsonKey(ignore: true)
+  final String? id;
+  // We'll get the ID from the doc snapshot
+  @override
+  final String senderId;
+  @override
+  final String text;
+  // When reading, 'timestamp' will be a Timestamp.
+  // When writing, this will be null and replaced by toFirestore
+  @override
+  final DateTime? timestamp;
+
+  @override
+  String toString() {
+    return 'MessageModel(id: $id, senderId: $senderId, text: $text, timestamp: $timestamp)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$MessageModelImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.senderId, senderId) ||
+                other.senderId == senderId) &&
+            (identical(other.text, text) || other.text == text) &&
+            (identical(other.timestamp, timestamp) ||
+                other.timestamp == timestamp));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, senderId, text, timestamp);
+
+  /// Create a copy of MessageModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$MessageModelImplCopyWith<_$MessageModelImpl> get copyWith =>
+      __$$MessageModelImplCopyWithImpl<_$MessageModelImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$MessageModelImplToJson(this);
+  }
+}
+
+abstract class _MessageModel extends MessageModel {
+  const factory _MessageModel({
+    @JsonKey(ignore: true) final String? id,
+    required final String senderId,
+    required final String text,
+    required final DateTime? timestamp,
+  }) = _$MessageModelImpl;
+  const _MessageModel._() : super._();
+
+  factory _MessageModel.fromJson(Map<String, dynamic> json) =
+      _$MessageModelImpl.fromJson;
+
+  @override
+  @JsonKey(ignore: true)
+  String? get id; // We'll get the ID from the doc snapshot
+  @override
+  String get senderId;
+  @override
+  String get text; // When reading, 'timestamp' will be a Timestamp.
+  // When writing, this will be null and replaced by toFirestore
+  @override
+  DateTime? get timestamp;
+
+  /// Create a copy of MessageModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$MessageModelImplCopyWith<_$MessageModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\data\models\message_model.g.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'message_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$MessageModelImpl _$$MessageModelImplFromJson(Map<String, dynamic> json) =>
+    _$MessageModelImpl(
+      senderId: json['sender_id'] as String,
+      text: json['text'] as String,
+      timestamp: _$JsonConverterFromJson<Object, DateTime?>(
+        json['timestamp'],
+        const TimestampConverter().fromJson,
+      ),
+    );
+
+Map<String, dynamic> _$$MessageModelImplToJson(_$MessageModelImpl instance) =>
+    <String, dynamic>{
+      'sender_id': instance.senderId,
+      'text': instance.text,
+      'timestamp': const TimestampConverter().toJson(instance.timestamp),
+    };
+
+Value? _$JsonConverterFromJson<Json, Value>(
+  Object? json,
+  Value? Function(Json json) fromJson,
+) => json == null ? null : fromJson(json as Json);
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\data\repositories\chat_repository_impl.dart
+==================================================
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/features/chat/data/datasources/chat_remote_datasource.dart';
+import 'package:sahbifit/features/chat/data/models/message_model.dart';
+import 'package:sahbifit/features/chat/domain/entities/message.dart';
+import 'package:sahbifit/features/chat/domain/repositories/chat_repository.dart';
+
+@Injectable(as: ChatRepository)
+class ChatRepositoryImpl implements ChatRepository {
+  final ChatRemoteDatasource _remoteDatasource;
+
+  ChatRepositoryImpl(this._remoteDatasource);
+
+  @override
+  Stream<List<Message>> getChatStream(String sessionId) {
+    // We catch errors on the stream itself
+    return _remoteDatasource.getChatStream(sessionId).map((models) {
+      return models.map((model) => model.toEntity()).toList();
+    }).handleError((error) {
+      // Log the error and bubble up a generic failure
+      print('Firestore Stream Error: $error');
+      throw ServerFailure(message: 'Could not load chat messages.');
+    });
+  }
+
+  @override
+  Future<void> sendMessage({
+    required String sessionId,
+    required String senderId,
+    required String text,
+  }) async {
+    try {
+      // Create the model to send
+      final message = MessageModel.forSending(
+        senderId: senderId,
+        text: text,
+      );
+      await _remoteDatasource.sendMessage(sessionId, message);
+    } on FirebaseException catch (e) {
+      // Handle specific Firestore errors
+      throw ServerFailure(message: e.message ?? 'Failed to send message.');
+    } catch (e) {
+      throw ServerFailure(message: 'An unknown error occurred.');
+    }
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\domain\entities\message.dart
+==================================================
+import 'package:equatable/equatable.dart';
+
+class Message extends Equatable {
+  final String messageId;
+  final String senderId;
+  final String text;
+  final DateTime timestamp;
+
+  const Message({
+    required this.messageId,
+    required this.senderId,
+    required this.text,
+    required this.timestamp,
+  });
+
+  @override
+  List<Object?> get props => [messageId, senderId, text, timestamp];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\domain\repositories\chat_repository.dart
+==================================================
+import 'package:sahbifit/features/chat/domain/entities/message.dart';
+
+abstract class ChatRepository {
+  Stream<List<Message>> getChatStream(String sessionId);
+  Future<void> sendMessage({
+    required String sessionId,
+    required String senderId,
+    required String text,
+  });
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\domain\usecases\get_chat_stream.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart'; 
+import 'package:sahbifit/features/chat/domain/entities/message.dart';
+import 'package:sahbifit/features/chat/domain/repositories/chat_repository.dart';
+
+@injectable
+class GetChatStream implements UseCase<Stream<List<Message>>, ChatStreamParams> {
+  final ChatRepository _repository;
+
+  GetChatStream(this._repository);
+
+  //
+  // ðŸ’¡ THIS IS THE FIX:
+  // 1. Add 'async'
+  // 2. Change the return type to 'Future<Stream<List<Message>>>'
+  //
+  @override
+  Future<Stream<List<Message>>> call(ChatStreamParams params) async {
+    // By making the function 'async' and returning the stream,
+    // Dart automatically wraps the stream in a Future,
+    // which satisfies the UseCase contract.
+    return _repository.getChatStream(params.sessionId);
+  }
+}
+
+class ChatStreamParams extends Equatable {
+  final String sessionId;
+
+  const ChatStreamParams({required this.sessionId});
+
+  @override
+  List<Object?> get props => [sessionId];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\domain\usecases\send_message.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/chat/domain/repositories/chat_repository.dart';
+
+@injectable
+class SendMessage implements UseCase<void, SendMessageParams> {
+  final ChatRepository _repository;
+
+  SendMessage(this._repository);
+
+  @override
+  Future<void> call(SendMessageParams params) async {
+    return _repository.sendMessage(
+      sessionId: params.sessionId,
+      senderId: params.senderId,
+      text: params.text,
+    );
+  }
+}
+
+class SendMessageParams extends Equatable {
+  final String sessionId;
+  final String senderId; // The ID of the currently logged-in user
+  final String text;
+
+  const SendMessageParams({
+    required this.sessionId,
+    required this.senderId,
+    required this.text,
+  });
+
+  @override
+  List<Object?> get props => [sessionId, senderId, text];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\presentation\cubit\chat_cubit.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\presentation\cubit\chat_state.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\presentation\pages\chat_page.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\presentation\widgets\chat_disabled_placeholder.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\presentation\widgets\chat_input_field.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\presentation\widgets\chat_logistics_header.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\presentation\widgets\message_bubble.dart
+==================================================
+

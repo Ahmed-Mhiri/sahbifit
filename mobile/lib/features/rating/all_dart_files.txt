@@ -1,0 +1,1536 @@
+﻿==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\datasources\rating_remote_datasource.dart
+==================================================
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/api/api_client.dart';
+import 'package:sahbifit/core/constants/api_endpoints.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/features/rating/data/models/create_rating_model.dart';
+import 'package:sahbifit/features/rating/data/models/pending_rating_model.dart';
+import 'package:sahbifit/features/rating/data/models/rating_model.dart';
+
+abstract class RatingRemoteDatasource {
+  Future<List<PendingRatingModel>> getPendingRatings();
+  Future<RatingModel> createRating(CreateRatingModel request);
+  Future<List<RatingModel>> getRatingsForUser(String userId);
+}
+
+@Injectable(as: RatingRemoteDatasource)
+class RatingRemoteDatasourceImpl implements RatingRemoteDatasource {
+  final ApiClient _apiClient;
+
+  RatingRemoteDatasourceImpl(this._apiClient);
+
+  @override
+  Future<List<PendingRatingModel>> getPendingRatings() async {
+    try {
+      final response = await _apiClient.dio.get(ApiEndpoints.pendingRatings);
+      return (response.data as List)
+          .map((json) => PendingRatingModel.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<RatingModel> createRating(CreateRatingModel request) async {
+    try {
+      final response = await _apiClient.dio.post(
+        ApiEndpoints.ratings,
+        data: request.toJson(),
+      );
+      // Backend returns the full Rating object upon creation
+      return RatingModel.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<List<RatingModel>> getRatingsForUser(String userId) async {
+    try {
+      final response = await _apiClient.dio.get(
+        ApiEndpoints.ratingsForUser(userId),
+      );
+      return (response.data as List)
+          .map((json) => RatingModel.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\create_rating_model.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'create_rating_model.freezed.dart';
+part 'create_rating_model.g.dart';
+
+@freezed
+class CreateRatingModel with _$CreateRatingModel {
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  const factory CreateRatingModel({
+    required String sessionId,
+    required String ratedUserId,
+    required int ratingValue, // 'Short' maps to 'int'
+    String? comment,
+  }) = _CreateRatingModel;
+
+  factory CreateRatingModel.fromJson(Map<String, dynamic> json) =>
+      _$CreateRatingModelFromJson(json);
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\create_rating_model.freezed.dart
+==================================================
+// coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'create_rating_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
+
+CreateRatingModel _$CreateRatingModelFromJson(Map<String, dynamic> json) {
+  return _CreateRatingModel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$CreateRatingModel {
+  String get sessionId => throw _privateConstructorUsedError;
+  String get ratedUserId => throw _privateConstructorUsedError;
+  int get ratingValue =>
+      throw _privateConstructorUsedError; // 'Short' maps to 'int'
+  String? get comment => throw _privateConstructorUsedError;
+
+  /// Serializes this CreateRatingModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of CreateRatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $CreateRatingModelCopyWith<CreateRatingModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $CreateRatingModelCopyWith<$Res> {
+  factory $CreateRatingModelCopyWith(
+    CreateRatingModel value,
+    $Res Function(CreateRatingModel) then,
+  ) = _$CreateRatingModelCopyWithImpl<$Res, CreateRatingModel>;
+  @useResult
+  $Res call({
+    String sessionId,
+    String ratedUserId,
+    int ratingValue,
+    String? comment,
+  });
+}
+
+/// @nodoc
+class _$CreateRatingModelCopyWithImpl<$Res, $Val extends CreateRatingModel>
+    implements $CreateRatingModelCopyWith<$Res> {
+  _$CreateRatingModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of CreateRatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sessionId = null,
+    Object? ratedUserId = null,
+    Object? ratingValue = null,
+    Object? comment = freezed,
+  }) {
+    return _then(
+      _value.copyWith(
+            sessionId: null == sessionId
+                ? _value.sessionId
+                : sessionId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            ratedUserId: null == ratedUserId
+                ? _value.ratedUserId
+                : ratedUserId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            ratingValue: null == ratingValue
+                ? _value.ratingValue
+                : ratingValue // ignore: cast_nullable_to_non_nullable
+                      as int,
+            comment: freezed == comment
+                ? _value.comment
+                : comment // ignore: cast_nullable_to_non_nullable
+                      as String?,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$CreateRatingModelImplCopyWith<$Res>
+    implements $CreateRatingModelCopyWith<$Res> {
+  factory _$$CreateRatingModelImplCopyWith(
+    _$CreateRatingModelImpl value,
+    $Res Function(_$CreateRatingModelImpl) then,
+  ) = __$$CreateRatingModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String sessionId,
+    String ratedUserId,
+    int ratingValue,
+    String? comment,
+  });
+}
+
+/// @nodoc
+class __$$CreateRatingModelImplCopyWithImpl<$Res>
+    extends _$CreateRatingModelCopyWithImpl<$Res, _$CreateRatingModelImpl>
+    implements _$$CreateRatingModelImplCopyWith<$Res> {
+  __$$CreateRatingModelImplCopyWithImpl(
+    _$CreateRatingModelImpl _value,
+    $Res Function(_$CreateRatingModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of CreateRatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sessionId = null,
+    Object? ratedUserId = null,
+    Object? ratingValue = null,
+    Object? comment = freezed,
+  }) {
+    return _then(
+      _$CreateRatingModelImpl(
+        sessionId: null == sessionId
+            ? _value.sessionId
+            : sessionId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        ratedUserId: null == ratedUserId
+            ? _value.ratedUserId
+            : ratedUserId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        ratingValue: null == ratingValue
+            ? _value.ratingValue
+            : ratingValue // ignore: cast_nullable_to_non_nullable
+                  as int,
+        comment: freezed == comment
+            ? _value.comment
+            : comment // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
+class _$CreateRatingModelImpl implements _CreateRatingModel {
+  const _$CreateRatingModelImpl({
+    required this.sessionId,
+    required this.ratedUserId,
+    required this.ratingValue,
+    this.comment,
+  });
+
+  factory _$CreateRatingModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$CreateRatingModelImplFromJson(json);
+
+  @override
+  final String sessionId;
+  @override
+  final String ratedUserId;
+  @override
+  final int ratingValue;
+  // 'Short' maps to 'int'
+  @override
+  final String? comment;
+
+  @override
+  String toString() {
+    return 'CreateRatingModel(sessionId: $sessionId, ratedUserId: $ratedUserId, ratingValue: $ratingValue, comment: $comment)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$CreateRatingModelImpl &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.ratedUserId, ratedUserId) ||
+                other.ratedUserId == ratedUserId) &&
+            (identical(other.ratingValue, ratingValue) ||
+                other.ratingValue == ratingValue) &&
+            (identical(other.comment, comment) || other.comment == comment));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, sessionId, ratedUserId, ratingValue, comment);
+
+  /// Create a copy of CreateRatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$CreateRatingModelImplCopyWith<_$CreateRatingModelImpl> get copyWith =>
+      __$$CreateRatingModelImplCopyWithImpl<_$CreateRatingModelImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$CreateRatingModelImplToJson(this);
+  }
+}
+
+abstract class _CreateRatingModel implements CreateRatingModel {
+  const factory _CreateRatingModel({
+    required final String sessionId,
+    required final String ratedUserId,
+    required final int ratingValue,
+    final String? comment,
+  }) = _$CreateRatingModelImpl;
+
+  factory _CreateRatingModel.fromJson(Map<String, dynamic> json) =
+      _$CreateRatingModelImpl.fromJson;
+
+  @override
+  String get sessionId;
+  @override
+  String get ratedUserId;
+  @override
+  int get ratingValue; // 'Short' maps to 'int'
+  @override
+  String? get comment;
+
+  /// Create a copy of CreateRatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$CreateRatingModelImplCopyWith<_$CreateRatingModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\create_rating_model.g.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'create_rating_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$CreateRatingModelImpl _$$CreateRatingModelImplFromJson(
+  Map<String, dynamic> json,
+) => _$CreateRatingModelImpl(
+  sessionId: json['sessionId'] as String,
+  ratedUserId: json['ratedUserId'] as String,
+  ratingValue: (json['ratingValue'] as num).toInt(),
+  comment: json['comment'] as String?,
+);
+
+Map<String, dynamic> _$$CreateRatingModelImplToJson(
+  _$CreateRatingModelImpl instance,
+) => <String, dynamic>{
+  'sessionId': instance.sessionId,
+  'ratedUserId': instance.ratedUserId,
+  'ratingValue': instance.ratingValue,
+  'comment': instance.comment,
+};
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\pending_rating_model.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit/features/rating/domain/entities/pending_rating.dart';
+
+part 'pending_rating_model.freezed.dart';
+part 'pending_rating_model.g.dart';
+
+@freezed
+class PendingRatingModel with _$PendingRatingModel {
+  const PendingRatingModel._();
+
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  const factory PendingRatingModel({
+    required String sessionId,
+    required String sessionTitle,
+    required String userIdToRate,
+    required String userNameToRate,
+  }) = _PendingRatingModel;
+
+  factory PendingRatingModel.fromJson(Map<String, dynamic> json) =>
+      _$PendingRatingModelFromJson(json);
+
+  PendingRating toEntity() {
+    return PendingRating(
+      sessionId: sessionId,
+      sessionTitle: sessionTitle,
+      userIdToRate: userIdToRate,
+      userNameToRate: userNameToRate,
+    );
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\pending_rating_model.freezed.dart
+==================================================
+// coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'pending_rating_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
+
+PendingRatingModel _$PendingRatingModelFromJson(Map<String, dynamic> json) {
+  return _PendingRatingModel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$PendingRatingModel {
+  String get sessionId => throw _privateConstructorUsedError;
+  String get sessionTitle => throw _privateConstructorUsedError;
+  String get userIdToRate => throw _privateConstructorUsedError;
+  String get userNameToRate => throw _privateConstructorUsedError;
+
+  /// Serializes this PendingRatingModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of PendingRatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $PendingRatingModelCopyWith<PendingRatingModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $PendingRatingModelCopyWith<$Res> {
+  factory $PendingRatingModelCopyWith(
+    PendingRatingModel value,
+    $Res Function(PendingRatingModel) then,
+  ) = _$PendingRatingModelCopyWithImpl<$Res, PendingRatingModel>;
+  @useResult
+  $Res call({
+    String sessionId,
+    String sessionTitle,
+    String userIdToRate,
+    String userNameToRate,
+  });
+}
+
+/// @nodoc
+class _$PendingRatingModelCopyWithImpl<$Res, $Val extends PendingRatingModel>
+    implements $PendingRatingModelCopyWith<$Res> {
+  _$PendingRatingModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of PendingRatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sessionId = null,
+    Object? sessionTitle = null,
+    Object? userIdToRate = null,
+    Object? userNameToRate = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            sessionId: null == sessionId
+                ? _value.sessionId
+                : sessionId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            sessionTitle: null == sessionTitle
+                ? _value.sessionTitle
+                : sessionTitle // ignore: cast_nullable_to_non_nullable
+                      as String,
+            userIdToRate: null == userIdToRate
+                ? _value.userIdToRate
+                : userIdToRate // ignore: cast_nullable_to_non_nullable
+                      as String,
+            userNameToRate: null == userNameToRate
+                ? _value.userNameToRate
+                : userNameToRate // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$PendingRatingModelImplCopyWith<$Res>
+    implements $PendingRatingModelCopyWith<$Res> {
+  factory _$$PendingRatingModelImplCopyWith(
+    _$PendingRatingModelImpl value,
+    $Res Function(_$PendingRatingModelImpl) then,
+  ) = __$$PendingRatingModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String sessionId,
+    String sessionTitle,
+    String userIdToRate,
+    String userNameToRate,
+  });
+}
+
+/// @nodoc
+class __$$PendingRatingModelImplCopyWithImpl<$Res>
+    extends _$PendingRatingModelCopyWithImpl<$Res, _$PendingRatingModelImpl>
+    implements _$$PendingRatingModelImplCopyWith<$Res> {
+  __$$PendingRatingModelImplCopyWithImpl(
+    _$PendingRatingModelImpl _value,
+    $Res Function(_$PendingRatingModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of PendingRatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sessionId = null,
+    Object? sessionTitle = null,
+    Object? userIdToRate = null,
+    Object? userNameToRate = null,
+  }) {
+    return _then(
+      _$PendingRatingModelImpl(
+        sessionId: null == sessionId
+            ? _value.sessionId
+            : sessionId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        sessionTitle: null == sessionTitle
+            ? _value.sessionTitle
+            : sessionTitle // ignore: cast_nullable_to_non_nullable
+                  as String,
+        userIdToRate: null == userIdToRate
+            ? _value.userIdToRate
+            : userIdToRate // ignore: cast_nullable_to_non_nullable
+                  as String,
+        userNameToRate: null == userNameToRate
+            ? _value.userNameToRate
+            : userNameToRate // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
+class _$PendingRatingModelImpl extends _PendingRatingModel {
+  const _$PendingRatingModelImpl({
+    required this.sessionId,
+    required this.sessionTitle,
+    required this.userIdToRate,
+    required this.userNameToRate,
+  }) : super._();
+
+  factory _$PendingRatingModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$PendingRatingModelImplFromJson(json);
+
+  @override
+  final String sessionId;
+  @override
+  final String sessionTitle;
+  @override
+  final String userIdToRate;
+  @override
+  final String userNameToRate;
+
+  @override
+  String toString() {
+    return 'PendingRatingModel(sessionId: $sessionId, sessionTitle: $sessionTitle, userIdToRate: $userIdToRate, userNameToRate: $userNameToRate)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$PendingRatingModelImpl &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.sessionTitle, sessionTitle) ||
+                other.sessionTitle == sessionTitle) &&
+            (identical(other.userIdToRate, userIdToRate) ||
+                other.userIdToRate == userIdToRate) &&
+            (identical(other.userNameToRate, userNameToRate) ||
+                other.userNameToRate == userNameToRate));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    sessionId,
+    sessionTitle,
+    userIdToRate,
+    userNameToRate,
+  );
+
+  /// Create a copy of PendingRatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$PendingRatingModelImplCopyWith<_$PendingRatingModelImpl> get copyWith =>
+      __$$PendingRatingModelImplCopyWithImpl<_$PendingRatingModelImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$PendingRatingModelImplToJson(this);
+  }
+}
+
+abstract class _PendingRatingModel extends PendingRatingModel {
+  const factory _PendingRatingModel({
+    required final String sessionId,
+    required final String sessionTitle,
+    required final String userIdToRate,
+    required final String userNameToRate,
+  }) = _$PendingRatingModelImpl;
+  const _PendingRatingModel._() : super._();
+
+  factory _PendingRatingModel.fromJson(Map<String, dynamic> json) =
+      _$PendingRatingModelImpl.fromJson;
+
+  @override
+  String get sessionId;
+  @override
+  String get sessionTitle;
+  @override
+  String get userIdToRate;
+  @override
+  String get userNameToRate;
+
+  /// Create a copy of PendingRatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$PendingRatingModelImplCopyWith<_$PendingRatingModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\pending_rating_model.g.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'pending_rating_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$PendingRatingModelImpl _$$PendingRatingModelImplFromJson(
+  Map<String, dynamic> json,
+) => _$PendingRatingModelImpl(
+  sessionId: json['sessionId'] as String,
+  sessionTitle: json['sessionTitle'] as String,
+  userIdToRate: json['userIdToRate'] as String,
+  userNameToRate: json['userNameToRate'] as String,
+);
+
+Map<String, dynamic> _$$PendingRatingModelImplToJson(
+  _$PendingRatingModelImpl instance,
+) => <String, dynamic>{
+  'sessionId': instance.sessionId,
+  'sessionTitle': instance.sessionTitle,
+  'userIdToRate': instance.userIdToRate,
+  'userNameToRate': instance.userNameToRate,
+};
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\rating_model.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit/features/rating/domain/entities/rating.dart';
+import 'package:sahbifit/features/user/data/models/user_model.dart';
+
+part 'rating_model.freezed.dart';
+part 'rating_model.g.dart';
+
+// Helper model to represent the nested 'session' object
+// We only extract the ID, as seen in the Rating entity
+@freezed
+class RatingSessionModel with _$RatingSessionModel {
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  const factory RatingSessionModel({
+    required String sessionId,
+  }) = _RatingSessionModel;
+
+  factory RatingSessionModel.fromJson(Map<String, dynamic> json) =>
+      _$RatingSessionModelFromJson(json);
+}
+
+
+@freezed
+class RatingModel with _$RatingModel {
+  const RatingModel._();
+
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  const factory RatingModel({
+    required String ratingId,
+    required RatingSessionModel session, // Nested session object
+    required UserModel ratingBy,
+    required UserModel ratingFor,
+    required int ratingValue,
+    String? comment,
+    required String createdAt, // Receive as ISO 8601 String
+  }) = _RatingModel;
+
+  factory RatingModel.fromJson(Map<String, dynamic> json) =>
+      _$RatingModelFromJson(json);
+
+  Rating toEntity() {
+    return Rating(
+      ratingId: ratingId,
+      sessionId: session.sessionId, // Extract the ID
+      ratingBy: ratingBy.toEntity(),
+      ratingFor: ratingFor.toEntity(),
+      ratingValue: ratingValue,
+      comment: comment,
+      createdAt: DateTime.parse(createdAt), // Convert String to DateTime
+    );
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\rating_model.freezed.dart
+==================================================
+// coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'rating_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
+
+RatingSessionModel _$RatingSessionModelFromJson(Map<String, dynamic> json) {
+  return _RatingSessionModel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$RatingSessionModel {
+  String get sessionId => throw _privateConstructorUsedError;
+
+  /// Serializes this RatingSessionModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of RatingSessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $RatingSessionModelCopyWith<RatingSessionModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $RatingSessionModelCopyWith<$Res> {
+  factory $RatingSessionModelCopyWith(
+    RatingSessionModel value,
+    $Res Function(RatingSessionModel) then,
+  ) = _$RatingSessionModelCopyWithImpl<$Res, RatingSessionModel>;
+  @useResult
+  $Res call({String sessionId});
+}
+
+/// @nodoc
+class _$RatingSessionModelCopyWithImpl<$Res, $Val extends RatingSessionModel>
+    implements $RatingSessionModelCopyWith<$Res> {
+  _$RatingSessionModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of RatingSessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? sessionId = null}) {
+    return _then(
+      _value.copyWith(
+            sessionId: null == sessionId
+                ? _value.sessionId
+                : sessionId // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$RatingSessionModelImplCopyWith<$Res>
+    implements $RatingSessionModelCopyWith<$Res> {
+  factory _$$RatingSessionModelImplCopyWith(
+    _$RatingSessionModelImpl value,
+    $Res Function(_$RatingSessionModelImpl) then,
+  ) = __$$RatingSessionModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String sessionId});
+}
+
+/// @nodoc
+class __$$RatingSessionModelImplCopyWithImpl<$Res>
+    extends _$RatingSessionModelCopyWithImpl<$Res, _$RatingSessionModelImpl>
+    implements _$$RatingSessionModelImplCopyWith<$Res> {
+  __$$RatingSessionModelImplCopyWithImpl(
+    _$RatingSessionModelImpl _value,
+    $Res Function(_$RatingSessionModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of RatingSessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? sessionId = null}) {
+    return _then(
+      _$RatingSessionModelImpl(
+        sessionId: null == sessionId
+            ? _value.sessionId
+            : sessionId // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
+class _$RatingSessionModelImpl implements _RatingSessionModel {
+  const _$RatingSessionModelImpl({required this.sessionId});
+
+  factory _$RatingSessionModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$RatingSessionModelImplFromJson(json);
+
+  @override
+  final String sessionId;
+
+  @override
+  String toString() {
+    return 'RatingSessionModel(sessionId: $sessionId)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$RatingSessionModelImpl &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, sessionId);
+
+  /// Create a copy of RatingSessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$RatingSessionModelImplCopyWith<_$RatingSessionModelImpl> get copyWith =>
+      __$$RatingSessionModelImplCopyWithImpl<_$RatingSessionModelImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$RatingSessionModelImplToJson(this);
+  }
+}
+
+abstract class _RatingSessionModel implements RatingSessionModel {
+  const factory _RatingSessionModel({required final String sessionId}) =
+      _$RatingSessionModelImpl;
+
+  factory _RatingSessionModel.fromJson(Map<String, dynamic> json) =
+      _$RatingSessionModelImpl.fromJson;
+
+  @override
+  String get sessionId;
+
+  /// Create a copy of RatingSessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$RatingSessionModelImplCopyWith<_$RatingSessionModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+RatingModel _$RatingModelFromJson(Map<String, dynamic> json) {
+  return _RatingModel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$RatingModel {
+  String get ratingId => throw _privateConstructorUsedError;
+  RatingSessionModel get session =>
+      throw _privateConstructorUsedError; // Nested session object
+  UserModel get ratingBy => throw _privateConstructorUsedError;
+  UserModel get ratingFor => throw _privateConstructorUsedError;
+  int get ratingValue => throw _privateConstructorUsedError;
+  String? get comment => throw _privateConstructorUsedError;
+  String get createdAt => throw _privateConstructorUsedError;
+
+  /// Serializes this RatingModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $RatingModelCopyWith<RatingModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $RatingModelCopyWith<$Res> {
+  factory $RatingModelCopyWith(
+    RatingModel value,
+    $Res Function(RatingModel) then,
+  ) = _$RatingModelCopyWithImpl<$Res, RatingModel>;
+  @useResult
+  $Res call({
+    String ratingId,
+    RatingSessionModel session,
+    UserModel ratingBy,
+    UserModel ratingFor,
+    int ratingValue,
+    String? comment,
+    String createdAt,
+  });
+
+  $RatingSessionModelCopyWith<$Res> get session;
+  $UserModelCopyWith<$Res> get ratingBy;
+  $UserModelCopyWith<$Res> get ratingFor;
+}
+
+/// @nodoc
+class _$RatingModelCopyWithImpl<$Res, $Val extends RatingModel>
+    implements $RatingModelCopyWith<$Res> {
+  _$RatingModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? ratingId = null,
+    Object? session = null,
+    Object? ratingBy = null,
+    Object? ratingFor = null,
+    Object? ratingValue = null,
+    Object? comment = freezed,
+    Object? createdAt = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            ratingId: null == ratingId
+                ? _value.ratingId
+                : ratingId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            session: null == session
+                ? _value.session
+                : session // ignore: cast_nullable_to_non_nullable
+                      as RatingSessionModel,
+            ratingBy: null == ratingBy
+                ? _value.ratingBy
+                : ratingBy // ignore: cast_nullable_to_non_nullable
+                      as UserModel,
+            ratingFor: null == ratingFor
+                ? _value.ratingFor
+                : ratingFor // ignore: cast_nullable_to_non_nullable
+                      as UserModel,
+            ratingValue: null == ratingValue
+                ? _value.ratingValue
+                : ratingValue // ignore: cast_nullable_to_non_nullable
+                      as int,
+            comment: freezed == comment
+                ? _value.comment
+                : comment // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            createdAt: null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
+  }
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $RatingSessionModelCopyWith<$Res> get session {
+    return $RatingSessionModelCopyWith<$Res>(_value.session, (value) {
+      return _then(_value.copyWith(session: value) as $Val);
+    });
+  }
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $UserModelCopyWith<$Res> get ratingBy {
+    return $UserModelCopyWith<$Res>(_value.ratingBy, (value) {
+      return _then(_value.copyWith(ratingBy: value) as $Val);
+    });
+  }
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $UserModelCopyWith<$Res> get ratingFor {
+    return $UserModelCopyWith<$Res>(_value.ratingFor, (value) {
+      return _then(_value.copyWith(ratingFor: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$RatingModelImplCopyWith<$Res>
+    implements $RatingModelCopyWith<$Res> {
+  factory _$$RatingModelImplCopyWith(
+    _$RatingModelImpl value,
+    $Res Function(_$RatingModelImpl) then,
+  ) = __$$RatingModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String ratingId,
+    RatingSessionModel session,
+    UserModel ratingBy,
+    UserModel ratingFor,
+    int ratingValue,
+    String? comment,
+    String createdAt,
+  });
+
+  @override
+  $RatingSessionModelCopyWith<$Res> get session;
+  @override
+  $UserModelCopyWith<$Res> get ratingBy;
+  @override
+  $UserModelCopyWith<$Res> get ratingFor;
+}
+
+/// @nodoc
+class __$$RatingModelImplCopyWithImpl<$Res>
+    extends _$RatingModelCopyWithImpl<$Res, _$RatingModelImpl>
+    implements _$$RatingModelImplCopyWith<$Res> {
+  __$$RatingModelImplCopyWithImpl(
+    _$RatingModelImpl _value,
+    $Res Function(_$RatingModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? ratingId = null,
+    Object? session = null,
+    Object? ratingBy = null,
+    Object? ratingFor = null,
+    Object? ratingValue = null,
+    Object? comment = freezed,
+    Object? createdAt = null,
+  }) {
+    return _then(
+      _$RatingModelImpl(
+        ratingId: null == ratingId
+            ? _value.ratingId
+            : ratingId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        session: null == session
+            ? _value.session
+            : session // ignore: cast_nullable_to_non_nullable
+                  as RatingSessionModel,
+        ratingBy: null == ratingBy
+            ? _value.ratingBy
+            : ratingBy // ignore: cast_nullable_to_non_nullable
+                  as UserModel,
+        ratingFor: null == ratingFor
+            ? _value.ratingFor
+            : ratingFor // ignore: cast_nullable_to_non_nullable
+                  as UserModel,
+        ratingValue: null == ratingValue
+            ? _value.ratingValue
+            : ratingValue // ignore: cast_nullable_to_non_nullable
+                  as int,
+        comment: freezed == comment
+            ? _value.comment
+            : comment // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
+class _$RatingModelImpl extends _RatingModel {
+  const _$RatingModelImpl({
+    required this.ratingId,
+    required this.session,
+    required this.ratingBy,
+    required this.ratingFor,
+    required this.ratingValue,
+    this.comment,
+    required this.createdAt,
+  }) : super._();
+
+  factory _$RatingModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$RatingModelImplFromJson(json);
+
+  @override
+  final String ratingId;
+  @override
+  final RatingSessionModel session;
+  // Nested session object
+  @override
+  final UserModel ratingBy;
+  @override
+  final UserModel ratingFor;
+  @override
+  final int ratingValue;
+  @override
+  final String? comment;
+  @override
+  final String createdAt;
+
+  @override
+  String toString() {
+    return 'RatingModel(ratingId: $ratingId, session: $session, ratingBy: $ratingBy, ratingFor: $ratingFor, ratingValue: $ratingValue, comment: $comment, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$RatingModelImpl &&
+            (identical(other.ratingId, ratingId) ||
+                other.ratingId == ratingId) &&
+            (identical(other.session, session) || other.session == session) &&
+            (identical(other.ratingBy, ratingBy) ||
+                other.ratingBy == ratingBy) &&
+            (identical(other.ratingFor, ratingFor) ||
+                other.ratingFor == ratingFor) &&
+            (identical(other.ratingValue, ratingValue) ||
+                other.ratingValue == ratingValue) &&
+            (identical(other.comment, comment) || other.comment == comment) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    ratingId,
+    session,
+    ratingBy,
+    ratingFor,
+    ratingValue,
+    comment,
+    createdAt,
+  );
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$RatingModelImplCopyWith<_$RatingModelImpl> get copyWith =>
+      __$$RatingModelImplCopyWithImpl<_$RatingModelImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$RatingModelImplToJson(this);
+  }
+}
+
+abstract class _RatingModel extends RatingModel {
+  const factory _RatingModel({
+    required final String ratingId,
+    required final RatingSessionModel session,
+    required final UserModel ratingBy,
+    required final UserModel ratingFor,
+    required final int ratingValue,
+    final String? comment,
+    required final String createdAt,
+  }) = _$RatingModelImpl;
+  const _RatingModel._() : super._();
+
+  factory _RatingModel.fromJson(Map<String, dynamic> json) =
+      _$RatingModelImpl.fromJson;
+
+  @override
+  String get ratingId;
+  @override
+  RatingSessionModel get session; // Nested session object
+  @override
+  UserModel get ratingBy;
+  @override
+  UserModel get ratingFor;
+  @override
+  int get ratingValue;
+  @override
+  String? get comment;
+  @override
+  String get createdAt;
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$RatingModelImplCopyWith<_$RatingModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\rating_model.g.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'rating_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$RatingSessionModelImpl _$$RatingSessionModelImplFromJson(
+  Map<String, dynamic> json,
+) => _$RatingSessionModelImpl(sessionId: json['sessionId'] as String);
+
+Map<String, dynamic> _$$RatingSessionModelImplToJson(
+  _$RatingSessionModelImpl instance,
+) => <String, dynamic>{'sessionId': instance.sessionId};
+
+_$RatingModelImpl _$$RatingModelImplFromJson(Map<String, dynamic> json) =>
+    _$RatingModelImpl(
+      ratingId: json['ratingId'] as String,
+      session: RatingSessionModel.fromJson(
+        json['session'] as Map<String, dynamic>,
+      ),
+      ratingBy: UserModel.fromJson(json['ratingBy'] as Map<String, dynamic>),
+      ratingFor: UserModel.fromJson(json['ratingFor'] as Map<String, dynamic>),
+      ratingValue: (json['ratingValue'] as num).toInt(),
+      comment: json['comment'] as String?,
+      createdAt: json['createdAt'] as String,
+    );
+
+Map<String, dynamic> _$$RatingModelImplToJson(_$RatingModelImpl instance) =>
+    <String, dynamic>{
+      'ratingId': instance.ratingId,
+      'session': instance.session.toJson(),
+      'ratingBy': instance.ratingBy.toJson(),
+      'ratingFor': instance.ratingFor.toJson(),
+      'ratingValue': instance.ratingValue,
+      'comment': instance.comment,
+      'createdAt': instance.createdAt,
+    };
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\repositories\rating_repository_impl.dart
+==================================================
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/features/rating/data/datasources/rating_remote_datasource.dart';
+import 'package:sahbifit/features/rating/data/models/create_rating_model.dart';
+import 'package:sahbifit/features/rating/domain/entities/pending_rating.dart';
+import 'package:sahbifit/features/rating/domain/entities/rating.dart';
+import 'package:sahbifit/features/rating/domain/repositories/rating_repository.dart';
+
+@Injectable(as: RatingRepository)
+class RatingRepositoryImpl implements RatingRepository {
+  final RatingRemoteDatasource _remoteDatasource;
+
+  RatingRepositoryImpl(this._remoteDatasource);
+
+  @override
+  Future<List<PendingRating>> getPendingRatings() async {
+    try {
+      final models = await _remoteDatasource.getPendingRatings();
+      return models.map((model) => model.toEntity()).toList();
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+  
+  @override
+  Future<Rating> createRating(CreateRatingModel request) async {
+    try {
+      final model = await _remoteDatasource.createRating(request);
+      return model.toEntity();
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+
+  @override
+  Future<List<Rating>> getRatingsForUser(String userId) async {
+     try {
+      final models = await _remoteDatasource.getRatingsForUser(userId);
+      return models.map((model) => model.toEntity()).toList();
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\domain\entities\pending_rating.dart
+==================================================
+import 'package:equatable/equatable.dart';
+
+class PendingRating extends Equatable {
+  final String sessionId;
+  final String sessionTitle;
+  final String userIdToRate;
+  final String userNameToRate;
+
+  const PendingRating({
+    required this.sessionId,
+    required this.sessionTitle,
+    required this.userIdToRate,
+    required this.userNameToRate,
+  });
+
+  @override
+  List<Object?> get props => [sessionId, userIdToRate, userNameToRate];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\domain\entities\rating.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:sahbifit/features/user/domain/entities/user.dart';
+
+class Rating extends Equatable {
+  final String ratingId;
+  final String sessionId; // Assuming we only need the ID on the client
+  final User ratingBy;
+  final User ratingFor;
+  final int ratingValue; // 'Short' in Java maps to 'int' in Dart
+  final String? comment;
+  final DateTime createdAt;
+
+  const Rating({
+    required this.ratingId,
+    required this.sessionId,
+    required this.ratingBy,
+    required this.ratingFor,
+    required this.ratingValue,
+    this.comment,
+    required this.createdAt,
+  });
+
+  @override
+  List<Object?> get props => [ratingId, sessionId, ratingBy, ratingFor, ratingValue];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\domain\repositories\rating_repository.dart
+==================================================
+import 'package:sahbifit/features/rating/data/models/create_rating_model.dart';
+import 'package:sahbifit/features/rating/domain/entities/pending_rating.dart';
+import 'package:sahbifit/features/rating/domain/entities/rating.dart';
+
+abstract class RatingRepository {
+  Future<List<PendingRating>> getPendingRatings();
+  Future<Rating> createRating(CreateRatingModel request);
+  Future<List<Rating>> getRatingsForUser(String userId);
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\domain\usecases\create_rating.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/rating/data/models/create_rating_model.dart';
+import 'package:sahbifit/features/rating/domain/entities/rating.dart';
+import 'package:sahbifit/features/rating/domain/repositories/rating_repository.dart';
+
+@injectable
+class CreateRating implements UseCase<Rating, CreateRatingParams> {
+  final RatingRepository _repository;
+
+  CreateRating(this._repository);
+
+  @override
+  Future<Rating> call(CreateRatingParams params) async {
+    // Map from clean params to the data model
+    final requestModel = CreateRatingModel(
+      sessionId: params.sessionId,
+      ratedUserId: params.ratedUserId,
+      ratingValue: params.ratingValue,
+      comment: params.comment,
+    );
+    return _repository.createRating(requestModel);
+  }
+}
+
+class CreateRatingParams extends Equatable {
+  final String sessionId;
+  final String ratedUserId;
+  final int ratingValue;
+  final String? comment;
+
+  const CreateRatingParams({
+    required this.sessionId,
+    required this.ratedUserId,
+    required this.ratingValue,
+    this.comment,
+  });
+
+  @override
+  List<Object?> get props => [sessionId, ratedUserId, ratingValue, comment];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\domain\usecases\get_pending_ratings.dart
+==================================================
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/rating/domain/entities/pending_rating.dart';
+import 'package:sahbifit/features/rating/domain/repositories/rating_repository.dart';
+
+@injectable
+class GetPendingRatings implements UseCase<List<PendingRating>, NoParams> {
+  final RatingRepository _repository;
+
+  GetPendingRatings(this._repository);
+
+  @override
+  Future<List<PendingRating>> call(NoParams params) async {
+    return _repository.getPendingRatings();
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\domain\usecases\get_ratings_for_user.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/rating/domain/entities/rating.dart';
+import 'package:sahbifit/features/rating/domain/repositories/rating_repository.dart';
+
+@injectable
+class GetRatingsForUser implements UseCase<List<Rating>, GetRatingsForUserParams> {
+  final RatingRepository _repository;
+
+  GetRatingsForUser(this._repository);
+
+  @override
+  Future<List<Rating>> call(GetRatingsForUserParams params) async {
+    return _repository.getRatingsForUser(params.userId);
+  }
+}
+
+class GetRatingsForUserParams extends Equatable {
+  final String userId;
+
+  const GetRatingsForUserParams({required this.userId});
+
+  @override
+  List<Object?> get props => [userId];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\presentation\bloc\pending_rating_event.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\presentation\bloc\pending_rating_state.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\presentation\pages\pending_ratings_page.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\presentation\widgets\create_rating_dialog.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\presentation\widgets\rating_stars.dart
+==================================================
+

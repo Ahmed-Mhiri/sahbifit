@@ -76,8 +76,8 @@ class TagModel with _$TagModel {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\tag\data\models\tag_model.freezed.dart
 ==================================================
-// GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -87,59 +87,49 @@ part of 'tag_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
-// dart format off
 T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
+
+TagModel _$TagModelFromJson(Map<String, dynamic> json) {
+  return _TagModel.fromJson(json);
+}
 
 /// @nodoc
 mixin _$TagModel {
-  int get tagId;
-  String get tagName;
-  TagType get tagType;
+  int get tagId => throw _privateConstructorUsedError;
+  String get tagName => throw _privateConstructorUsedError;
+  TagType get tagType => throw _privateConstructorUsedError;
+
+  /// Serializes this TagModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of TagModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
   $TagModelCopyWith<TagModel> get copyWith =>
-      _$TagModelCopyWithImpl<TagModel>(this as TagModel, _$identity);
-
-  /// Serializes this TagModel to a JSON map.
-  Map<String, dynamic> toJson();
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is TagModel &&
-            (identical(other.tagId, tagId) || other.tagId == tagId) &&
-            (identical(other.tagName, tagName) || other.tagName == tagName) &&
-            (identical(other.tagType, tagType) || other.tagType == tagType));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(runtimeType, tagId, tagName, tagType);
-
-  @override
-  String toString() {
-    return 'TagModel(tagId: $tagId, tagName: $tagName, tagType: $tagType)';
-  }
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract mixin class $TagModelCopyWith<$Res> {
-  factory $TagModelCopyWith(TagModel value, $Res Function(TagModel) _then) =
-      _$TagModelCopyWithImpl;
+abstract class $TagModelCopyWith<$Res> {
+  factory $TagModelCopyWith(TagModel value, $Res Function(TagModel) then) =
+      _$TagModelCopyWithImpl<$Res, TagModel>;
   @useResult
   $Res call({int tagId, String tagName, TagType tagType});
 }
 
 /// @nodoc
-class _$TagModelCopyWithImpl<$Res> implements $TagModelCopyWith<$Res> {
-  _$TagModelCopyWithImpl(this._self, this._then);
+class _$TagModelCopyWithImpl<$Res, $Val extends TagModel>
+    implements $TagModelCopyWith<$Res> {
+  _$TagModelCopyWithImpl(this._value, this._then);
 
-  final TagModel _self;
-  final $Res Function(TagModel) _then;
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 
   /// Create a copy of TagModel
   /// with the given fields replaced by the non-null parameter values.
@@ -150,189 +140,87 @@ class _$TagModelCopyWithImpl<$Res> implements $TagModelCopyWith<$Res> {
     Object? tagName = null,
     Object? tagType = null,
   }) {
-    return _then(_self.copyWith(
-      tagId: null == tagId
-          ? _self.tagId
-          : tagId // ignore: cast_nullable_to_non_nullable
-              as int,
-      tagName: null == tagName
-          ? _self.tagName
-          : tagName // ignore: cast_nullable_to_non_nullable
-              as String,
-      tagType: null == tagType
-          ? _self.tagType
-          : tagType // ignore: cast_nullable_to_non_nullable
-              as TagType,
-    ));
+    return _then(
+      _value.copyWith(
+            tagId: null == tagId
+                ? _value.tagId
+                : tagId // ignore: cast_nullable_to_non_nullable
+                      as int,
+            tagName: null == tagName
+                ? _value.tagName
+                : tagName // ignore: cast_nullable_to_non_nullable
+                      as String,
+            tagType: null == tagType
+                ? _value.tagType
+                : tagType // ignore: cast_nullable_to_non_nullable
+                      as TagType,
+          )
+          as $Val,
+    );
   }
 }
 
-/// Adds pattern-matching-related methods to [TagModel].
-extension TagModelPatterns on TagModel {
-  /// A variant of `map` that fallback to returning `orElse`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
+/// @nodoc
+abstract class _$$TagModelImplCopyWith<$Res>
+    implements $TagModelCopyWith<$Res> {
+  factory _$$TagModelImplCopyWith(
+    _$TagModelImpl value,
+    $Res Function(_$TagModelImpl) then,
+  ) = __$$TagModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({int tagId, String tagName, TagType tagType});
+}
 
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>(
-    TResult Function(_TagModel value)? $default, {
-    required TResult orElse(),
+/// @nodoc
+class __$$TagModelImplCopyWithImpl<$Res>
+    extends _$TagModelCopyWithImpl<$Res, _$TagModelImpl>
+    implements _$$TagModelImplCopyWith<$Res> {
+  __$$TagModelImplCopyWithImpl(
+    _$TagModelImpl _value,
+    $Res Function(_$TagModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of TagModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? tagId = null,
+    Object? tagName = null,
+    Object? tagType = null,
   }) {
-    final _that = this;
-    switch (_that) {
-      case _TagModel() when $default != null:
-        return $default(_that);
-      case _:
-        return orElse();
-    }
-  }
-
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// Callbacks receives the raw object, upcasted.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case final Subclass2 value:
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>(
-    TResult Function(_TagModel value) $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _TagModel():
-        return $default(_that);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
-
-  /// A variant of `map` that fallback to returning `null`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>(
-    TResult? Function(_TagModel value)? $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _TagModel() when $default != null:
-        return $default(_that);
-      case _:
-        return null;
-    }
-  }
-
-  /// A variant of `when` that fallback to an `orElse` callback.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>(
-    TResult Function(int tagId, String tagName, TagType tagType)? $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _TagModel() when $default != null:
-        return $default(_that.tagId, _that.tagName, _that.tagType);
-      case _:
-        return orElse();
-    }
-  }
-
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// As opposed to `map`, this offers destructuring.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case Subclass2(:final field2):
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>(
-    TResult Function(int tagId, String tagName, TagType tagType) $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _TagModel():
-        return $default(_that.tagId, _that.tagName, _that.tagType);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
-
-  /// A variant of `when` that fallback to returning `null`
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(int tagId, String tagName, TagType tagType)? $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _TagModel() when $default != null:
-        return $default(_that.tagId, _that.tagName, _that.tagType);
-      case _:
-        return null;
-    }
+    return _then(
+      _$TagModelImpl(
+        tagId: null == tagId
+            ? _value.tagId
+            : tagId // ignore: cast_nullable_to_non_nullable
+                  as int,
+        tagName: null == tagName
+            ? _value.tagName
+            : tagName // ignore: cast_nullable_to_non_nullable
+                  as String,
+        tagType: null == tagType
+            ? _value.tagType
+            : tagType // ignore: cast_nullable_to_non_nullable
+                  as TagType,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
-class _TagModel extends TagModel {
-  const _TagModel(
-      {required this.tagId, required this.tagName, required this.tagType})
-      : super._();
-  factory _TagModel.fromJson(Map<String, dynamic> json) =>
-      _$TagModelFromJson(json);
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
+class _$TagModelImpl extends _TagModel {
+  const _$TagModelImpl({
+    required this.tagId,
+    required this.tagName,
+    required this.tagType,
+  }) : super._();
+
+  factory _$TagModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$TagModelImplFromJson(json);
 
   @override
   final int tagId;
@@ -341,26 +229,16 @@ class _TagModel extends TagModel {
   @override
   final TagType tagType;
 
-  /// Create a copy of TagModel
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  _$TagModelCopyWith<_TagModel> get copyWith =>
-      __$TagModelCopyWithImpl<_TagModel>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$TagModelToJson(
-      this,
-    );
+  String toString() {
+    return 'TagModel(tagId: $tagId, tagName: $tagName, tagType: $tagType)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _TagModel &&
+            other is _$TagModelImpl &&
             (identical(other.tagId, tagId) || other.tagId == tagId) &&
             (identical(other.tagName, tagName) || other.tagName == tagName) &&
             (identical(other.tagType, tagType) || other.tagType == tagType));
@@ -370,56 +248,45 @@ class _TagModel extends TagModel {
   @override
   int get hashCode => Object.hash(runtimeType, tagId, tagName, tagType);
 
+  /// Create a copy of TagModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  String toString() {
-    return 'TagModel(tagId: $tagId, tagName: $tagName, tagType: $tagType)';
+  @pragma('vm:prefer-inline')
+  _$$TagModelImplCopyWith<_$TagModelImpl> get copyWith =>
+      __$$TagModelImplCopyWithImpl<_$TagModelImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$TagModelImplToJson(this);
   }
 }
 
-/// @nodoc
-abstract mixin class _$TagModelCopyWith<$Res>
-    implements $TagModelCopyWith<$Res> {
-  factory _$TagModelCopyWith(_TagModel value, $Res Function(_TagModel) _then) =
-      __$TagModelCopyWithImpl;
+abstract class _TagModel extends TagModel {
+  const factory _TagModel({
+    required final int tagId,
+    required final String tagName,
+    required final TagType tagType,
+  }) = _$TagModelImpl;
+  const _TagModel._() : super._();
+
+  factory _TagModel.fromJson(Map<String, dynamic> json) =
+      _$TagModelImpl.fromJson;
+
   @override
-  @useResult
-  $Res call({int tagId, String tagName, TagType tagType});
-}
-
-/// @nodoc
-class __$TagModelCopyWithImpl<$Res> implements _$TagModelCopyWith<$Res> {
-  __$TagModelCopyWithImpl(this._self, this._then);
-
-  final _TagModel _self;
-  final $Res Function(_TagModel) _then;
+  int get tagId;
+  @override
+  String get tagName;
+  @override
+  TagType get tagType;
 
   /// Create a copy of TagModel
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @pragma('vm:prefer-inline')
-  $Res call({
-    Object? tagId = null,
-    Object? tagName = null,
-    Object? tagType = null,
-  }) {
-    return _then(_TagModel(
-      tagId: null == tagId
-          ? _self.tagId
-          : tagId // ignore: cast_nullable_to_non_nullable
-              as int,
-      tagName: null == tagName
-          ? _self.tagName
-          : tagName // ignore: cast_nullable_to_non_nullable
-              as String,
-      tagType: null == tagType
-          ? _self.tagType
-          : tagType // ignore: cast_nullable_to_non_nullable
-              as TagType,
-    ));
-  }
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$TagModelImplCopyWith<_$TagModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
-
-// dart format on
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\tag\data\models\tag_model.g.dart
@@ -432,22 +299,21 @@ part of 'tag_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_TagModel _$TagModelFromJson(Map<String, dynamic> json) => _TagModel(
+_$TagModelImpl _$$TagModelImplFromJson(Map<String, dynamic> json) =>
+    _$TagModelImpl(
       tagId: (json['tagId'] as num).toInt(),
       tagName: json['tagName'] as String,
       tagType: $enumDecode(_$TagTypeEnumMap, json['tagType']),
     );
 
-Map<String, dynamic> _$TagModelToJson(_TagModel instance) => <String, dynamic>{
+Map<String, dynamic> _$$TagModelImplToJson(_$TagModelImpl instance) =>
+    <String, dynamic>{
       'tagId': instance.tagId,
       'tagName': instance.tagName,
       'tagType': _$TagTypeEnumMap[instance.tagType]!,
     };
 
-const _$TagTypeEnumMap = {
-  TagType.goal: 'goal',
-  TagType.schedule: 'schedule',
-};
+const _$TagTypeEnumMap = {TagType.goal: 'goal', TagType.schedule: 'schedule'};
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\tag\data\repositories\tag_repository_impl.dart

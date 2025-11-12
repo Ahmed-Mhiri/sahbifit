@@ -14,6 +14,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
+import '../../app/bloc/app_bloc.dart' as _i912;
 import '../../features/auth/data/datasources/auth_remote_datasource.dart'
     as _i161;
 import '../../features/auth/data/repositories/auth_repository_impl.dart'
@@ -23,6 +24,7 @@ import '../../features/auth/domain/usecases/login_user.dart' as _i778;
 import '../../features/auth/domain/usecases/register_user.dart' as _i198;
 import '../../features/auth/domain/usecases/resend_otp.dart' as _i152;
 import '../../features/auth/domain/usecases/verify_sms.dart' as _i699;
+import '../../features/auth/presentation/bloc/auth_bloc.dart' as _i797;
 import '../../features/chat/data/datasources/chat_remote_datasource.dart'
     as _i159;
 import '../../features/chat/data/repositories/chat_repository_impl.dart'
@@ -30,12 +32,14 @@ import '../../features/chat/data/repositories/chat_repository_impl.dart'
 import '../../features/chat/domain/repositories/chat_repository.dart' as _i420;
 import '../../features/chat/domain/usecases/get_chat_stream.dart' as _i583;
 import '../../features/chat/domain/usecases/send_message.dart' as _i76;
+import '../../features/chat/presentation/cubit/chat_cubit.dart' as _i305;
 import '../../features/gym/data/datasources/gym_remote_datasource.dart'
     as _i602;
 import '../../features/gym/data/repositories/gym_repository_impl.dart' as _i689;
 import '../../features/gym/domain/repositories/gym_repository.dart' as _i225;
 import '../../features/gym/domain/usecases/get_approved_gyms.dart' as _i338;
 import '../../features/gym/domain/usecases/submit_gym.dart' as _i82;
+import '../../features/gym/presentation/cubit/gym_list_cubit.dart' as _i423;
 import '../../features/rating/data/datasources/rating_remote_datasource.dart'
     as _i193;
 import '../../features/rating/data/repositories/rating_repository_impl.dart'
@@ -47,6 +51,8 @@ import '../../features/rating/domain/usecases/get_pending_ratings.dart'
     as _i396;
 import '../../features/rating/domain/usecases/get_ratings_for_user.dart'
     as _i809;
+import '../../features/rating/presentation/bloc/pending_rating_bloc.dart'
+    as _i157;
 import '../../features/report/data/datasources/report_remote_datasource.dart'
     as _i548;
 import '../../features/report/data/repositories/report_repository_impl.dart'
@@ -54,6 +60,7 @@ import '../../features/report/data/repositories/report_repository_impl.dart'
 import '../../features/report/domain/repositories/report_repository.dart'
     as _i23;
 import '../../features/report/domain/usecases/create_report.dart' as _i775;
+import '../../features/report/presentation/cubit/report_cubit.dart' as _i182;
 import '../../features/session/data/datasources/session_remote_datasource.dart'
     as _i478;
 import '../../features/session/data/datasources/session_remote_datasource_impl.dart'
@@ -67,11 +74,14 @@ import '../../features/session/domain/usecases/get_active_sessions.dart'
     as _i51;
 import '../../features/session/domain/usecases/join_session.dart' as _i170;
 import '../../features/session/domain/usecases/mark_attendance.dart' as _i690;
+import '../../features/session/presentation/cubit/session_feed_cubit.dart'
+    as _i285;
 import '../../features/tag/data/datasources/tag_remote_datasource.dart'
     as _i501;
 import '../../features/tag/data/repositories/tag_repository_impl.dart' as _i454;
 import '../../features/tag/domain/repositories/tag_repository.dart' as _i701;
 import '../../features/tag/domain/usecases/get_tags_by_type.dart' as _i521;
+import '../../features/tag/presentation/cubit/tags_cubit.dart' as _i519;
 import '../../features/user/data/datasources/user_remote_datasource.dart'
     as _i708;
 import '../../features/user/data/repositories/user_repository_impl.dart'
@@ -83,6 +93,7 @@ import '../../features/user/domain/usecases/get_user_profile.dart' as _i497;
 import '../../features/user/domain/usecases/update_fcm_token.dart' as _i652;
 import '../../features/user/domain/usecases/update_profile_visibility.dart'
     as _i544;
+import '../../features/user/presentation/bloc/profile_bloc.dart' as _i829;
 import '../../features/verification/data/datasources/verification_remote_datasource.dart'
     as _i552;
 import '../../features/verification/data/repositories/verification_repository_impl.dart'
@@ -93,6 +104,8 @@ import '../../features/verification/domain/usecases/get_verification_status.dart
     as _i482;
 import '../../features/verification/domain/usecases/submit_verification_video.dart'
     as _i573;
+import '../../features/verification/presentation/cubit/verification_cubit.dart'
+    as _i643;
 import '../api/api_client.dart' as _i277;
 import '../api/interceptors.dart' as _i367;
 import '../services/secure_storage_service.dart' as _i535;
@@ -114,6 +127,9 @@ _i174.GetIt $initGetIt(
   );
   gh.lazySingleton<_i367.AuthInterceptor>(
     () => _i367.AuthInterceptor(gh<_i535.SecureStorageService>()),
+  );
+  gh.factory<_i912.AppBloc>(
+    () => _i912.AppBloc(gh<_i535.SecureStorageService>()),
   );
   gh.lazySingleton<_i277.ApiClient>(
     () => _i277.ApiClient(gh<_i367.AuthInterceptor>()),
@@ -184,10 +200,22 @@ _i174.GetIt $initGetIt(
   gh.factory<_i161.AuthRemoteDatasource>(
     () => _i161.AuthRemoteDatasourceImpl(gh<_i277.ApiClient>()),
   );
+  gh.factory<_i182.ReportCubit>(
+    () => _i182.ReportCubit(gh<_i775.CreateReport>()),
+  );
   gh.factory<_i338.GetApprovedGyms>(
     () => _i338.GetApprovedGyms(gh<_i225.GymRepository>()),
   );
   gh.factory<_i82.SubmitGym>(() => _i82.SubmitGym(gh<_i225.GymRepository>()));
+  gh.factory<_i829.ProfileBloc>(
+    () => _i829.ProfileBloc(
+      gh<_i667.GetMyProfile>(),
+      gh<_i544.UpdateProfileVisibility>(),
+    ),
+  );
+  gh.factory<_i423.GymListCubit>(
+    () => _i423.GymListCubit(gh<_i338.GetApprovedGyms>()),
+  );
   gh.factory<_i583.GetChatStream>(
     () => _i583.GetChatStream(gh<_i420.ChatRepository>()),
   );
@@ -197,6 +225,10 @@ _i174.GetIt $initGetIt(
   gh.factory<_i1027.RatingRepository>(
     () => _i874.RatingRepositoryImpl(gh<_i193.RatingRemoteDatasource>()),
   );
+  gh.factory<_i305.ChatCubit>(
+    () => _i305.ChatCubit(gh<_i583.GetChatStream>(), gh<_i76.SendMessage>()),
+  );
+  gh.factory<_i519.TagsCubit>(() => _i519.TagsCubit(gh<_i521.GetTagsByType>()));
   gh.factory<_i831.CreateSession>(
     () => _i831.CreateSession(gh<_i738.SessionRepository>()),
   );
@@ -226,6 +258,12 @@ _i174.GetIt $initGetIt(
   gh.factory<_i573.SubmitVerificationVideo>(
     () => _i573.SubmitVerificationVideo(gh<_i1070.VerificationRepository>()),
   );
+  gh.factory<_i643.VerificationCubit>(
+    () => _i643.VerificationCubit(
+      gh<_i482.GetVerificationStatus>(),
+      gh<_i573.SubmitVerificationVideo>(),
+    ),
+  );
   gh.factory<_i694.CreateRating>(
     () => _i694.CreateRating(gh<_i1027.RatingRepository>()),
   );
@@ -234,6 +272,9 @@ _i174.GetIt $initGetIt(
   );
   gh.factory<_i809.GetRatingsForUser>(
     () => _i809.GetRatingsForUser(gh<_i1027.RatingRepository>()),
+  );
+  gh.factory<_i285.SessionFeedCubit>(
+    () => _i285.SessionFeedCubit(gh<_i51.GetActiveSessions>()),
   );
   gh.factory<_i778.LoginUser>(
     () => _i778.LoginUser(gh<_i787.AuthRepository>()),
@@ -246,6 +287,21 @@ _i174.GetIt $initGetIt(
   );
   gh.factory<_i699.VerifySms>(
     () => _i699.VerifySms(gh<_i787.AuthRepository>()),
+  );
+  gh.factory<_i157.PendingRatingBloc>(
+    () => _i157.PendingRatingBloc(
+      gh<_i396.GetPendingRatings>(),
+      gh<_i694.CreateRating>(),
+    ),
+  );
+  gh.factory<_i797.AuthBloc>(
+    () => _i797.AuthBloc(
+      gh<_i778.LoginUser>(),
+      gh<_i198.RegisterUser>(),
+      gh<_i699.VerifySms>(),
+      gh<_i152.ResendOtp>(),
+      gh<_i912.AppBloc>(),
+    ),
   );
   return getIt;
 }
