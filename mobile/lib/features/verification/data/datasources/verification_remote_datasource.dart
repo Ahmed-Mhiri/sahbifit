@@ -1,51 +1,64 @@
-import 'package:dio/dio.dart'; // Assuming you use dio
-import 'package:sahbifit_mobile/features/verification/data/models/verification_status_model.dart';
 import 'dart:io';
-import '../../../../core/constants/api_endpoints.dart';
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/api/api_client.dart';
+import 'package:sahbifit/core/constants/api_endpoints.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/features/verification/data/models/verification_status_model.dart';
+import 'package:path/path.dart' as p;
 
-abstract class VerificationRemoteDataSource {
+abstract class VerificationRemoteDatasource {
   Future<VerificationStatusModel> getVerificationStatus();
-  Future<String> submitVerificationVideo(String videoPath);
+  Future<void> submitVerificationVideo(File video);
 }
 
-class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
-  final ApiClient apiClient;
+@Injectable(as: VerificationRemoteDatasource)
+class VerificationRemoteDatasourceImpl implements VerificationRemoteDatasource {
+  final ApiClient _apiClient;
 
-  VerificationRemoteDataSourceImpl({required this.apiClient});
+  VerificationRemoteDatasourceImpl(this._apiClient);
 
   @override
   Future<VerificationStatusModel> getVerificationStatus() async {
-    final response = await apiClient.get(ApiEndpoints.verificationStatus);
-    return VerificationStatusModel.fromJson(response.data);
+    try {
+      final response = await _apiClient.dio.get(
+        ApiEndpoints.verificationStatus,
+      );
+      return VerificationStatusModel.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
   }
 
   @override
-  Future<String> submitVerificationVideo(String videoPath) async {
-    final file = File(videoPath);
-    final fileName = file.path.split('/').last;
-    
-    // 1. Create FormData
-    // This matches the @RequestParam("video") MultipartFile in Java
-    
-    final formData = FormData.fromMap({
-      'video': await MultipartFile.fromFile(
-        file.path,
-        filename: fileName,
-      ),
-    });
+  Future<void> submitVerificationVideo(File video) async {
+    try {
+      // 1. Get the file name
+      String fileName = p.basename(video.path);
 
-    // 2. Send as POST with FormData, not JSON
-    final response = await apiClient.post(
-      ApiEndpoints.submitVerification,
-      data: formData,
-      // Optional: Add progress callback for UI
-      onSendProgress: (sent, total) {
-        // You can pass this to the BLoC
-        print('Upload progress: ${((sent / total) * 100).toStringAsFixed(0)}%');
-      },
-    );
+      // 2. Create the FormData object
+      // This is the multipart request body
+      FormData formData = FormData.fromMap({
+        // The key "video" MUST match the @RequestParam("video")
+        // in your VerificationController.java
+        "video": await MultipartFile.fromFile(
+          video.path,
+          filename: fileName,
+        ),
+      });
 
-    // 3. Backend returns a plain string message
-    return response.data as String;
+      // 3. Send the request
+      await _apiClient.dio.post(
+        ApiEndpoints.submitVerification,
+        data: formData,
+        // Optional: Show upload progress
+        onSendProgress: (int sent, int total) {
+          print('Upload progress: ${((sent / total) * 100).toStringAsFixed(0)}%');
+        },
+      );
+      // Backend returns a 200 OK with a simple string, which we ignore
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
   }
 }

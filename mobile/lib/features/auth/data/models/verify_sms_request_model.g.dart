@@ -1,0 +1,21 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'verify_sms_request_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_VerifySmsRequestModel _$VerifySmsRequestModelFromJson(
+        Map<String, dynamic> json) =>
+    _VerifySmsRequestModel(
+      phoneNumber: json['phoneNumber'] as String,
+      otp: json['otp'] as String,
+    );
+
+Map<String, dynamic> _$VerifySmsRequestModelToJson(
+        _VerifySmsRequestModel instance) =>
+    <String, dynamic>{
+      'phoneNumber': instance.phoneNumber,
+      'otp': instance.otp,
+    };

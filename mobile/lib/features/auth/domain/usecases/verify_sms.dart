@@ -1,11 +1,26 @@
-import '../repositories/auth_repository.dart';
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/auth/domain/repositories/auth_repository.dart';
 
-class VerifySms {
-  final AuthRepository repository;
+@injectable
+class VerifySms implements UseCase<void, VerifySmsParams> {
+  final AuthRepository _repository;
 
-  VerifySms({required this.repository});
+  VerifySms(this._repository);
 
-  Future<String> call(String phoneNumber, String otp) async {
-    return await repository.verifySms(phoneNumber, otp);
+  @override
+  Future<void> call(VerifySmsParams params) async {
+    return _repository.verifySms(params.phoneNumber, params.otp);
   }
+}
+
+class VerifySmsParams extends Equatable {
+  final String phoneNumber;
+  final String otp;
+
+  const VerifySmsParams({required this.phoneNumber, required this.otp});
+
+  @override
+  List<Object?> get props => [phoneNumber, otp];
 }

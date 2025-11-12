@@ -1,48 +1,47 @@
-import 'package:dartz/dartz.dart';
-import 'package:sahbifit_mobile/core/errors/failure.dart';
-import 'package:sahbifit_mobile/core/utils/type_defs.dart';
-import 'package:sahbifit_mobile/features/chat/data/datasources/chat_remote_datasource.dart';
-import 'package:sahbifit_mobile/features/chat/data/models/message_model.dart';
-import 'package:sahbifit_mobile/features/chat/domain/entities/message.dart';
-import 'package:sahbifit_mobile/features/chat/domain/repositories/chat_repository.dart';
-import 'package:sahbifit_mobile/features/user/domain/entities/user.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/features/chat/data/datasources/chat_remote_datasource.dart';
+import 'package:sahbifit/features/chat/data/models/message_model.dart';
+import 'package:sahbifit/features/chat/domain/entities/message.dart';
+import 'package:sahbifit/features/chat/domain/repositories/chat_repository.dart';
 
+@Injectable(as: ChatRepository)
 class ChatRepositoryImpl implements ChatRepository {
-  final ChatRemoteDataSource remoteDataSource;
+  final ChatRemoteDatasource _remoteDatasource;
 
-  ChatRepositoryImpl(this.remoteDataSource);
+  ChatRepositoryImpl(this._remoteDatasource);
 
   @override
-  ResultStream<List<Message>> getChatStream(String sessionId) {
-    try {
-      return remoteDataSource.getChatStream(sessionId).map((models) {
-        final messages = models.map((model) => model.toDomain()).toList();
-        return Right(messages);
-      }).handleError((error) {
-        return Left(ServerFailure('Failed to load messages: $error'));
-      });
-    } catch (e) {
-      // This will catch synchronous errors, e.g., if Firestore is not initialized
-      return Stream.value(Left(ServerFailure(e.toString())));
-    }
+  Stream<List<Message>> getChatStream(String sessionId) {
+    // We catch errors on the stream itself
+    return _remoteDatasource.getChatStream(sessionId).map((models) {
+      return models.map((model) => model.toEntity()).toList();
+    }).handleError((error) {
+      // Log the error and bubble up a generic failure
+      print('Firestore Stream Error: $error');
+      throw ServerFailure(message: 'Could not load chat messages.');
+    });
   }
 
   @override
-  Future<Result<void>> sendMessage({
+  Future<void> sendMessage({
     required String sessionId,
+    required String senderId,
     required String text,
-    required User sender, // Get the current user from the BLoC/Cubit
   }) async {
     try {
-      final createMessageModel = CreateMessageModel(
-        senderId: sender.userId, // Ensure your User entity has this
-        senderName: sender.firstName, // Or fullName
+      // Create the model to send
+      final message = MessageModel.forSending(
+        senderId: senderId,
         text: text,
       );
-      await remoteDataSource.sendMessage(sessionId, createMessageModel);
-      return const Right(null);
+      await _remoteDatasource.sendMessage(sessionId, message);
+    } on FirebaseException catch (e) {
+      // Handle specific Firestore errors
+      throw ServerFailure(message: e.message ?? 'Failed to send message.');
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      throw ServerFailure(message: 'An unknown error occurred.');
     }
   }
 }

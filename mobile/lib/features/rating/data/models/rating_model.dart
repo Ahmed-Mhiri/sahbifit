@@ -1,58 +1,51 @@
-import 'package:your_app_name/features/rating/domain/entities/rating.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit/features/rating/domain/entities/rating.dart';
+import 'package:sahbifit/features/user/data/models/user_model.dart';
 
-/// DTO Model for GET /api/ratings/*
-/// Mirrors backend Rating.java entity
-class RatingModel {
-  final String ratingId;
-  final String sessionId; // Assuming session is flattened
-  final String ratedByUserId; // Assuming user is flattened
-  final String ratedByUserName;
-  final String ratedForUserId; // Assuming user is flattened
-  final String ratedForUserName;
-  final int ratingValue;
-  final String? comment;
-  final DateTime createdAt;
+part 'rating_model.freezed.dart';
+part 'rating_model.g.dart';
 
-  RatingModel({
-    required this.ratingId,
-    required this.sessionId,
-    required this.ratedByUserId,
-    required this.ratedByUserName,
-    required this.ratedForUserId,
-    required this.ratedForUserName,
-    required this.ratingValue,
-    this.comment,
-    required this.createdAt,
-  });
+// Helper model to represent the nested 'session' object
+// We only extract the ID, as seen in the Rating entity
+@freezed
+class RatingSessionModel with _$RatingSessionModel {
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory RatingSessionModel({
+    required String sessionId,
+  }) = _RatingSessionModel;
 
-  factory RatingModel.fromJson(Map<String, dynamic> json) {
-    // This assumes the backend serializes the nested User/Session objects
-    // You MUST adjust this to match your actual JSON response
-    return RatingModel(
-      ratingId: json['ratingId'],
-      sessionId: json['session']['sessionId'], // Assumed nesting
-      ratedByUserId: json['ratingBy']['userId'], // Assumed nesting
-      ratedByUserName: json['ratingBy']['firstName'], // Assumed nesting
-      ratedForUserId: json['ratingFor']['userId'], // Assumed nesting
-      ratedForUserName: json['ratingFor']['firstName'], // Assumed nesting
-      ratingValue: (json['ratingValue'] as num).toInt(),
-      comment: json['comment'],
-      createdAt: DateTime.parse(json['createdAt']),
-    );
-  }
+  factory RatingSessionModel.fromJson(Map<String, dynamic> json) =>
+      _$RatingSessionModelFromJson(json);
+}
 
-  /// Converts this DTO model to a clean domain [Rating] entity
+
+@freezed
+class RatingModel with _$RatingModel {
+  const RatingModel._();
+
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory RatingModel({
+    required String ratingId,
+    required RatingSessionModel session, // Nested session object
+    required UserModel ratingBy,
+    required UserModel ratingFor,
+    required int ratingValue,
+    String? comment,
+    required String createdAt, // Receive as ISO 8601 String
+  }) = _RatingModel;
+
+  factory RatingModel.fromJson(Map<String, dynamic> json) =>
+      _$RatingModelFromJson(json);
+
   Rating toEntity() {
     return Rating(
       ratingId: ratingId,
-      sessionId: sessionId,
-      ratedByUserId: ratedByUserId,
-      ratedByUserName: ratedByUserName,
-      ratedForUserId: ratedForUserId,
-      ratedForUserName: ratedForUserName,
+      sessionId: session.sessionId, // Extract the ID
+      ratingBy: ratingBy.toEntity(),
+      ratingFor: ratingFor.toEntity(),
       ratingValue: ratingValue,
       comment: comment,
-      createdAt: createdAt,
+      createdAt: DateTime.parse(createdAt), // Convert String to DateTime
     );
   }
 }

@@ -1,50 +1,30 @@
-import 'package:equatable/equatable.dart';
-import '../domain/entities/tag.dart';
-import '../domain/enums/tag_type.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit/features/tag/domain/entities/tag.dart';
+import 'package:sahbifit/features/tag/domain/entities/tag_type.dart';
 
-/// Data Transfer Object (DTO) for a Tag.
-/// This model directly maps to the JSON response from the backend.
-class TagModel extends Equatable {
-  final int tagId;
-  final String tagName;
-  final TagType tagType;
+part 'tag_model.freezed.dart';
+part 'tag_model.g.dart';
 
-  const TagModel({
-    required this.tagId,
-    required this.tagName,
-    required this.tagType,
-  });
+@freezed
+class TagModel with _$TagModel {
+  const TagModel._(); // Private constructor for methods
 
-  /// Creates a [TagModel] from a JSON map.
-  factory TagModel.fromJson(Map<String, dynamic> json) {
-    return TagModel(
-      tagId: json['tagId'] as int,
-      tagName: json['tagName'] as String,
-      // Handle the enum deserialization
-      tagType: (json['tagType'] as String).toTagType(),
-    );
-  }
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory TagModel({
+    required int tagId,
+    required String tagName,
+    required TagType tagType,
+  }) = _TagModel;
 
-  /// Converts the Data-layer [TagModel] to a Domain-layer [Tag] entity.
-  /// This is where we convert `tagId` (int) to `id` (String) for the UI.
+  factory TagModel.fromJson(Map<String, dynamic> json) =>
+      _$TagModelFromJson(json);
+
+  // Converts the data-layer model to a domain-layer entity
   Tag toEntity() {
     return Tag(
-      id: tagId.toString(),
-      name: tagName,
-      type: tagType,
-    );
-  }
-
-  @override
-  List<Object?> get props => [tagId, tagName, tagType];
-}
-
-/// Helper extension to convert string from API to [TagType] enum.
-extension on String {
-  TagType toTagType() {
-    return TagType.values.firstWhere(
-      (e) => e.name == this,
-      orElse: () => TagType.goal, // Default fallback
+      tagId: tagId,
+      tagName: tagName,
+      tagType: tagType,
     );
   }
 }

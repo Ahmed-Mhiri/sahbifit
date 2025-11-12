@@ -1,36 +1,18 @@
-import 'package:your_app_name/features/rating/domain/entities/create_rating.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-/// DTO Model for POST /api/ratings
-/// Mirrors backend CreateRatingDto.java
-class CreateRatingModel {
-  final String sessionId;
-  final String ratedUserId;
-  final int ratingValue;
-  final String? comment;
+part 'create_rating_model.freezed.dart';
+part 'create_rating_model.g.dart';
 
-  CreateRatingModel({
-    required this.sessionId,
-    required this.ratedUserId,
-    required this.ratingValue,
-    this.comment,
-  });
+@freezed
+class CreateRatingModel with _$CreateRatingModel {
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory CreateRatingModel({
+    required String sessionId,
+    required String ratedUserId,
+    required int ratingValue, // 'Short' maps to 'int'
+    String? comment,
+  }) = _CreateRatingModel;
 
-  /// Creates a Model from a domain [CreateRating] entity
-  factory CreateRatingModel.fromEntity(CreateRating entity) {
-    return CreateRatingModel(
-      sessionId: entity.sessionId,
-      ratedUserId: entity.ratedUserId,
-      ratingValue: entity.ratingValue,
-      comment: entity.comment,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'sessionId': sessionId,
-      'ratedUserId': ratedUserId,
-      'ratingValue': ratingValue,
-      'comment': comment,
-    };
-  }
+  factory CreateRatingModel.fromJson(Map<String, dynamic> json) =>
+      _$CreateRatingModelFromJson(json);
 }

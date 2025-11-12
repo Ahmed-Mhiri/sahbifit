@@ -1,25 +1,30 @@
-import 'package:json_annotation/json_annotation.dart';
-import 'package:sahbifit_mobile/features/verification/domain/enums/verification_status_enum.dart';
-import 'package:sahbifit_mobile/features/verification/domain/enums/verified_gender_enum.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit/features/verification/domain/entities/verification_status_entity.dart';
+import 'package:sahbifit/features/verification/domain/enums/verification_status_enum.dart';
+import 'package:sahbifit/features/verification/domain/enums/verified_gender_enum.dart';
 
-
+part 'verification_status_model.freezed.dart';
 part 'verification_status_model.g.dart';
 
-@JsonSerializable()
-class VerificationStatusModel {
-  @JsonKey(name: 'status')
-  final VerificationStatus status;
-  
-  @JsonKey(name: 'gender')
-  final VerifiedGender gender;
+// Matches VerificationStatusDto.java
+@freezed
+class VerificationStatusModel with _$VerificationStatusModel {
+  const VerificationStatusModel._();
 
-  VerificationStatusModel({
-    required this.status,
-    required this.gender,
-  });
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory VerificationStatusModel({
+    required VerificationStatus status,
+    required VerifiedGender gender,
+  }) = _VerificationStatusModel;
 
   factory VerificationStatusModel.fromJson(Map<String, dynamic> json) =>
       _$VerificationStatusModelFromJson(json);
 
-  Map<String, dynamic> toJson() => _$VerificationStatusModelToJson(this);
+  // Converts the data-layer model to a domain-layer entity
+  VerificationStatusEntity toEntity() {
+    return VerificationStatusEntity(
+      status: status,
+      gender: gender,
+    );
+  }
 }

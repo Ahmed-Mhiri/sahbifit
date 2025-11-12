@@ -1,0 +1,24 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'tag_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_TagModel _$TagModelFromJson(Map<String, dynamic> json) => _TagModel(
+      tagId: (json['tagId'] as num).toInt(),
+      tagName: json['tagName'] as String,
+      tagType: $enumDecode(_$TagTypeEnumMap, json['tagType']),
+    );
+
+Map<String, dynamic> _$TagModelToJson(_TagModel instance) => <String, dynamic>{
+      'tagId': instance.tagId,
+      'tagName': instance.tagName,
+      'tagType': _$TagTypeEnumMap[instance.tagType]!,
+    };
+
+const _$TagTypeEnumMap = {
+  TagType.goal: 'goal',
+  TagType.schedule: 'schedule',
+};

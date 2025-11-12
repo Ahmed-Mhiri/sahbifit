@@ -1,26 +1,44 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sahbifit_mobile/features/gym/domain/entities/gym.dart'; // Stubbed
-import 'package:sahbifit_mobile/features/session/domain/entities/enums/session_status.dart';
-import 'package:sahbifit_mobile/features/session/domain/entities/enums/session_type.dart';
-import 'package:sahbifit_mobile/features/user/domain/entities/user.dart'; // Stubbed
-part 'session.freezed.dart';
+import 'package:equatable/equatable.dart';
+import 'package:sahbifit/features/gym/domain/entities/gym.dart';
+import 'package:sahbifit/features/session/domain/enums/session_status.dart';
+import 'package:sahbifit/features/session/domain/enums/session_type.dart';
+import 'package:sahbifit/features/user/domain/entities/user.dart';
 
-/// Clean domain entity for a Session.
-/// This is what the UI will consume.
-@freezed
-class Session with _$Session {
-  const factory Session({
-    required String sessionId,
-    required User creator,
-    required Gym gym,
-    required SessionType sessionType,
-    required SessionStatus status,
-    required String title,
-    required DateTime startTime,
-    required DateTime endTime,
-    required int maxParticipants,
-    required int participantCount,
-    String? firestoreChatId,
-    required bool isChatActive,
-  }) = _Session;
+class Session extends Equatable {
+  final String sessionId;
+  final String title;
+  final SessionType sessionType;
+  final SessionStatus status;
+  final DateTime startTime;
+  final DateTime endTime;
+  final int maxParticipants;
+  final int participantCount; // From the @Formula
+  final User creator; // Nested User entity
+  final Gym gym;     // Nested Gym entity
+
+  const Session({
+    required this.sessionId,
+    required this.title,
+    required this.sessionType,
+    required this.status,
+    required this.startTime,
+    required this.endTime,
+    required this.maxParticipants,
+    required this.participantCount,
+    required this.creator,
+    required this.gym,
+  });
+
+  @override
+  List<Object?> get props => [
+        sessionId,
+        title,
+        sessionType,
+        status,
+        startTime,
+        endTime,
+        participantCount,
+        creator,
+        gym,
+      ];
 }

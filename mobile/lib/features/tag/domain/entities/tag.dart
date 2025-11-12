@@ -1,21 +1,17 @@
 import 'package:equatable/equatable.dart';
-import 'enums/tag_type.dart';
+import 'package:sahbifit/features/tag/domain/entities/tag_type.dart';
 
-/// Domain entity for a Tag.
-/// This is the object used by the UI (Presentation) layer.
 class Tag extends Equatable {
-  /// Note: This is a [String] to match the `tag_selection_widget`
-  /// which uses `List<String> selectedTags`.
-  final String id;
-  final String name;
-  final TagType type;
+  final int tagId;
+  final String tagName;
+  final TagType tagType;
 
   const Tag({
-    required this.id,
-    required this.name,
-    required this.type,
+    required this.tagId,
+    required this.tagName,
+    required this.tagType,
   });
 
   @override
-  List<Object?> get props => [id, name, type];
+  List<Object?> get props => [tagId, tagName, tagType];
 }

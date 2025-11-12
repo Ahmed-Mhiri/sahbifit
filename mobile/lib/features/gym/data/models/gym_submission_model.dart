@@ -1,22 +1,15 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+part 'gym_submission_model.freezed.dart';
+part 'gym_submission_model.g.dart';
 
-class GymSubmissionModel extends Equatable {
-  final String name;
-  final String address;
+@freezed
+class GymSubmissionModel with _$GymSubmissionModel {
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory GymSubmissionModel({
+    required String name,
+    required String address,
+  }) = _GymSubmissionModel;
 
-  const GymSubmissionModel({
-    required this.name,
-    required this.address,
-  });
-
-  // Creates the JSON body for the POST request
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'address': address,
-    };
-  }
-
-  @override
-  List<Object?> get props => [name, address];
+  factory GymSubmissionModel.fromJson(Map<String, dynamic> json) =>
+      _$GymSubmissionModelFromJson(json);
 }

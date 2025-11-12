@@ -1,33 +1,23 @@
-import 'package:json_annotation/json_annotation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
+part 'register_request_model.freezed.dart';
 part 'register_request_model.g.dart';
 
-@JsonSerializable()
-class RegisterRequestModel {
-  final String phoneNumber;
-  final String password;
-  final String recaptchaToken;
-  final String firstName;
-  final String dateOfBirth;
-  final String primaryGymId;
-  final String? profilePhotoUrl;
-  final List<int> goalTagIds;
-  final List<int> scheduleTagIds;
-
-  RegisterRequestModel({
-    required this.phoneNumber,
-    required this.password,
-    required this.recaptchaToken,
-    required this.firstName,
-    required this.dateOfBirth,
-    required this.primaryGymId,
-    this.profilePhotoUrl,
-    required this.goalTagIds,
-    required this.scheduleTagIds,
-  });
+@freezed
+class RegisterRequestModel with _$RegisterRequestModel {
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory RegisterRequestModel({
+    required String phoneNumber,
+    required String password,
+    required String recaptchaToken,
+    required String firstName,
+    required String dateOfBirth, // Send as "YYYY-MM-DD" string
+    required String primaryGymId, // Send the UUID as a String
+    String? profilePhotoUrl, // Optional
+    required List<int> goalTagIds,
+    required List<int> scheduleTagIds,
+  }) = _RegisterRequestModel;
 
   factory RegisterRequestModel.fromJson(Map<String, dynamic> json) =>
       _$RegisterRequestModelFromJson(json);
-
-  Map<String, dynamic> toJson() => _$RegisterRequestModelToJson(this);
 }

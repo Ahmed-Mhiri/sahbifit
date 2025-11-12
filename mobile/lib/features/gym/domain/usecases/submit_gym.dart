@@ -1,31 +1,19 @@
-import 'package:dartz/dartz.dart';
-import 'package:equatable/equatable.dart';
-import 'package:sahbifit_mobile/core/usecases/usecase.dart';
-import '../../../../../core/errors/failure.dart';
-import '../entities/gym_submission.dart';
-import '../repositories/gym_repository.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/gym/domain/entities/gym_submission.dart';
+import 'package:sahbifit/features/gym/domain/repositories/gym_repository.dart';
 
-class SubmitGym implements UseCase<void, SubmitGymParams> {
-  final GymRepository repository;
+@injectable
+class SubmitGym implements UseCase<void, GymSubmission> {
+  final GymRepository _repository;
 
-  SubmitGym(this.repository);
+  SubmitGym(this._repository);
 
+  // ---
+  // 💡 3. YOUR FIX: The call is now much simpler
+  // ---
   @override
-  Future<Either<Failure, void>> call(SubmitGymParams params) async {
-    final submission = GymSubmission(
-      name: params.name,
-      address: params.address,
-    );
-    return await repository.submitGym(submission);
+  Future<void> call(GymSubmission params) async {
+    return _repository.submitGym(params);
   }
-}
-
-class SubmitGymParams extends Equatable {
-  final String name;
-  final String address;
-
-  const SubmitGymParams({required this.name, required this.address});
-
-  @override
-  List<Object?> get props => [name, address];
 }

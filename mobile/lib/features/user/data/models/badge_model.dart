@@ -1,28 +1,30 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sahbifit/features/user/domain/entities/badge.dart';
 
-class BadgeModel extends Badge {
-  const BadgeModel({
-    required super.id,
-    required super.name,
-    required super.description,
-    super.iconUrl,
-  });
+part 'badge_model.freezed.dart';
+part 'badge_model.g.dart';
 
-  factory BadgeModel.fromJson(Map<String, dynamic> json) {
-    return BadgeModel(
-      id: json['badgeId'],
-      name: json['badgeName'],
-      description: json['description'],
-      iconUrl: json['iconUrl'],
+@freezed
+class BadgeModel with _$BadgeModel {
+  const BadgeModel._();
+
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory BadgeModel({
+    required int badgeId,
+    required String badgeName,
+    required String description,
+    String? iconUrl,
+  }) = _BadgeModel;
+
+  factory BadgeModel.fromJson(Map<String, dynamic> json) =>
+      _$BadgeModelFromJson(json);
+
+  Badge toEntity() {
+    return Badge(
+      badgeId: badgeId,
+      badgeName: badgeName,
+      description: description,
+      iconUrl: iconUrl,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'badgeId': id,
-      'badgeName': name,
-      'description': description,
-      'iconUrl': iconUrl,
-    };
   }
 }

@@ -1,26 +1,28 @@
-import 'package:equatable/equatable.dart'; // You may need to run: flutter pub add equatable
+import 'package:equatable/equatable.dart';
 
-/// A base Failure class. All other failures in the app should extend this.
-/// Using Equatable to allow for value comparison.
+/// A [Failure] is an error that is safe to show to the user
+/// and will be handled by the UI/Presentation layer.
 abstract class Failure extends Equatable {
   final String message;
 
-  const Failure(this.message);
+  const Failure({required this.message});
 
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [message];
 }
 
-/// Represents a failure from the server (e.g., API errors, 404, 500).
+/// Represents a failure from the server (e.g., 4xx, 5xx errors).
+/// This is what we used in our [AuthRepositoryImpl].
 class ServerFailure extends Failure {
-  const ServerFailure(String message) : super(message);
+  const ServerFailure({required super.message});
 }
 
-/// Represents a failure from the local cache (e.g., database not found).
+/// Represents a failure when accessing local cache.
 class CacheFailure extends Failure {
-  const CacheFailure(String message) : super(message);
+  const CacheFailure({super.message = 'Error reading from local storage.'});
 }
 
-// You can add other specific failures here as needed:
-// class NetworkFailure extends Failure { ... }
-// class AuthenticationFailure extends Failure { ... }
+/// Represents a failure when there is no network connection.
+class NetworkFailure extends Failure {
+  const NetworkFailure({super.message = 'Please check your internet connection.'});
+}

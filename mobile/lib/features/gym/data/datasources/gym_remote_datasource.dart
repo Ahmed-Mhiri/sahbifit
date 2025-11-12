@@ -1,58 +1,49 @@
-import 'package:dio/dio.dart'; // Assuming you use Dio for HTTP
-import 'package:sahbifit_mobile/features/gym/data/models/gym_model.dart';
-import 'package:sahbifit_mobile/features/gym/data/models/gym_submission_model.dart';
-import 'package:sahbifit_mobile/core/errors/exceptions.dart';
-abstract class GymRemoteDataSource {
-  /// Calls the GET /api/gyms endpoint.
-  /// Throws a [ServerException] for all error codes.
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/api/api_client.dart';
+import 'package:sahbifit/core/constants/api_endpoints.dart'; // <-- IMPORT
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/features/gym/data/models/gym_model.dart';
+import 'package:sahbifit/features/gym/data/models/gym_submission_model.dart';
+
+abstract class GymRemoteDatasource {
+  /// Calls the GET /gyms endpoint
   Future<List<GymModel>> getApprovedGyms();
 
-  /// Calls the POST /api/gyms/submit endpoint.
-  /// Throws a [ServerException] for all error codes.
-  Future<void> submitGym(GymSubmissionModel submissionModel);
+  /// Calls the POST /gyms/submit endpoint
+  Future<void> submitGym(GymSubmissionModel request);
 }
 
-class GymRemoteDataSourceImpl implements GymRemoteDataSource {
-  final Dio dio;
+@Injectable(as: GymRemoteDatasource)
+class GymRemoteDatasourceImpl implements GymRemoteDatasource {
+  final ApiClient _apiClient;
 
-  GymRemoteDataSourceImpl({required this.dio});
+  GymRemoteDatasourceImpl(this._apiClient);
 
   @override
   Future<List<GymModel>> getApprovedGyms() async {
     try {
-      // This path matches GymController's @GetMapping("/gyms")
-      final response = await dio.get('/api/gyms');
+      final response = await _apiClient.dio.get(ApiEndpoints.gyms); // <-- USE CONSTANT
 
-      if (response.statusCode == 200) {
-        final List<dynamic> gymsJson = response.data as List;
-        return gymsJson
-            .map((json) => GymModel.fromJson(json as Map<String, dynamic>))
-            .toList();
-      } else {
-        throw ServerException();
-      }
-    } catch (e) {
-      throw ServerException();
+      // The response.data is a List<dynamic> of JSON maps
+      // We must convert it into a List<GymModel>
+      return (response.data as List)
+          .map((json) => GymModel.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
     }
   }
 
   @override
-  Future<void> submitGym(GymSubmissionModel submissionModel) async {
+  Future<void> submitGym(GymSubmissionModel request) async {
     try {
-      // This path matches GymController's @PostMapping("/gyms/submit")
-      final response = await dio.post(
-        '/api/gyms/submit',
-        data: submissionModel.toJson(),
+      await _apiClient.dio.post(
+        ApiEndpoints.submitGym, // <-- USE CONSTANT
+        data: request.toJson(),
       );
-
-      // HttpStatus.CREATED is 201
-      if (response.statusCode != 201) {
-        throw ServerException();
-      }
-      // No return value needed, as per controller's ResponseEntity<Gym>
-      // We just care that it succeeded.
-    } catch (e) {
-      throw ServerException();
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
     }
   }
 }

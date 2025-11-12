@@ -1,21 +1,10 @@
-class AuthToken {
+import 'package:equatable/equatable.dart';
+
+class AuthToken extends Equatable {
   final String token;
-  final DateTime expiresAt;
 
-  AuthToken({
-    required this.token,
-    required this.expiresAt,
-  });
+  const AuthToken({required this.token});
 
-  bool get isExpired => DateTime.now().isAfter(expiresAt);
-
-  Map<String, dynamic> toJson() => {
-        'token': token,
-        'expiresAt': expiresAt.toIso8601String(),
-      };
-
-  factory AuthToken.fromJson(Map<String, dynamic> json) => AuthToken(
-        token: json['token'],
-        expiresAt: DateTime.parse(json['expiresAt']),
-      );
+  @override
+  List<Object?> get props => [token];
 }

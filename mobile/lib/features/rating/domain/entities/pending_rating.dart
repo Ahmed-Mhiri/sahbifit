@@ -1,7 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-/// Domain Entity for a Pending Rating
-/// This is a clean, framework-independent business object.
 class PendingRating extends Equatable {
   final String sessionId;
   final String sessionTitle;
@@ -16,6 +14,5 @@ class PendingRating extends Equatable {
   });
 
   @override
-  List<Object?> get props =>
-      [sessionId, sessionTitle, userIdToRate, userNameToRate];
+  List<Object?> get props => [sessionId, userIdToRate, userNameToRate];
 }

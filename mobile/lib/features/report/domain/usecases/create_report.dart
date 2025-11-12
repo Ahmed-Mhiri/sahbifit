@@ -1,35 +1,24 @@
-import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import 'report_repository.dart';
-// Assume a core usecase file exists
-// import 'package:your_app/core/usecases/usecase.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/report/domain/repositories/report_repository.dart';
 
-// Placeholder for UseCase
-abstract class UseCase<Type, Params> {
-  Future<Either<Failure, Type>> call(Params params);
-}
-
-/// The Usecase for creating a report.
-/// This encapsulates the specific business rule.
+@injectable
 class CreateReport implements UseCase<void, CreateReportParams> {
-  final ReportRepository repository;
+  final ReportRepository _repository;
 
-  CreateReport(this.repository);
+  CreateReport(this._repository);
 
   @override
-  Future<Either<Failure, void>> call(CreateReportParams params) async {
-    // Convert Usecase params to the model required by the repository
-    final createReportModel = CreateReportModel(
+  Future<void> call(CreateReportParams params) async {
+    return _repository.createReport(
       reportedUserId: params.reportedUserId,
       reason: params.reason,
       sessionId: params.sessionId,
     );
-
-    return await repository.createReport(createReportModel);
   }
 }
 
-/// Parameters required by the [CreateReport] usecase.
 class CreateReportParams extends Equatable {
   final String reportedUserId;
   final String reason;

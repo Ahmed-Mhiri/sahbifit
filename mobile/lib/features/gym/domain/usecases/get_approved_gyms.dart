@@ -1,16 +1,16 @@
-import 'package:dartz/dartz.dart';
-import 'package:sahbifit_mobile/core/usecases/usecase.dart';
-import '../../../../../core/errors/failure.dart';
-import '../entities/gym.dart';
-import '../repositories/gym_repository.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/gym/domain/entities/gym.dart';
+import 'package:sahbifit/features/gym/domain/repositories/gym_repository.dart';
 
+@injectable
 class GetApprovedGyms implements UseCase<List<Gym>, NoParams> {
-  final GymRepository repository;
+  final GymRepository _repository;
 
-  GetApprovedGyms(this.repository);
+  GetApprovedGyms(this._repository);
 
   @override
-  Future<Either<Failure, List<Gym>>> call(NoParams params) async {
-    return await repository.getApprovedGyms();
+  Future<List<Gym>> call(NoParams params) async {
+    return _repository.getApprovedGyms();
   }
 }

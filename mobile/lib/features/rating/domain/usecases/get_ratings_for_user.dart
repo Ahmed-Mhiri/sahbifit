@@ -1,25 +1,26 @@
-import 'package:dartz/dartz.dart';
-import 'package:your_app_name/core/error/failure.dart';
-import 'package:your_app_name/core/usecase/usecase.dart';
-import 'package:your_app_name/features/rating/domain/entities/rating.dart';
-import 'package:your_app_name/features/rating/domain/repositories/rating_repository.dart';
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/rating/domain/entities/rating.dart';
+import 'package:sahbifit/features/rating/domain/repositories/rating_repository.dart';
 
-/// Use Case for getting all ratings a specific user has received
+@injectable
 class GetRatingsForUser implements UseCase<List<Rating>, GetRatingsForUserParams> {
-  final RatingRepository repository;
+  final RatingRepository _repository;
 
-  GetRatingsForUser(this.repository);
+  GetRatingsForUser(this._repository);
 
   @override
-  Future<Either<Failure, List<Rating>>> call(
-      GetRatingsForUserParams params) async {
-    return await repository.getRatingsForUser(params.userId);
+  Future<List<Rating>> call(GetRatingsForUserParams params) async {
+    return _repository.getRatingsForUser(params.userId);
   }
 }
 
 class GetRatingsForUserParams extends Equatable {
   final String userId;
+
   const GetRatingsForUserParams({required this.userId});
+
   @override
-  List<Object> get props => [userId];
+  List<Object?> get props => [userId];
 }

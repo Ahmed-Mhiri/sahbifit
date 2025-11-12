@@ -1,86 +1,82 @@
-name: sahbifit_mobile
-description: A new Flutter project.
+name: sahbifit
+description: its a gym buddy app that helps you find people partner(s) to train with
+
+# Prevent accidental publishing to pub.dev.
+publish_to: 'none'
+
+version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0' # Using a modern Dart SDK range
 
 dependencies:
   flutter:
     sdk: flutter
 
-  # Core Services & Dependency Injection
-  get_it: ^9.0.5
-  injectable: ^2.6.0
-  dio: ^5.9.0
-  go_router: ^17.0.0
-  flutter_secure_storage: ^9.2.2
-  
   # State Management
-  flutter_bloc: ^9.1.1
+  flutter_bloc: ^9.1.1 # Updated from 8.1.3
+  bloc: ^9.1.0 # Updated from 8.1.2
+  equatable: ^2.0.7 # Updated from 2.0.5
 
-  # Firebase Services
-  firebase_core: ^2.31.0   # <-- UPDATED
-  firebase_messaging: ^16.0.4
-  firebase_auth: ^6.1.2
-  cloud_firestore: ^4.17.3 # <-- UPDATED
+  # Dependency Injection / Service Location
+  get_it: ^9.0.5 # Updated from 7.6.4
+  injectable: ^2.6.0 # Updated from 2.3.2
 
-  # Utilities
-  equatable: ^2.0.7
-  intl: ^0.20.2
-  cached_network_image: ^3.4.1
-  image_picker: ^1.2.0
-  permission_handler: ^12.0.1
+  # Networking
+  dio: ^5.9.0 # Updated from 5.3.3
 
-  # JSON Serialization
-  json_annotation: ^4.8.1
-  
-  # Camera Packages (NEWLY ADDED)
-  camera: ^0.10.5+9
-  camera_android: ^0.10.8+13
-  camera_avfoundation: ^0.9.13+10
+  # Models & State (Data Classes)
+  freezed_annotation: ^3.1.0 # Updated from 2.4.1
+  json_annotation: ^4.9.0 # Updated from 4.8.1
 
-  # UI & Styling
-  google_fonts: ^6.3.2
-  flutter_svg: ^2.2.2
-  badges: ^3.1.2
-  shimmer: ^3.0.0
-  
-  # Icon Packages - Smart Integration
-  icons_plus: ^5.0.0
-  font_awesome_flutter: ^10.12.0
-  dartz: ^0.10.1
-  freezed_annotation: ^3.1.0
+  # Secure Storage
+  flutter_secure_storage: ^9.2.4 # Updated from 9.0.0
+
+  # Firebase
+  firebase_core: ^4.2.1 # Updated from 2.24.2
+  firebase_messaging: ^16.0.4 # Updated from 14.7.10
+  cloud_firestore: ^6.1.0 # Updated from 4.14.0
+
+  # Routing
+  auto_route: ^10.2.0 # Updated from 7.8.4
+
+  # UI / Utils
+  # google_fonts: ^6.1.0 # Removed to use local fonts
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
 
-  # Code Generators
-  injectable_generator: ^2.9.0
-  build_runner: ^2.4.11
-  json_serializable: ^6.7.1
+  flutter_lints: ^6.0.0 # Updated from 3.0.2
 
-# Flutter configuration
+  # Code Generation
+  build_runner: ^2.4.13 # Updated from 2.4.6
+  injectable_generator: ^2.9.1 # Updated from 2.4.1
+  freezed: ^3.2.3 # Updated from 2.4.5
+  json_serializable: ^6.11.1 # Updated from 6.7.1
+  auto_route_generator: ^10.2.5 # Updated from 7.3.2
+
+# Flutter-specific configuration
 flutter:
   uses-material-design: true
 
-  # Assets configuration - Only custom assets we actually need
+  # Register assets
   assets:
-    - assets/images/
-    - assets/logo/
-    - assets/illustrations/  # For empty states and custom illustrations
-  
-  # Optimized Poppins font family
+    - assets/logo/ # Includes all files in this directory
+    # - assets/images/ # Add this if you have other images
+
+  # Register local fonts
   fonts:
     - family: Poppins
       fonts:
         - asset: assets/fonts/Poppins/Poppins-Thin.ttf
           weight: 100
+        - asset: assets/fonts/Poppins/Poppins-ExtraLight.ttf
+          weight: 200
         - asset: assets/fonts/Poppins/Poppins-Light.ttf
           weight: 300
         - asset: assets/fonts/Poppins/Poppins-Regular.ttf
-          weight: 400
+          weight: 400 # Default weight
         - asset: assets/fonts/Poppins/Poppins-Medium.ttf
           weight: 500
         - asset: assets/fonts/Poppins/Poppins-SemiBold.ttf

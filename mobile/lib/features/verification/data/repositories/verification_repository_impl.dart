@@ -1,33 +1,33 @@
+import 'dart:io';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/features/verification/data/datasources/verification_remote_datasource.dart';
+import 'package:sahbifit/features/verification/domain/entities/verification_status_entity.dart';
+import 'package:sahbifit/features/verification/domain/repositories/verification_repository.dart';
 
-import 'package:sahbifit_mobile/features/verification/data/datasources/verification_remote_datasource.dart';
-import 'package:sahbifit_mobile/features/verification/data/models/verification_status_model.dart';
-
-import '../../domain/repositories/verification_repository.dart';
-
+@Injectable(as: VerificationRepository)
 class VerificationRepositoryImpl implements VerificationRepository {
-  final VerificationRemoteDataSource remoteDataSource;
+  final VerificationRemoteDatasource _remoteDatasource;
 
-  VerificationRepositoryImpl({required this.remoteDataSource});
+  VerificationRepositoryImpl(this._remoteDatasource);
 
   @override
-  Future<VerificationStatusModel> getVerificationStatus() async {
-    // Add try/catch for error handling
+  Future<VerificationStatusEntity> getVerificationStatus() async {
     try {
-      return await remoteDataSource.getVerificationStatus();
-    } catch (e) {
-      // Re-throw a domain-specific error
-      throw Exception('Failed to get verification status: $e');
+      final statusModel = await _remoteDatasource.getVerificationStatus();
+      return statusModel.toEntity();
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
     }
   }
 
   @override
-  Future<String> submitVerificationVideo(String videoPath) async {
-    // Add try/catch for error handling
+  Future<void> submitVerificationVideo(File video) async {
     try {
-      return await remoteDataSource.submitVerificationVideo(videoPath);
-    } catch (e) {
-      // Re-throw a domain-specific error
-      throw Exception('Failed to submit video: $e');
+      await _remoteDatasource.submitVerificationVideo(video);
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
     }
   }
 }

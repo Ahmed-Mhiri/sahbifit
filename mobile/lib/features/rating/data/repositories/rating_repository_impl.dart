@@ -1,57 +1,45 @@
-import 'package:dartz/dartz.dart';
-import 'package:your_app_name/core/error/exception.dart';
-import 'package:your_app_name/core/error/failure.dart';
-import 'package:your_app_name/features/rating/data/datasources/rating_remote_datasource.dart';
-import 'package:your_app_name/features/rating/data/models/create_rating_model.dart';
-import 'package:your_app_name/features/rating/domain/entities/create_rating.dart';
-import 'package:your_app_name/features/rating/domain/entities/pending_rating.dart';
-import 'package:your_app_name/features/rating/domain/entities/rating.dart';
-import 'package:your_app_name/features/rating/domain/repositories/rating_repository.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/features/rating/data/datasources/rating_remote_datasource.dart';
+import 'package:sahbifit/features/rating/data/models/create_rating_model.dart';
+import 'package:sahbifit/features/rating/domain/entities/pending_rating.dart';
+import 'package:sahbifit/features/rating/domain/entities/rating.dart';
+import 'package:sahbifit/features/rating/domain/repositories/rating_repository.dart';
 
+@Injectable(as: RatingRepository)
 class RatingRepositoryImpl implements RatingRepository {
-  final RatingRemoteDatasource remoteDatasource;
-  // final NetworkInfo networkInfo; // (Optional: for checking internet)
+  final RatingRemoteDatasource _remoteDatasource;
 
-  RatingRepositoryImpl({
-    required this.remoteDatasource,
-    // required this.networkInfo,
-  });
+  RatingRepositoryImpl(this._remoteDatasource);
 
   @override
-  Future<Either<Failure, Rating>> createRating(CreateRating createRating) async {
-    // if (await networkInfo.isConnected) { // (Optional)
+  Future<List<PendingRating>> getPendingRatings() async {
     try {
-      final model = CreateRatingModel.fromEntity(createRating);
-      final newRatingModel = await remoteDatasource.createRating(model);
-      return Right(newRatingModel.toEntity());
+      final models = await _remoteDatasource.getPendingRatings();
+      return models.map((model) => model.toEntity()).toList();
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      throw ServerFailure(message: e.message);
     }
-    // } else {
-    //   return Left(ServerFailure('No internet connection'));
-    // }
   }
-
+  
   @override
-  Future<Either<Failure, List<Rating>>> getRatingsForUser(String userId) async {
+  Future<Rating> createRating(CreateRatingModel request) async {
     try {
-      final ratingModels = await remoteDatasource.getRatingsForUser(userId);
-      final ratings = ratingModels.map((model) => model.toEntity()).toList();
-      return Right(ratings);
+      final model = await _remoteDatasource.createRating(request);
+      return model.toEntity();
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      throw ServerFailure(message: e.message);
     }
   }
 
   @override
-  Future<Either<Failure, List<PendingRating>>> getPendingRatings() async {
-    try {
-      final pendingModels = await remoteDatasource.getPendingRatings();
-      final pendingRatings =
-          pendingModels.map((model) => model.toEntity()).toList();
-      return Right(pendingRatings);
+  Future<List<Rating>> getRatingsForUser(String userId) async {
+     try {
+      final models = await _remoteDatasource.getRatingsForUser(userId);
+      return models.map((model) => model.toEntity()).toList();
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      throw ServerFailure(message: e.message);
     }
   }
 }

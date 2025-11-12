@@ -1,0 +1,411 @@
+﻿==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\api\api_client.dart
+==================================================
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/api/interceptors.dart';
+
+@lazySingleton
+class ApiClient {
+  final Dio dio;
+
+  ApiClient(AuthInterceptor authInterceptor)
+      : dio = Dio(
+          BaseOptions(
+            // IMPORTANT: Change YOUR_IP to your computer's IP address
+            // (e.g., 192.168.1.5) or 'localhost' if using web.
+            baseUrl: 'http://YOUR_IP:8080/api', 
+            connectTimeout: const Duration(seconds: 10),
+            receiveTimeout: const Duration(seconds: 10),
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          ),
+        ) {
+    // Add the auth interceptor to Dio's interceptor list
+    dio.interceptors.add(authInterceptor);
+
+    // You can add other interceptors here, like a logger
+    dio.interceptors.add(LogInterceptor(
+      requestBody: true,
+      responseBody: true,
+    ));
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\api\interceptors.dart
+==================================================
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+
+import 'package:sahbifit/core/services/secure_storage_service.dart';
+
+@lazySingleton
+class AuthInterceptor extends Interceptor {
+  final SecureStorageService _storageService;
+
+  AuthInterceptor(this._storageService);
+
+  @override
+  Future<void> onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    // Read the token from storage
+    final String? token = await _storageService.readToken();
+
+    // Add the Authorization header if the token exists
+    if (token != null) {
+      options.headers['Authorization'] = 'Bearer $token';
+    }
+
+    return super.onRequest(options, handler);
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    if (err.response?.statusCode == 401) {
+      // 401 Unauthorized error
+      print('--- 401 Unauthorized ---');
+      
+      // TODO: In Phase 2, this is where you'll trigger a logout.
+      // For example, you might have a global AppBloc and add:
+      // getIt<AppBloc>().add(const AppEvent.logoutRequested());
+      
+      // We can also clear the token
+      _storageService.deleteToken();
+    }
+    return super.onError(err, handler);
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\config\app_router.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\config\app_theme.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\constants\api_endpoints.dart
+==================================================
+class ApiEndpoints {
+  // --- Auth ---
+  static const String login = '/auth/login';
+  static const String register = '/auth/register';
+  static const String verifySms = '/auth/verify-sms';
+  static const String resendOtp = '/auth/resend-otp';
+
+  // --- Gym ---
+  static const String gyms = '/gyms';
+  static const String submitGym = '/gyms/submit';
+
+  // --- 
+  // ðŸ’¡ NEWLY ADDED 
+  // ---
+  static const String tags = '/tags'; // e.g., GET /tags?type=goal
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\constants\app_assets.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\di\service_locator.config.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
+
+// **************************************************************************
+// InjectableConfigGenerator
+// **************************************************************************
+
+// ignore_for_file: type=lint
+// coverage:ignore-file
+
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
+import 'package:get_it/get_it.dart' as _i174;
+import 'package:injectable/injectable.dart' as _i526;
+
+import '../../features/auth/data/datasources/auth_remote_datasource.dart'
+    as _i161;
+import '../../features/auth/data/repositories/auth_repository_impl.dart'
+    as _i153;
+import '../../features/auth/domain/repositories/auth_repository.dart' as _i787;
+import '../../features/auth/domain/usecases/login_user.dart' as _i778;
+import '../../features/auth/domain/usecases/register_user.dart' as _i198;
+import '../../features/auth/domain/usecases/resend_otp.dart' as _i152;
+import '../../features/auth/domain/usecases/verify_sms.dart' as _i699;
+import '../../features/gym/data/datasources/gym_remote_datasource.dart'
+    as _i602;
+import '../../features/gym/data/repositories/gym_repository_impl.dart' as _i689;
+import '../../features/gym/domain/repositories/gym_repository.dart' as _i225;
+import '../../features/gym/domain/usecases/get_approved_gyms.dart' as _i338;
+import '../../features/gym/domain/usecases/submit_gym.dart' as _i82;
+import '../../features/tag/data/datasources/tag_remote_datasource.dart'
+    as _i501;
+import '../../features/tag/data/repositories/tag_repository_impl.dart' as _i454;
+import '../../features/tag/domain/repositories/tag_repository.dart' as _i701;
+import '../../features/tag/domain/usecases/get_tags_by_type.dart' as _i521;
+import '../api/api_client.dart' as _i277;
+import '../api/interceptors.dart' as _i367;
+import '../services/secure_storage_service.dart' as _i535;
+
+// initializes the registration of main-scope dependencies inside of GetIt
+_i174.GetIt $initGetIt(
+  _i174.GetIt getIt, {
+  String? environment,
+  _i526.EnvironmentFilter? environmentFilter,
+}) {
+  final gh = _i526.GetItHelper(
+    getIt,
+    environment,
+    environmentFilter,
+  );
+  final storageModule = _$StorageModule();
+  gh.lazySingleton<_i558.FlutterSecureStorage>(() => storageModule.storage);
+  gh.lazySingleton<_i535.SecureStorageService>(
+      () => _i535.SecureStorageService(gh<_i558.FlutterSecureStorage>()));
+  gh.lazySingleton<_i367.AuthInterceptor>(
+      () => _i367.AuthInterceptor(gh<_i535.SecureStorageService>()));
+  gh.lazySingleton<_i277.ApiClient>(
+      () => _i277.ApiClient(gh<_i367.AuthInterceptor>()));
+  gh.factory<_i501.TagRemoteDatasource>(
+      () => _i501.TagRemoteDatasourceImpl(gh<_i277.ApiClient>()));
+  gh.factory<_i602.GymRemoteDatasource>(
+      () => _i602.GymRemoteDatasourceImpl(gh<_i277.ApiClient>()));
+  gh.factory<_i225.GymRepository>(
+      () => _i689.GymRepositoryImpl(gh<_i602.GymRemoteDatasource>()));
+  gh.factory<_i701.TagRepository>(
+      () => _i454.TagRepositoryImpl(gh<_i501.TagRemoteDatasource>()));
+  gh.factory<_i521.GetTagsByType>(
+      () => _i521.GetTagsByType(gh<_i701.TagRepository>()));
+  gh.factory<_i161.AuthRemoteDatasource>(
+      () => _i161.AuthRemoteDatasourceImpl(gh<_i277.ApiClient>()));
+  gh.factory<_i338.GetApprovedGyms>(
+      () => _i338.GetApprovedGyms(gh<_i225.GymRepository>()));
+  gh.factory<_i82.SubmitGym>(() => _i82.SubmitGym(gh<_i225.GymRepository>()));
+  gh.factory<_i787.AuthRepository>(() => _i153.AuthRepositoryImpl(
+        gh<_i161.AuthRemoteDatasource>(),
+        gh<_i535.SecureStorageService>(),
+      ));
+  gh.factory<_i778.LoginUser>(
+      () => _i778.LoginUser(gh<_i787.AuthRepository>()));
+  gh.factory<_i198.RegisterUser>(
+      () => _i198.RegisterUser(gh<_i787.AuthRepository>()));
+  gh.factory<_i152.ResendOtp>(
+      () => _i152.ResendOtp(gh<_i787.AuthRepository>()));
+  gh.factory<_i699.VerifySms>(
+      () => _i699.VerifySms(gh<_i787.AuthRepository>()));
+  return getIt;
+}
+
+class _$StorageModule extends _i535.StorageModule {}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\di\service_locator.dart
+==================================================
+import 'package:get_it/get_it.dart';
+import 'package:injectable/injectable.dart';
+
+// This import is for the file that build_runner GENERARES.
+// If you have an error here, run build_runner.
+import 'service_locator.config.dart';
+
+// This is the global service locator instance
+final getIt = GetIt.instance;
+
+@InjectableInit(
+  initializerName: r'$initGetIt', // The function name in the .config.dart file
+  preferRelativeImports: true,    // Good practice for generated files
+  asExtension: false,             // Keeps it as a top-level function
+)
+/// Configures all application dependencies.
+///
+/// Run this in `main.dart` before `runApp()`.
+Future<void> configureDependencies() async {
+  // This $initGetIt function is generated by build_runner
+  // and will register all your @injectable, @lazySingleton, etc. classes.
+  await $initGetIt(getIt);
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\errors\exceptions.dart
+==================================================
+import 'package:dio/dio.dart';
+
+class ServerException implements Exception {
+  final String message;
+
+  ServerException({required this.message});
+
+  /// This factory constructor creates a [ServerException] from a [DioException].
+  /// It parses the Dio error to find the most helpful message.
+  factory ServerException.fromDio(DioException e) {
+    String message = 'An unknown server error occurred.';
+
+    // Try to get a specific error message from the backend response
+    if (e.response != null && e.response?.data != null) {
+      // Check if the backend sent a map with a 'message' key
+      // e.g., { "message": "Phone number is already registered." }
+      if (e.response?.data is Map) {
+        message = e.response?.data['message'] ?? message;
+      }
+      // Check if the backend just sent a plain text error
+      else if (e.response?.data is String) {
+        final responseString = e.response!.data as String;
+        if (responseString.isNotEmpty) {
+          message = responseString;
+        }
+      }
+    } 
+    // Handle common Dio error types
+    else if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.sendTimeout) {
+      message = 'Connection timed out. Please try again.';
+    } else if (e.type == DioExceptionType.connectionError) {
+      message = 'Network error. Please check your internet connection.';
+    } else if (e.type == DioExceptionType.cancel) {
+      message = 'Request was cancelled.';
+    }
+
+    return ServerException(message: message);
+  }
+}
+
+/// Thrown if the user is not authorized (e.g., 401 error).
+/// Our interceptor might catch this first, but it's good to have.
+class UnauthorizedException implements Exception {
+  final String message;
+  UnauthorizedException({this.message = 'You are not authorized.'});
+}
+
+/// Thrown when dealing with local data storage.
+class CacheException implements Exception {}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\errors\failure.dart
+==================================================
+import 'package:equatable/equatable.dart';
+
+/// A [Failure] is an error that is safe to show to the user
+/// and will be handled by the UI/Presentation layer.
+abstract class Failure extends Equatable {
+  final String message;
+
+  const Failure({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+/// Represents a failure from the server (e.g., 4xx, 5xx errors).
+/// This is what we used in our [AuthRepositoryImpl].
+class ServerFailure extends Failure {
+  const ServerFailure({required super.message});
+}
+
+/// Represents a failure when accessing local cache.
+class CacheFailure extends Failure {
+  const CacheFailure({super.message = 'Error reading from local storage.'});
+}
+
+/// Represents a failure when there is no network connection.
+class NetworkFailure extends Failure {
+  const NetworkFailure({super.message = 'Please check your internet connection.'});
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\services\push_notification_service.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\services\recaptcha_service.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\services\secure_storage_service.dart
+==================================================
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:injectable/injectable.dart';
+
+@lazySingleton
+class SecureStorageService {
+  final FlutterSecureStorage _storage;
+
+  // Use const for keys
+  static const String _keyToken = 'jwt_token';
+
+  SecureStorageService(this._storage);
+
+  Future<void> writeToken(String token) async {
+    await _storage.write(key: _keyToken, value: token);
+  }
+
+  Future<String?> readToken() async {
+    return await _storage.read(key: _keyToken);
+}
+
+  Future<void> deleteToken() async {
+    await _storage.delete(key: _keyToken);
+  }
+}
+
+// We need to tell GetIt how to create FlutterSecureStorage
+@module
+abstract class StorageModule {
+  @lazySingleton
+  FlutterSecureStorage get storage => const FlutterSecureStorage();
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\usecases\usecase.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+
+/// [Type] is the return type of the usecase (e.g., AuthToken, void).
+/// [Params] is the parameters class (e.g., LoginParams).
+abstract class UseCase<Type, Params> {
+  /// The [call] method is the single entry point for the usecase.
+  /// It's designed to be asynchronous and return either a [Failure]
+  /// or the expected [Type].
+  ///
+  /// Note: In our Auth implementation, we are letting exceptions bubble up
+  /// to the BLoC. You can also use an Either<Failure, Type> wrapper here.
+  /// For simplicity, we'll stick to throwing Failures.
+  Future<Type> call(Params params);
+}
+
+/// A helper class for usecases that do not require any parameters.
+/// For example: `GetMyProfile(NoParams())`
+class NoParams extends Equatable {
+  @override
+  List<Object?> get props => [];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\utils\date_formatters.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\utils\icon_utils.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\utils\phone_number_validator.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\utils\type_defs.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\utils\validators.dart
+==================================================
+

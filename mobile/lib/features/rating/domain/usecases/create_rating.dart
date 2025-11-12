@@ -1,23 +1,29 @@
-import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import 'package:your_app_name/core/error/failure.dart';
-import 'package:your_app_name/core/usecase/usecase.dart';
-import 'package:your_app_name/features/rating/domain/entities/rating.dart';
-import 'package:your_app_name/features/rating/domain/repositories/rating_repository.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/rating/data/models/create_rating_model.dart';
+import 'package:sahbifit/features/rating/domain/entities/rating.dart';
+import 'package:sahbifit/features/rating/domain/repositories/rating_repository.dart';
 
-/// Use Case for creating a rating
+@injectable
 class CreateRating implements UseCase<Rating, CreateRatingParams> {
-  final RatingRepository repository;
+  final RatingRepository _repository;
 
-  CreateRating(this.repository);
+  CreateRating(this._repository);
 
   @override
-  Future<Either<Failure, Rating>> call(CreateRatingParams params) async {
-    return await repository.createRating(params);
+  Future<Rating> call(CreateRatingParams params) async {
+    // Map from clean params to the data model
+    final requestModel = CreateRatingModel(
+      sessionId: params.sessionId,
+      ratedUserId: params.ratedUserId,
+      ratingValue: params.ratingValue,
+      comment: params.comment,
+    );
+    return _repository.createRating(requestModel);
   }
 }
 
-/// Parameters object for the [CreateRating] use case
 class CreateRatingParams extends Equatable {
   final String sessionId;
   final String ratedUserId;

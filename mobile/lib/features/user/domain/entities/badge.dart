@@ -1,21 +1,19 @@
 import 'package:equatable/equatable.dart';
 
-// NOTE: The BadgeType enum has been removed.
-// The backend provides the name (e.g., "RELIABLE") and iconUrl directly.
-
+// Matches Badge.java
 class Badge extends Equatable {
-  final int id;
-  final String name; // This will map to 'badgeName' from the backend
+  final int badgeId;
+  final String badgeName;
   final String description;
   final String? iconUrl;
 
   const Badge({
-    required this.id,
-    required this.name,
+    required this.badgeId,
+    required this.badgeName,
     required this.description,
     this.iconUrl,
   });
 
   @override
-  List<Object?> get props => [id, name, description, iconUrl];
+  List<Object?> get props => [badgeId, badgeName, description, iconUrl];
 }

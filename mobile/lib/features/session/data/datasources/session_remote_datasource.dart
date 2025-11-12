@@ -1,68 +1,81 @@
-import 'package:sahbifit_mobile/features/session/data/models/create_session_model.dart';
-import 'package:sahbifit_mobile/features/session/data/models/mark_attendance_model.dart';
-import 'package:sahbifit_mobile/features/session/data/models/session_model.dart';
-import 'package:sahbifit_mobile/features/verification/domain/enums/verified_gender_enum.dart';
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/api/api_client.dart';
+import 'package:sahbifit/core/constants/api_endpoints.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/features/session/data/models/create_session_model.dart';
+import 'package:sahbifit/features/session/data/models/mark_attendance_model.dart';
+import 'package:sahbifit/features/session/data/models/session_model.dart';
+import 'package:sahbifit/features/user/domain/enums/verified_gender_enum.dart';
 
-/// Abstract interface for the session API.
-/// This will be implemented using Dio or Http.
-abstract class SessionRemoteDataSource {
-  /// Corresponds to [GET /api/sessions]
-  Future<List<SessionModel>> getActiveSessions(
-      {VerifiedGender? genderFilter});
-
-  /// Corresponds to [POST /api/sessions]
-  Future<SessionModel> createSession(CreateSessionModel createSessionModel);
-
-  /// Corresponds to [POST /api/sessions/{sessionId}/join]
+abstract class SessionRemoteDatasource {
+  Future<List<SessionModel>> getActiveSessions(VerifiedGender? genderFilter);
+  Future<SessionModel> createSession(CreateSessionModel request);
   Future<void> joinSession(String sessionId);
-
-  /// Corresponds to [PUT /api/sessions/attendance]
-  Future<void> markAttendance(MarkAttendanceModel markAttendanceModel);
+  Future<void> markAttendance(MarkAttendanceModel request);
 }
 
-/*
-// Example implementation using Dio (add to a different file)
-class SessionRemoteDataSourceImpl implements SessionRemoteDataSource {
-  final Dio dio;
-  SessionRemoteDataSourceImpl(this.dio);
+@Injectable(as: SessionRemoteDatasource)
+class SessionRemoteDatasourceImpl implements SessionRemoteDatasource {
+  final ApiClient _apiClient;
+
+  SessionRemoteDatasourceImpl(this._apiClient);
 
   @override
-  Future<List<SessionModel>> getActiveSessions({VerifiedGender? genderFilter}) async {
-    final Map<String, dynamic> queryParams = {};
-    if (genderFilter != null) {
-      queryParams['genderFilter'] = genderFilter.toJson();
+  Future<List<SessionModel>> getActiveSessions(VerifiedGender? genderFilter) async {
+    try {
+      final Map<String, dynamic> queryParams = {};
+      if (genderFilter != null) {
+        queryParams['genderFilter'] = genderFilter.name;
+      }
+
+      final response = await _apiClient.dio.get(
+        ApiEndpoints.sessions,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+
+      return (response.data as List)
+          .map((json) => SessionModel.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
     }
-    
-    final response = await dio.get(
-      '/api/sessions',
-      queryParameters: queryParams,
-    );
-    
-    return (response.data as List)
-        .map((json) => SessionModel.fromJson(json))
-        .toList();
   }
 
   @override
-  Future<SessionModel> createSession(CreateSessionModel createSessionModel) async {
-    final response = await dio.post(
-      '/api/sessions',
-      data: createSessionModel.toJson(),
-    );
-    return SessionModel.fromJson(response.data);
+  Future<SessionModel> createSession(CreateSessionModel request) async {
+    try {
+      final response = await _apiClient.dio.post(
+        ApiEndpoints.createSession,
+        data: request.toJson(),
+      );
+      // Backend returns the created session
+      return SessionModel.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
   }
 
   @override
   Future<void> joinSession(String sessionId) async {
-    await dio.post('/api/sessions/$sessionId/join');
+    try {
+      await _apiClient.dio.post(
+        ApiEndpoints.joinSession(sessionId), // Use function for dynamic URL
+      );
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
   }
 
   @override
-  Future<void> markAttendance(MarkAttendanceModel markAttendanceModel) async {
-    await dio.put(
-      '/api/sessions/attendance',
-      data: markAttendanceModel.toJson(),
-    );
+  Future<void> markAttendance(MarkAttendanceModel request) async {
+    try {
+      await _apiClient.dio.put(
+        ApiEndpoints.markAttendance,
+        data: request.toJson(),
+      );
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
   }
 }
-*/

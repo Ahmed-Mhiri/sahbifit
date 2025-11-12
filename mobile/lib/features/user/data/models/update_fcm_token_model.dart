@@ -1,17 +1,16 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-// DTO for updating the FCM token, based on UpdateFcmTokenDto.java
-class UpdateFcmTokenModel extends Equatable {
-  final String fcmToken;
+part 'update_fcm_token_model.freezed.dart';
+part 'update_fcm_token_model.g.dart';
 
-  const UpdateFcmTokenModel({required this.fcmToken});
+// Matches UpdateFcmTokenDto.java
+@freezed
+class UpdateFcmTokenModel with _$UpdateFcmTokenModel {
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory UpdateFcmTokenModel({
+    required String fcmToken,
+  }) = _UpdateFcmTokenModel;
 
-  Map<String, dynamic> toJson() {
-    return {
-      'fcmToken': fcmToken,
-    };
-  }
-
-  @override
-  List<Object?> get props => [fcmToken];
+  factory UpdateFcmTokenModel.fromJson(Map<String, dynamic> json) =>
+      _$UpdateFcmTokenModelFromJson(json);
 }

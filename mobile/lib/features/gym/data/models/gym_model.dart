@@ -1,52 +1,34 @@
-import 'package:equatable/equatable.dart';
-import 'package:sahbifit_mobile/features/gym/domain/enums/gym_status.dart';
-import '../../domain/entities/gym.dart'; // We will create this
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit/features/gym/domain/entities/gym.dart';
+import 'package:sahbifit/features/gym/domain/entities/gym_status.dart';
 
-class GymModel extends Gym {
-  const GymModel({
-    required super.id,
-    required super.name,
-    required super.address,
-    required super.memberCount,
-    required this.status, // The model has status, the entity might not
-  });
+part 'gym_model.freezed.dart';
+part 'gym_model.g.dart';
 
-  final GymStatus status;
+@freezed
+class GymModel with _$GymModel {
+  const GymModel._(); // Private constructor for methods
 
-  factory GymModel.fromJson(Map<String, dynamic> json) {
-    return GymModel(
-      // Matches gymId from Gym.java
-      id: json['gymId'] as String, 
-      
-      // Matches name from Gym.java
-      name: json['name'] as String, 
-      
-      // Matches address from Gym.java
-      address: json['address'] as String? ?? '', 
-      
-      // Matches @Formula memberCount from Gym.java
-      // This directly implements MVP 6.2
-      memberCount: json['memberCount'] as int, 
-      
-      // Matches status from Gym.java
-      status: (json['status'] as String).toGymStatus(),
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory GymModel({
+    required String gymId,
+    required String name,
+    String? address,
+    required GymStatus status,
+    required int memberCount,
+  }) = _GymModel;
+
+  factory GymModel.fromJson(Map<String, dynamic> json) =>
+      _$GymModelFromJson(json);
+
+  // Converts the data-layer model to a domain-layer entity
+  Gym toEntity() {
+    return Gym(
+      gymId: gymId,
+      name: name,
+      address: address,
+      status: status,
+      memberCount: memberCount,
     );
-  }
-
-  // Helper to convert string to enum
-}
-
-extension on String {
-  GymStatus toGymStatus() {
-    switch (this) {
-      case 'pending':
-        return GymStatus.pending;
-      case 'approved':
-        return GymStatus.approved;
-      case 'rejected':
-        return GymStatus.rejected;
-      default:
-        return GymStatus.pending; // Default fallback
-    }
   }
 }

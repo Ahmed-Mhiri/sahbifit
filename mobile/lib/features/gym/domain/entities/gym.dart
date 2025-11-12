@@ -1,18 +1,21 @@
 import 'package:equatable/equatable.dart';
+import 'package:sahbifit/features/gym/domain/entities/gym_status.dart';
 
 class Gym extends Equatable {
-  final String id;
+  final String gymId;
   final String name;
-  final String address;
-  final int memberCount; // For MVP 6.2
+  final String? address;
+  final GymStatus status;
+  final int memberCount; // From the @Formula in Gym.java
 
   const Gym({
-    required this.id,
+    required this.gymId,
     required this.name,
-    required this.address,
+    this.address,
+    required this.status,
     required this.memberCount,
   });
 
   @override
-  List<Object?> get props => [id, name, address, memberCount];
+  List<Object?> get props => [gymId, name, address, status, memberCount];
 }

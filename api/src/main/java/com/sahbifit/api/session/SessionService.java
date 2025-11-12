@@ -58,9 +58,9 @@ public class SessionService {
             throw new IllegalStateException("You must be fully verified to create a session.");
         }
 
-        // Gate 2 (Reputation - MVP 3.5)
-        if (dto.sessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 3) {
-            throw new IllegalStateException("You must attend 3 group sessions before creating a 1-on-1 session.");
+        // Gate 2 (Reputation - "The 1-Session Gate" Strategy)
+        if (dto.sessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 1) { // <-- CHANGED FROM 3 to 1
+            throw new IllegalStateException("You must attend 1 group session before creating a 1-on-1 session."); // <-- UPDATED MESSAGE
         }
 
         Gym gym = gymRepository.findById(dto.gymId())
@@ -121,9 +121,9 @@ public class SessionService {
             }
         }
 
-        // Gate 2 (Reputation - MVP 3.5)
-        if (session.getSessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 3) {
-            throw new IllegalStateException("You must attend 3 group sessions before joining a 1-on-1 session.");
+        // Gate 2 (Reputation - "The 1-Session Gate" Strategy)
+        if (session.getSessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 1) { // <-- CHANGED FROM 3 to 1
+            throw new IllegalStateException("You must attend 1 group session before joining a 1-on-1 session."); // <-- UPDATED MESSAGE
         }
 
         // Gate 3 (Session Full?)

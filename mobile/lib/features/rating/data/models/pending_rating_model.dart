@@ -1,30 +1,24 @@
-import 'package:your_app_name/features/rating/domain/entities/pending_rating.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit/features/rating/domain/entities/pending_rating.dart';
 
-/// DTO Model for GET /api/ratings/pending
-/// Mirrors backend PendingRatingDto.java
-class PendingRatingModel {
-  final String sessionId;
-  final String sessionTitle;
-  final String userIdToRate;
-  final String userNameToRate;
+part 'pending_rating_model.freezed.dart';
+part 'pending_rating_model.g.dart';
 
-  PendingRatingModel({
-    required this.sessionId,
-    required this.sessionTitle,
-    required this.userIdToRate,
-    required this.userNameToRate,
-  });
+@freezed
+class PendingRatingModel with _$PendingRatingModel {
+  const PendingRatingModel._();
 
-  factory PendingRatingModel.fromJson(Map<String, dynamic> json) {
-    return PendingRatingModel(
-      sessionId: json['sessionId'],
-      sessionTitle: json['sessionTitle'],
-      userIdToRate: json['userIdToRate'],
-      userNameToRate: json['userNameToRate'],
-    );
-  }
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory PendingRatingModel({
+    required String sessionId,
+    required String sessionTitle,
+    required String userIdToRate,
+    required String userNameToRate,
+  }) = _PendingRatingModel;
 
-  /// Converts this DTO model to a clean domain [PendingRating] entity
+  factory PendingRatingModel.fromJson(Map<String, dynamic> json) =>
+      _$PendingRatingModelFromJson(json);
+
   PendingRating toEntity() {
     return PendingRating(
       sessionId: sessionId,

@@ -1,27 +1,33 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit/features/user/data/models/user_model.dart';
 
-// Model based on the UserBlock.java entity,
-// likely used for a "Blocked Users" list screen.
-class UserBlockModel extends Equatable {
-  final String blockerUserId;
-  final String blockedUserId;
-  final DateTime createdAt;
+part 'user_block_model.freezed.dart';
+part 'user_block_model.g.dart';
 
-  const UserBlockModel({
-    required this.blockerUserId,
-    required this.blockedUserId,
-    required this.createdAt,
-  });
+// This model maps to UserBlockId.java
+@freezed
+class UserBlockIdModel with _$UserBlockIdModel {
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory UserBlockIdModel({
+    required String blockerUserId,
+    required String blockedUserId,
+  }) = _UserBlockIdModel;
 
-  factory UserBlockModel.fromJson(Map<String, dynamic> json) {
-    // Assumes the backend returns an object with this structure
-    return UserBlockModel(
-      blockerUserId: json['blocker']['userId'],
-      blockedUserId: json['blocked']['userId'],
-      createdAt: DateTime.parse(json['createdAt']),
-    );
-  }
+  factory UserBlockIdModel.fromJson(Map<String, dynamic> json) =>
+      _$UserBlockIdModelFromJson(json);
+}
 
-  @override
-  List<Object?> get props => [blockerUserId, blockedUserId];
+// This model maps to UserBlock.java
+@freezed
+class UserBlockModel with _$UserBlockModel {
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory UserBlockModel({
+    required UserBlockIdModel id,
+    required UserModel blocker, // The user who did the blocking
+    required UserModel blocked, // The user who was blocked
+    required String createdAt, // Received as ISO 8601 String
+  }) = _UserBlockModel;
+
+  factory UserBlockModel.fromJson(Map<String, dynamic> json) =>
+      _$UserBlockModelFromJson(json);
 }

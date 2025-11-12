@@ -1,13 +1,25 @@
-import 'package:sahbifit_mobile/core/utils/type_defs.dart';
-import 'package:sahbifit_mobile/features/session/domain/repositories/session_repository.dart';
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/session/domain/repositories/session_repository.dart';
 
-/// Use case for joining a session.
-class JoinSession {
-  final SessionRepository repository;
+@injectable
+class JoinSession implements UseCase<void, JoinSessionParams> {
+  final SessionRepository _repository;
 
-  JoinSession(this.repository);
+  JoinSession(this._repository);
 
-  Future<Result<void>> call(String sessionId) async {
-    return await repository.joinSession(sessionId);
+  @override
+  Future<void> call(JoinSessionParams params) async {
+    return _repository.joinSession(params.sessionId);
   }
+}
+
+class JoinSessionParams extends Equatable {
+  final String sessionId;
+
+  const JoinSessionParams({required this.sessionId});
+
+  @override
+  List<Object?> get props => [sessionId];
 }

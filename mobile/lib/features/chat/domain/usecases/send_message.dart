@@ -1,30 +1,35 @@
-import 'package:sahbifit_mobile/core/utils/type_defs.dart';
-import 'package:sahbifit_mobile/features/chat/domain/repositories/chat_repository.dart';
-import 'package:sahbifit_mobile/features/user/domain/entities/user.dart';
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/chat/domain/repositories/chat_repository.dart';
 
-/// Use case for sending a message.
-class SendMessage {
-  final ChatRepository repository;
+@injectable
+class SendMessage implements UseCase<void, SendMessageParams> {
+  final ChatRepository _repository;
 
-  SendMessage(this.repository);
+  SendMessage(this._repository);
 
-  Future<Result<void>> call(SendMessageParams params) async {
-    return await repository.sendMessage(
+  @override
+  Future<void> call(SendMessageParams params) async {
+    return _repository.sendMessage(
       sessionId: params.sessionId,
+      senderId: params.senderId,
       text: params.text,
-      sender: params.sender,
     );
   }
 }
 
-class SendMessageParams {
+class SendMessageParams extends Equatable {
   final String sessionId;
+  final String senderId; // The ID of the currently logged-in user
   final String text;
-  final User sender;
 
-  SendMessageParams({
+  const SendMessageParams({
     required this.sessionId,
+    required this.senderId,
     required this.text,
-    required this.sender,
   });
+
+  @override
+  List<Object?> get props => [sessionId, senderId, text];
 }

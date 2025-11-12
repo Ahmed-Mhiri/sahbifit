@@ -1,55 +1,74 @@
-import '../../../../core/constants/api_endpoints.dart';
-import '../models/login_request_model.dart';
-import '../models/register_request_model.dart';
-import '../models/verify_sms_request_model.dart';
-import '../models/resend_otp_request_model.dart';
-import '../models/auth_response_model.dart';
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/api/api_client.dart';
+import 'package:sahbifit/core/constants/api_endpoints.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/features/auth/data/models/auth_response_model.dart';
+import 'package:sahbifit/features/auth/data/models/login_request_model.dart';
+import 'package:sahbifit/features/auth/data/models/register_request_model.dart';
+import 'package:sahbifit/features/auth/data/models/resend_otp_request_model.dart';
+import 'package:sahbifit/features/auth/data/models/verify_sms_request_model.dart';
 
-abstract class AuthRemoteDataSource {
-  Future<AuthResponseModel> login(LoginRequestModel loginRequest);
-  Future<String> register(RegisterRequestModel registerRequest);
-  Future<String> verifySms(VerifySmsRequestModel verifySmsRequest);
-  Future<String> resendOtp(ResendOtpRequestModel resendOtpRequest);
+// This is the abstract interface
+abstract class AuthRemoteDatasource {
+  Future<AuthResponseModel> login(LoginRequestModel request);
+  Future<void> register(RegisterRequestModel request);
+  Future<void> verifySms(VerifySmsRequestModel request);
+  Future<void> resendOtp(ResendOtpRequestModel request);
 }
 
-class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  final ApiClient apiClient;
+@Injectable(as: AuthRemoteDatasource)
+class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
+  final ApiClient _apiClient;
 
-  AuthRemoteDataSourceImpl({required this.apiClient});
+  AuthRemoteDatasourceImpl(this._apiClient);
 
   @override
-  Future<AuthResponseModel> login(LoginRequestModel loginRequest) async {
-    final response = await apiClient.post(
-      ApiEndpoints.login,
-      data: loginRequest.toJson(),
-    );
-    return AuthResponseModel.fromJson(response.data);
+  Future<AuthResponseModel> login(LoginRequestModel request) async {
+    try {
+      final response = await _apiClient.dio.post(
+        ApiEndpoints.login, // <-- USE CONSTANT
+        data: request.toJson(),
+      );
+      return AuthResponseModel.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
   }
 
   @override
-  Future<String> register(RegisterRequestModel registerRequest) async {
-    final response = await apiClient.post(
-      ApiEndpoints.register,
-      data: registerRequest.toJson(),
-    );
-    return response.data as String;
+  Future<void> register(RegisterRequestModel request) async {
+    try {
+      await _apiClient.dio.post(
+        ApiEndpoints.register, // <-- USE CONSTANT
+        data: request.toJson(),
+      );
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
   }
 
   @override
-  Future<String> verifySms(VerifySmsRequestModel verifySmsRequest) async {
-    final response = await apiClient.post(
-      ApiEndpoints.verifySms,
-      data: verifySmsRequest.toJson(),
-    );
-    return response.data as String;
+  Future<void> verifySms(VerifySmsRequestModel request) async {
+    try {
+      await _apiClient.dio.post(
+        ApiEndpoints.verifySms, // <-- USE CONSTANT
+        data: request.toJson(),
+      );
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
   }
 
   @override
-  Future<String> resendOtp(ResendOtpRequestModel resendOtpRequest) async {
-    final response = await apiClient.post(
-      ApiEndpoints.resendOtp,
-      data: resendOtpRequest.toJson(),
-    );
-    return response.data as String;
+  Future<void> resendOtp(ResendOtpRequestModel request) async {
+    try {
+      await _apiClient.dio.post(
+        ApiEndpoints.resendOtp, // <-- USE CONSTANT
+        data: request.toJson(),
+      );
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
   }
 }

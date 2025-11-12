@@ -1,43 +1,37 @@
 import 'package:dio/dio.dart';
-import 'tag_model.dart';
-import '../domain/enums/tag_type.dart';
-// Assume a core exception file exists
-// import 'package:your_app/core/error/exception.dart'; 
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/api/api_client.dart';
+import 'package:sahbifit/core/constants/api_endpoints.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/features/tag/data/models/tag_model.dart';
+import 'package:sahbifit/features/tag/domain/entities/tag_type.dart';
 
-// Placeholder for custom exception
-class ServerException implements Exception {}
-
-abstract class TagRemoteDataSource {
-  /// Calls the GET /api/tags?type={tagType} endpoint.
-  ///
-  /// Throws a [ServerException] for all error codes.
-  Future<List<TagModel>> getTagsByType(TagType tagType);
+abstract class TagRemoteDatasource {
+  Future<List<TagModel>> getTagsByType(TagType type);
 }
 
-class TagRemoteDataSourceImpl implements TagRemoteDataSource {
-  final Dio dio;
-  final String _endpoint = '/api/tags';
+@Injectable(as: TagRemoteDatasource)
+class TagRemoteDatasourceImpl implements TagRemoteDatasource {
+  final ApiClient _apiClient;
 
-  TagRemoteDataSourceImpl({required this.dio});
+  TagRemoteDatasourceImpl(this._apiClient);
 
   @override
-  Future<List<TagModel>> getTagsByType(TagType tagType) async {
+  Future<List<TagModel>> getTagsByType(TagType type) async {
     try {
-      final response = await dio.get(
-        _endpoint,
+      final response = await _apiClient.dio.get(
+        ApiEndpoints.tags,
         queryParameters: {
-          'type': tagType.name, // e.g., 'goal' or 'schedule'
+          'type': type.name, // Sends ?type=goal or ?type=schedule
         },
       );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonList = response.data as List;
-        return jsonList.map((json) => TagModel.fromJson(json)).toList();
-      } else {
-        throw ServerException();
-      }
-    } on DioException {
-      throw ServerException();
+      // Convert the List<dynamic> from JSON to List<TagModel>
+      return (response.data as List)
+          .map((json) => TagModel.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
     }
   }
 }

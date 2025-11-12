@@ -1,90 +1,60 @@
-import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart'; // Assuming you use Dio
-import 'package:sahbifit_mobile/core/errors/failure.dart';
-import 'package:sahbifit_mobile/core/utils/type_defs.dart';
-import 'package:sahbifit_mobile/features/session/data/datasources/session_remote_datasource.dart';
-import 'package:sahbifit_mobile/features/session/data/models/create_session_model.dart';
-import 'package:sahbifit_mobile/features/session/data/models/mark_attendance_model.dart';
-import 'package:sahbifit_mobile/features/session/data/models/session_model.dart';
-import 'package:sahbifit_mobile/features/session/domain/entities/session.dart';
-import 'package:sahbifit_mobile/features/session/domain/repositories/session_repository.dart';
-import 'package:sahbifit_mobile/features/verification/domain/enums/verified_gender_enum.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/features/session/data/datasources/session_remote_datasource.dart';
+import 'package:sahbifit/features/session/data/models/create_session_model.dart';
+import 'package:sahbifit/features/session/data/models/mark_attendance_model.dart';
+import 'package:sahbifit/features/session/domain/entities/session.dart';
+import 'package:sahbifit/features/session/domain/enums/participant_status.dart';
+import 'package:sahbifit/features/session/domain/repositories/session_repository.dart';
+import 'package:sahbifit/features/user/domain/enums/verified_gender_enum.dart';
 
+@Injectable(as: SessionRepository)
 class SessionRepositoryImpl implements SessionRepository {
-  final SessionRemoteDataSource remoteDataSource;
+  final SessionRemoteDatasource _remoteDatasource;
 
-  SessionRepositoryImpl(this.remoteDataSource);
+  SessionRepositoryImpl(this._remoteDatasource);
 
   @override
-  Future<Result<List<Session>>> getActiveSessions(
-      {VerifiedGender? genderFilter}) async {
+  Future<List<Session>> getActiveSessions(VerifiedGender? genderFilter) async {
     try {
-      final sessionModels =
-          await remoteDataSource.getActiveSessions(genderFilter: genderFilter);
-      // Map from Data Models to Domain Entities
-      final sessions = sessionModels.map((model) => model.toDomain()).toList();
-      return Right(sessions);
-    } on DioException catch (e) {
-      // Handle API errors
-      return Left(ServerFailure(e.message ?? 'Failed to fetch sessions'));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      final sessionModels = await _remoteDatasource.getActiveSessions(genderFilter);
+      return sessionModels.map((model) => model.toEntity()).toList();
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
     }
   }
 
   @override
-  Future<Result<Session>> createSession(
-      CreateSessionModel createSessionModel) async {
+  Future<Session> createSession(CreateSessionModel request) async {
     try {
-      final sessionModel =
-          await remoteDataSource.createSession(createSessionModel);
-      // Map from Data Model to Domain Entity
-      return Right(sessionModel.toDomain());
-    } on DioException catch (e) {
-      // Handle specific backend errors (like "IllegalStateException")
-      if (e.response?.statusCode == 400 || e.response?.statusCode == 500) {
-        // You can parse the error response from Spring Boot
-        final errorMessage =
-            e.response?.data['message'] ?? 'Failed to create session.';
-        return Left(ServerFailure(errorMessage));
-      }
-      return Left(ServerFailure(e.message ?? 'Failed to create session'));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      final sessionModel = await _remoteDatasource.createSession(request);
+      return sessionModel.toEntity();
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
     }
   }
 
   @override
-  Future<Result<void>> joinSession(String sessionId) async {
+  Future<void> joinSession(String sessionId) async {
     try {
-      await remoteDataSource.joinSession(sessionId);
-      return const Right(null);
-    } on DioException catch (e) {
-      // Handle specific backend errors
-      if (e.response?.statusCode == 400 || e.response?.statusCode == 500) {
-        final errorMessage =
-            e.response?.data['message'] ?? 'Failed to join session.';
-        return Left(ServerFailure(errorMessage));
-      }
-      return Left(ServerFailure(e.message ?? 'Failed to join session'));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      await _remoteDatasource.joinSession(sessionId);
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
     }
   }
 
   @override
-  Future<Result<void>> markAttendance(
-      MarkAttendanceModel markAttendanceModel) async {
+  Future<void> markAttendance(String sessionId, String userId, ParticipantStatus status) async {
     try {
-      await remoteDataSource.markAttendance(markAttendanceModel);
-      return const Right(null);
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 403) {
-        return const Left(ServerFailure('You are not allowed to mark attendance.'));
-      }
-      return Left(ServerFailure(e.message ?? 'Failed to mark attendance'));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      final requestModel = MarkAttendanceModel(
+        sessionId: sessionId,
+        participantUserId: userId,
+        status: status,
+      );
+      await _remoteDatasource.markAttendance(requestModel);
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
     }
   }
 }

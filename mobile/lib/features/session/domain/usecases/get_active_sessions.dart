@@ -1,21 +1,27 @@
-import 'package:sahbifit_mobile/core/utils/type_defs.dart';
-import 'package:sahbifit_mobile/features/session/domain/entities/session.dart';
-import 'package:sahbifit_mobile/features/session/domain/repositories/session_repository.dart';
-import 'package:sahbifit_mobile/features/verification/domain/enums/verified_gender_enum.dart';
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/session/domain/entities/session.dart';
+import 'package:sahbifit/features/session/domain/repositories/session_repository.dart';
+import 'package:sahbifit/features/user/domain/enums/verified_gender_enum.dart';
 
-/// Use case for getting the active session feed.
-class GetActiveSessions {
-  final SessionRepository repository;
+@injectable
+class GetActiveSessions implements UseCase<List<Session>, GetActiveSessionsParams> {
+  final SessionRepository _repository;
 
-  GetActiveSessions(this.repository);
+  GetActiveSessions(this._repository);
 
-  Future<Result<List<Session>>> call(GetActiveSessionsParams params) async {
-    return await repository.getActiveSessions(
-        genderFilter: params.genderFilter);
+  @override
+  Future<List<Session>> call(GetActiveSessionsParams params) async {
+    return _repository.getActiveSessions(params.genderFilter);
   }
 }
 
-class GetActiveSessionsParams {
+class GetActiveSessionsParams extends Equatable {
   final VerifiedGender? genderFilter;
+
   const GetActiveSessionsParams({this.genderFilter});
+
+  @override
+  List<Object?> get props => [genderFilter];
 }

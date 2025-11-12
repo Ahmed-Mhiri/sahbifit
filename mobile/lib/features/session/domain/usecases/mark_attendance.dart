@@ -1,14 +1,37 @@
-import 'package:sahbifit_mobile/core/utils/type_defs.dart';
-import 'package:sahbifit_mobile/features/session/data/models/mark_attendance_model.dart';
-import 'package:sahbifit_mobile/features/session/domain/repositories/session_repository.dart';
+import 'package:equatable/equatable.dart';
+import 'packagepackage:equatable/equatable.dart';
+import 'packagepackage:injectable/injectable.dart';
+import 'packagepackage:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/session/domain/enums/participant_status.dart';
+import 'package:sahbifit/features/session/domain/repositories/session_repository.dart';
 
-/// Use case for marking attendance.
-class MarkAttendance {
-  final SessionRepository repository;
+@injectable
+class MarkAttendance implements UseCase<void, MarkAttendanceParams> {
+  final SessionRepository _repository;
 
-  MarkAttendance(this.repository);
+  MarkAttendance(this._repository);
 
-  Future<Result<void>> call(MarkAttendanceModel params) async {
-    return await repository.markAttendance(params);
+  @override
+  Future<void> call(MarkAttendanceParams params) async {
+    return _repository.markAttendance(
+      params.sessionId,
+      params.userId,
+      params.status,
+    );
   }
+}
+
+class MarkAttendanceParams extends Equatable {
+  final String sessionId;
+  final String userId;
+  final ParticipantStatus status;
+
+  const MarkAttendanceParams({
+    required this.sessionId,
+    required this.userId,
+    required this.status,
+  });
+
+  @override
+  List<Object?> get props => [sessionId, userId, status];
 }

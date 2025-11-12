@@ -1,13 +1,16 @@
-import 'package:sahbifit_mobile/features/verification/data/models/verification_status_model.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/verification/domain/entities/verification_status_entity.dart';
+import 'package:sahbifit/features/verification/domain/repositories/verification_repository.dart';
 
-import '../repositories/verification_repository.dart';
+@injectable
+class GetVerificationStatus implements UseCase<VerificationStatusEntity, NoParams> {
+  final VerificationRepository _repository;
 
-class GetVerificationStatus {
-  final VerificationRepository repository;
+  GetVerificationStatus(this._repository);
 
-  GetVerificationStatus(this.repository);
-
-  Future<VerificationStatusModel> call() async {
-    return await repository.getVerificationStatus();
+  @override
+  Future<VerificationStatusEntity> call(NoParams params) async {
+    return _repository.getVerificationStatus();
   }
 }

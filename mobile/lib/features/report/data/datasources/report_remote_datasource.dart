@@ -1,42 +1,29 @@
 import 'package:dio/dio.dart';
-import 'create_report_model.dart';
-// Assume a core exception file exists
-// import 'package:your_app/core/error/exception.dart'; 
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/api/api_client.dart';
+import 'package:sahbifit/core/constants/api_endpoints.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/features/report/data/models/create_report_model.dart';
 
-// Placeholder for custom exception
-class ServerException implements Exception {}
-
-abstract class ReportRemoteDataSource {
-  /// Calls the POST /api/reports endpoint.
-  ///
-  /// Throws a [ServerException] for all error codes.
-  Future<void> createReport(CreateReportModel createReportModel);
+abstract class ReportRemoteDatasource {
+  Future<void> createReport(CreateReportModel request);
 }
 
-class ReportRemoteDataSourceImpl implements ReportRemoteDataSource {
-  final Dio dio; // Use Dio for HTTP requests
-  final String _endpoint = '/api/reports';
+@Injectable(as: ReportRemoteDatasource)
+class ReportRemoteDatasourceImpl implements ReportRemoteDatasource {
+  final ApiClient _apiClient;
 
-  ReportRemoteDataSourceImpl({required this.dio});
+  ReportRemoteDatasourceImpl(this._apiClient);
 
   @override
-  Future<void> createReport(CreateReportModel createReportModel) async {
+  Future<void> createReport(CreateReportModel request) async {
     try {
-      final response = await dio.post(
-        _endpoint,
-        data: createReportModel.toJson(),
+      await _apiClient.dio.post(
+        ApiEndpoints.reports,
+        data: request.toJson(),
       );
-
-      // The backend returns 201 Created with no body (ResponseEntity<Void>)
-      if (response.statusCode == 201) {
-        return;
-      } else {
-        // Handle other successful-but-not-expected statuses if necessary
-        throw ServerException();
-      }
-    } on DioException {
-      // Re-throw as a standardized ServerException
-      throw ServerException();
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
     }
   }
 }

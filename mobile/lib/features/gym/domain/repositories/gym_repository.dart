@@ -1,14 +1,11 @@
-import 'package:dartz/dartz.dart';
-import 'package:sahbifit_mobile/features/gym/domain/entities/gym.dart';
-import 'package:sahbifit_mobile/features/gym/domain/entities/gym_submission.dart';
-
-import '../../../../../core/errors/failure.dart'; // Custom failure class
-
+import 'package:sahbifit/features/gym/domain/entities/gym.dart';
+import 'package:sahbifit/features/gym/domain/entities/gym_submission.dart'; // Import entity
 
 abstract class GymRepository {
-  // Returns a list of approved Gyms for the picker
-  Future<Either<Failure, List<Gym>>> getApprovedGyms();
+  Future<List<Gym>> getApprovedGyms();
   
-  // Submits a new gym for review (MVP 7.5)
-  Future<Either<Failure, void>> submitGym(GymSubmission submission);
+  // ---
+  // 💡 1. YOUR FIX: Change signature to accept the entity
+  // ---
+  Future<void> submitGym(GymSubmission submission);
 }

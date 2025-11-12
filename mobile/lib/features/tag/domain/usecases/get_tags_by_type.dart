@@ -1,36 +1,27 @@
-import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import 'repositories/tag_repository.dart';
-import 'entities/tag.dart';
-import 'enums/tag_type.dart';
-// Assume a core usecase file exists
-// import 'package:your_app/core/usecases/usecase.dart';
-// Assume a core failure file exists
-// import 'package:your_app/core/error/failure.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/tag/domain/entities/tag.dart';
+import 'package:sahbifit/features/tag/domain/entities/tag_type.dart';
+import 'package:sahbifit/features/tag/domain/repositories/tag_repository.dart';
 
-// Placeholder for UseCase
-abstract class UseCase<Type, Params> {
-  Future<Either<Failure, Type>> call(Params params);
-}
+@injectable
+class GetTagsByType implements UseCase<List<Tag>, GetTagsByTypeParams> {
+  final TagRepository _repository;
 
-/// The Usecase for getting tags by their type.
-class GetTagsByType implements UseCase<List<Tag>, GetTagsParams> {
-  final TagRepository repository;
-
-  GetTagsByType(this.repository);
+  GetTagsByType(this._repository);
 
   @override
-  Future<Either<Failure, List<Tag>>> call(GetTagsParams params) async {
-    return await repository.getTagsByType(params.tagType);
+  Future<List<Tag>> call(GetTagsByTypeParams params) async {
+    return _repository.getTagsByType(params.type);
   }
 }
 
-/// Parameters required by the [GetTagsByType] usecase.
-class GetTagsParams extends Equatable {
-  final TagType tagType;
+class GetTagsByTypeParams extends Equatable {
+  final TagType type;
 
-  const GetTagsParams(this.tagType);
+  const GetTagsByTypeParams({required this.type});
 
   @override
-  List<Object?> get props => [tagType];
+  List<Object?> get props => [type];
 }

@@ -1,25 +1,23 @@
-import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import 'package:sahbifit/core/error/failure.dart';
-import 'package:sahbifit/core/usecase/usecase.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
 import 'package:sahbifit/features/user/domain/repositories/user_repository.dart';
 
+@injectable
 class UpdateFcmToken implements UseCase<void, UpdateFcmTokenParams> {
-  final UserRepository repository;
+  final UserRepository _repository;
 
-  UpdateFcmToken(this.repository);
+  UpdateFcmToken(this._repository);
 
   @override
-  Future<Either<Failure, void>> call(UpdateFcmTokenParams params) async {
-    return await repository.updateFcmToken(params.token);
+  Future<void> call(UpdateFcmTokenParams params) async {
+    return _repository.updateFcmToken(params.token);
   }
 }
 
 class UpdateFcmTokenParams extends Equatable {
   final String token;
-
   const UpdateFcmTokenParams({required this.token});
-
   @override
-  List<Object> get props => [token];
+  List<Object?> get props => [token];
 }

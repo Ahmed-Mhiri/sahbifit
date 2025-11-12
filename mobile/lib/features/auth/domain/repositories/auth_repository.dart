@@ -1,19 +1,11 @@
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/features/auth/data/models/register_request_model.dart';
+import 'package:sahbifit/features/auth/domain/entities/auth_token.dart';
 
-import 'package:sahbifit_mobile/features/auth/data/models/auth_response_model.dart';
-
+// Using a pattern that throws a Failure on error
 abstract class AuthRepository {
-  Future<AuthResponseModel> login(String phoneNumber, String password);
-  Future<String> register({
-    required String phoneNumber,
-    required String password,
-    required String recaptchaToken,
-    required String firstName,
-    required String dateOfBirth,
-    required String primaryGymId,
-    String? profilePhotoUrl,
-    required List<int> goalTagIds,
-    required List<int> scheduleTagIds,
-  });
-  Future<String> verifySms(String phoneNumber, String otp);
-  Future<String> resendOtp(String phoneNumber, String recaptchaToken);
+  Future<AuthToken> login(String phoneNumber, String password);
+  Future<void> register(RegisterRequestModel request);
+  Future<void> verifySms(String phoneNumber, String otp);
+  Future<void> resendOtp(String phoneNumber, String recaptchaToken);
 }

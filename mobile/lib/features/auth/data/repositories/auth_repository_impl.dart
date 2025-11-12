@@ -1,85 +1,74 @@
-// Import the model from the login_user.dart file, or wherever it is defined
-import 'package:sahbifit_mobile/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:sahbifit_mobile/features/auth/data/models/login_request_model.dart';
-import 'package:sahbifit_mobile/features/auth/data/models/register_request_model.dart';
-import 'package:sahbifit_mobile/features/auth/data/models/resend_otp_request_model.dart';
-import 'package:sahbifit_mobile/features/auth/data/models/verify_sms_request_model.dart';
-import 'package:sahbifit_mobile/features/auth/domain/repositories/auth_repository.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/core/services/secure_storage_service.dart';
+import 'package:sahbifit/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:sahbifit/features/auth/data/models/login_request_model.dart';
+import 'package:sahbifit/features/auth/data/models/register_request_model.dart';
+import 'package:sahbifit/features/auth/data/models/resend_otp_request_model.dart';
+import 'package:sahbifit/features/auth/data/models/verify_sms_request_model.dart';
+import 'package:sahbifit/features/auth/domain/entities/auth_token.dart';
+import 'package:sahbifit/features/auth/domain/repositories/auth_repository.dart';
 
-import '../models/auth_response_model.dart'; 
-
+@Injectable(as: AuthRepository)
 class AuthRepositoryImpl implements AuthRepository {
-  final AuthRemoteDataSource remoteDataSource;
+  final AuthRemoteDatasource _remoteDatasource;
+  final SecureStorageService _storageService;
 
-  AuthRepositoryImpl({required this.remoteDataSource});
+  AuthRepositoryImpl(this._remoteDatasource, this._storageService);
 
-  // Helper function to ensure phone number is in backend format
-  String _stripCountryCode(String phoneNumber) {
-    if (phoneNumber.startsWith('+216')) {
-      return phoneNumber.substring(4); // Removes '+216'
+  @override
+  Future<AuthToken> login(String phoneNumber, String password) async {
+    try {
+      final requestModel = LoginRequestModel(
+        phoneNumber: phoneNumber,
+        password: password,
+      );
+      final responseModel = await _remoteDatasource.login(requestModel);
+
+      // --- 
+      // 💡 KEY REQUIREMENT: Write the token to secure storage
+      // ---
+      await _storageService.writeToken(responseModel.jwtToken);
+      
+      return responseModel.toEntity();
+    } on ServerException catch(e) {
+      throw ServerFailure(message: e.message);
     }
-    // Add other prefixes if necessary, e.g., '00216'
-    if (phoneNumber.startsWith('00216')) {
-      return phoneNumber.substring(5); // Removes '00216'
+  }
+
+  @override
+  Future<void> register(RegisterRequestModel request) async {
+    try {
+      await _remoteDatasource.register(request);
+    } on ServerException catch(e) {
+      throw ServerFailure(message: e.message);
     }
-    // Assume it's already in the correct format if it doesn't match
-    return phoneNumber;
   }
 
   @override
-  Future<AuthResponseModel> login(String phoneNumber, String password) async {
-    final formattedPhoneNumber = _stripCountryCode(phoneNumber);
-    final request = LoginRequestModel(
-      phoneNumber: formattedPhoneNumber,
-      password: password,
-    );
-    return await remoteDataSource.login(request);
+  Future<void> verifySms(String phoneNumber, String otp) async {
+    try {
+      final requestModel = VerifySmsRequestModel(
+        phoneNumber: phoneNumber,
+        otp: otp,
+      );
+      await _remoteDatasource.verifySms(requestModel);
+    } on ServerException catch(e) {
+      throw ServerFailure(message: e.message);
+    }
   }
-
+    
   @override
-  Future<String> register({
-    required String phoneNumber,
-    required String password,
-    required String recaptchaToken,
-    required String firstName,
-    required String dateOfBirth,
-    required String primaryGymId,
-    String? profilePhotoUrl,
-    required List<int> goalTagIds,
-    required List<int> scheduleTagIds,
-  }) async {
-    final formattedPhoneNumber = _stripCountryCode(phoneNumber);
-    final request = RegisterRequestModel(
-      phoneNumber: formattedPhoneNumber,
-      password: password,
-      recaptchaToken: recaptchaToken,
-      firstName: firstName,
-      dateOfBirth: dateOfBirth,
-      primaryGymId: primaryGymId,
-      profilePhotoUrl: profilePhotoUrl,
-      goalTagIds: goalTagIds,
-      scheduleTagIds: scheduleTagIds,
-    );
-    return await remoteDataSource.register(request);
-  }
-
-  @override
-  Future<String> verifySms(String phoneNumber, String otp) async {
-    final formattedPhoneNumber = _stripCountryCode(phoneNumber);
-    final request = VerifySmsRequestModel(
-      phoneNumber: formattedPhoneNumber,
-      otp: otp,
-    );
-    return await remoteDataSource.verifySms(request);
-  }
-
-  @override
-  Future<String> resendOtp(String phoneNumber, String recaptchaToken) async {
-    final formattedPhoneNumber = _stripCountryCode(phoneNumber);
-    final request = ResendOtpRequestModel(
-      phoneNumber: formattedPhoneNumber,
-      recaptchaToken: recaptchaToken,
-    );
-    return await remoteDataSource.resendOtp(request);
+  Future<void> resendOtp(String phoneNumber, String recaptchaToken) async {
+    try {
+      final requestModel = ResendOtpRequestModel(
+        phoneNumber: phoneNumber,
+        recaptchaToken: recaptchaToken,
+      );
+      await _remoteDatasource.resendOtp(requestModel);
+    } on ServerException catch(e) {
+      throw ServerFailure(message: e.message);
+    }
   }
 }

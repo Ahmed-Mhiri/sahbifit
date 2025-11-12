@@ -1,15 +1,18 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:equatable/equatable.dart';
 
-part 'message.freezed.dart';
+class Message extends Equatable {
+  final String messageId;
+  final String senderId;
+  final String text;
+  final DateTime timestamp;
 
-/// Clean domain entity for a Chat Message.
-@freezed
-class Message with _$Message {
-  const factory Message({
-    required String id,
-    required String senderId,
-    required String senderName,
-    required String text,
-    required DateTime timestamp,
-  }) = _Message;
+  const Message({
+    required this.messageId,
+    required this.senderId,
+    required this.text,
+    required this.timestamp,
+  });
+
+  @override
+  List<Object?> get props => [messageId, senderId, text, timestamp];
 }

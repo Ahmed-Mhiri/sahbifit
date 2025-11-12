@@ -1,38 +1,25 @@
-import 'package:dartz/dartz.dart';
-import 'domain/entities/tag.dart';
-import 'domain/enums/tag_type.dart';
-import 'domain/repositories/tag_repository.dart';
-import 'data/datasources/tag_remote_datasource.dart';
-// Assume a core network_info file exists
-// import 'package:your_app/core/network/network_info.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/features/tag/data/datasources/tag_remote_datasource.dart';
+import 'package:sahbifit/features/tag/domain/entities/tag.dart';
+import 'package:sahbifit/features/tag/domain/entities/tag_type.dart';
+import 'package:sahbifit/features/tag/domain/repositories/tag_repository.dart';
 
-// Placeholder for NetworkInfo
-abstract class NetworkInfo {
-  Future<bool> get isConnected;
-}
-
+@Injectable(as: TagRepository)
 class TagRepositoryImpl implements TagRepository {
-  final TagRemoteDataSource remoteDataSource;
-  final NetworkInfo networkInfo;
+  final TagRemoteDatasource _remoteDatasource;
 
-  TagRepositoryImpl({
-    required this.remoteDataSource,
-    required this.networkInfo,
-  });
+  TagRepositoryImpl(this._remoteDatasource);
 
   @override
-  Future<Either<Failure, List<Tag>>> getTagsByType(TagType tagType) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final tagModels = await remoteDataSource.getTagsByType(tagType);
-        // Convert List<TagModel> to List<Tag>
-        final tags = tagModels.map((model) => model.toEntity()).toList();
-        return Right(tags);
-      } on ServerException {
-        return Left(ServerFailure());
-      }
-    } else {
-      return Left(NetworkFailure());
+  Future<List<Tag>> getTagsByType(TagType type) async {
+    try {
+      final tagModels = await _remoteDatasource.getTagsByType(type);
+      // Map List<TagModel> to List<Tag>
+      return tagModels.map((model) => model.toEntity()).toList();
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
     }
   }
 }

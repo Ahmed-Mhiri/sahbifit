@@ -1,23 +1,21 @@
-
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:dartz/dartz.dart' ;
-import 'package:json_annotation/json_annotation.dart';
-import 'package:sahbifit_mobile/features/session/domain/enums/session_type.dart';
+import 'package:sahbifit/features/session/domain/enums/session_type.dart';
 
-/// Data Transfer Object (DTO) for creating a session.
-/// This maps directly to the backend's [CreateSessionDto.java].
+part 'create_session_model.freezed.dart';
+part 'create_session_model.g.dart';
+
 @freezed
 class CreateSessionModel with _$CreateSessionModel {
-  @JsonSerializable(
-    createFactory: false, // We only need toJson for sending data
-    fieldRename: FieldRename.none, // Java fields are already camelCase
-  )
+  @JsonSerializable(fieldRename: FieldRename.none)
   const factory CreateSessionModel({
     required String gymId,
     required SessionType sessionType,
     required String title,
-    required DateTime startTime,
-    required DateTime endTime,
+    required String startTime, // Send as ISO 8601 String
+    required String endTime,   // Send as ISO 8601 String
     required int maxParticipants,
   }) = _CreateSessionModel;
+
+  factory CreateSessionModel.fromJson(Map<String, dynamic> json) =>
+      _$CreateSessionModelFromJson(json);
 }

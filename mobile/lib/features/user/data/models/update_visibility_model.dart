@@ -1,21 +1,17 @@
-import 'package:equatable/equatable.dart';
-import '../../domain/entities/profile_visibility.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit/features/user/domain/enums/profile_visibility.dart';
 
-// DTO for updating visibility, based on UpdateVisibilityDto.java
-class UpdateVisibilityModel extends Equatable {
-  final ProfileVisibility visibility;
+part 'update_visibility_model.freezed.dart';
+part 'update_visibility_model.g.dart';
 
-  const UpdateVisibilityModel({required this.visibility});
+// Matches UpdateVisibilityDto.java
+@freezed
+class UpdateVisibilityModel with _$UpdateVisibilityModel {
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory UpdateVisibilityModel({
+    required ProfileVisibility visibility,
+  }) = _UpdateVisibilityModel;
 
-  Map<String, dynamic> toJson() {
-    // Convert enum to the backend's expected string format
-    final String visibilityString =
-        visibility == ProfileVisibility.sameGender ? 'same_gender' : 'all';
-    return {
-      'visibility': visibilityString,
-    };
-  }
-
-  @override
-  List<Object?> get props => [visibility];
+  factory UpdateVisibilityModel.fromJson(Map<String, dynamic> json) =>
+      _$UpdateVisibilityModelFromJson(json);
 }

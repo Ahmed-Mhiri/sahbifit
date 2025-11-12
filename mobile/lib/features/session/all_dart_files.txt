@@ -1,0 +1,2048 @@
+﻿==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\datasources\session_remote_datasource.dart
+==================================================
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/api/api_client.dart';
+import 'package:sahbifit/core/constants/api_endpoints.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/features/session/data/models/create_session_model.dart';
+import 'package:sahbifit/features/session/data/models/mark_attendance_model.dart';
+import 'package:sahbifit/features/session/data/models/session_model.dart';
+import 'package:sahbifit/features/user/domain/enums/verified_gender_enum.dart';
+
+abstract class SessionRemoteDatasource {
+  Future<List<SessionModel>> getActiveSessions(VerifiedGender? genderFilter);
+  Future<SessionModel> createSession(CreateSessionModel request);
+  Future<void> joinSession(String sessionId);
+  Future<void> markAttendance(MarkAttendanceModel request);
+}
+
+@Injectable(as: SessionRemoteDatasource)
+class SessionRemoteDatasourceImpl implements SessionRemoteDatasource {
+  final ApiClient _apiClient;
+
+  SessionRemoteDatasourceImpl(this._apiClient);
+
+  @override
+  Future<List<SessionModel>> getActiveSessions(VerifiedGender? genderFilter) async {
+    try {
+      final Map<String, dynamic> queryParams = {};
+      if (genderFilter != null) {
+        queryParams['genderFilter'] = genderFilter.name;
+      }
+
+      final response = await _apiClient.dio.get(
+        ApiEndpoints.sessions,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+
+      return (response.data as List)
+          .map((json) => SessionModel.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<SessionModel> createSession(CreateSessionModel request) async {
+    try {
+      final response = await _apiClient.dio.post(
+        ApiEndpoints.createSession,
+        data: request.toJson(),
+      );
+      // Backend returns the created session
+      return SessionModel.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<void> joinSession(String sessionId) async {
+    try {
+      await _apiClient.dio.post(
+        ApiEndpoints.joinSession(sessionId), // Use function for dynamic URL
+      );
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<void> markAttendance(MarkAttendanceModel request) async {
+    try {
+      await _apiClient.dio.put(
+        ApiEndpoints.markAttendance,
+        data: request.toJson(),
+      );
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\datasources\session_remote_datasource_impl.dart
+==================================================
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/features/session/data/datasources/session_remote_datasource.dart';
+import 'package:sahbifit/features/session/data/models/create_session_model.dart';
+import 'package:sahbifit/features/session/data/models/mark_attendance_model.dart';
+import 'package:sahbifit/features/session/domain/entities/session.dart';
+import 'package:sahbifit/features/session/domain/enums/participant_status.dart';
+import 'package:sahbifit/features/session/domain/repositories/session_repository.dart';
+import 'package:sahbifit/features/user/domain/enums/verified_gender_enum.dart';
+
+@Injectable(as: SessionRepository)
+class SessionRepositoryImpl implements SessionRepository {
+  final SessionRemoteDatasource _remoteDatasource;
+
+  SessionRepositoryImpl(this._remoteDatasource);
+
+  @override
+  Future<List<Session>> getActiveSessions(VerifiedGender? genderFilter) async {
+    try {
+      final sessionModels = await _remoteDatasource.getActiveSessions(genderFilter);
+      return sessionModels.map((model) => model.toEntity()).toList();
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+
+  @override
+  Future<Session> createSession(CreateSessionModel request) async {
+    try {
+      final sessionModel = await _remoteDatasource.createSession(request);
+      return sessionModel.toEntity();
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+
+  @override
+  Future<void> joinSession(String sessionId) async {
+    try {
+      await _remoteDatasource.joinSession(sessionId);
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+
+  @override
+  Future<void> markAttendance(String sessionId, String userId, ParticipantStatus status) async {
+    try {
+      final requestModel = MarkAttendanceModel(
+        sessionId: sessionId,
+        participantUserId: userId,
+        status: status,
+      );
+      await _remoteDatasource.markAttendance(requestModel);
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\create_session_model.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit/features/session/domain/enums/session_type.dart';
+
+part 'create_session_model.freezed.dart';
+part 'create_session_model.g.dart';
+
+@freezed
+class CreateSessionModel with _$CreateSessionModel {
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory CreateSessionModel({
+    required String gymId,
+    required SessionType sessionType,
+    required String title,
+    required String startTime, // Send as ISO 8601 String
+    required String endTime,   // Send as ISO 8601 String
+    required int maxParticipants,
+  }) = _CreateSessionModel;
+
+  factory CreateSessionModel.fromJson(Map<String, dynamic> json) =>
+      _$CreateSessionModelFromJson(json);
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\create_session_model.freezed.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'create_session_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$CreateSessionModel {
+  String get gymId;
+  SessionType get sessionType;
+  String get title;
+  String get startTime; // Send as ISO 8601 String
+  String get endTime; // Send as ISO 8601 String
+  int get maxParticipants;
+
+  /// Create a copy of CreateSessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $CreateSessionModelCopyWith<CreateSessionModel> get copyWith =>
+      _$CreateSessionModelCopyWithImpl<CreateSessionModel>(
+          this as CreateSessionModel, _$identity);
+
+  /// Serializes this CreateSessionModel to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is CreateSessionModel &&
+            (identical(other.gymId, gymId) || other.gymId == gymId) &&
+            (identical(other.sessionType, sessionType) ||
+                other.sessionType == sessionType) &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.startTime, startTime) ||
+                other.startTime == startTime) &&
+            (identical(other.endTime, endTime) || other.endTime == endTime) &&
+            (identical(other.maxParticipants, maxParticipants) ||
+                other.maxParticipants == maxParticipants));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, gymId, sessionType, title,
+      startTime, endTime, maxParticipants);
+
+  @override
+  String toString() {
+    return 'CreateSessionModel(gymId: $gymId, sessionType: $sessionType, title: $title, startTime: $startTime, endTime: $endTime, maxParticipants: $maxParticipants)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $CreateSessionModelCopyWith<$Res> {
+  factory $CreateSessionModelCopyWith(
+          CreateSessionModel value, $Res Function(CreateSessionModel) _then) =
+      _$CreateSessionModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String gymId,
+      SessionType sessionType,
+      String title,
+      String startTime,
+      String endTime,
+      int maxParticipants});
+}
+
+/// @nodoc
+class _$CreateSessionModelCopyWithImpl<$Res>
+    implements $CreateSessionModelCopyWith<$Res> {
+  _$CreateSessionModelCopyWithImpl(this._self, this._then);
+
+  final CreateSessionModel _self;
+  final $Res Function(CreateSessionModel) _then;
+
+  /// Create a copy of CreateSessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? gymId = null,
+    Object? sessionType = null,
+    Object? title = null,
+    Object? startTime = null,
+    Object? endTime = null,
+    Object? maxParticipants = null,
+  }) {
+    return _then(_self.copyWith(
+      gymId: null == gymId
+          ? _self.gymId
+          : gymId // ignore: cast_nullable_to_non_nullable
+              as String,
+      sessionType: null == sessionType
+          ? _self.sessionType
+          : sessionType // ignore: cast_nullable_to_non_nullable
+              as SessionType,
+      title: null == title
+          ? _self.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      startTime: null == startTime
+          ? _self.startTime
+          : startTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      endTime: null == endTime
+          ? _self.endTime
+          : endTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      maxParticipants: null == maxParticipants
+          ? _self.maxParticipants
+          : maxParticipants // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [CreateSessionModel].
+extension CreateSessionModelPatterns on CreateSessionModel {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_CreateSessionModel value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _CreateSessionModel() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_CreateSessionModel value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CreateSessionModel():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_CreateSessionModel value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CreateSessionModel() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(String gymId, SessionType sessionType, String title,
+            String startTime, String endTime, int maxParticipants)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _CreateSessionModel() when $default != null:
+        return $default(_that.gymId, _that.sessionType, _that.title,
+            _that.startTime, _that.endTime, _that.maxParticipants);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(String gymId, SessionType sessionType, String title,
+            String startTime, String endTime, int maxParticipants)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CreateSessionModel():
+        return $default(_that.gymId, _that.sessionType, _that.title,
+            _that.startTime, _that.endTime, _that.maxParticipants);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(String gymId, SessionType sessionType, String title,
+            String startTime, String endTime, int maxParticipants)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CreateSessionModel() when $default != null:
+        return $default(_that.gymId, _that.sessionType, _that.title,
+            _that.startTime, _that.endTime, _that.maxParticipants);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+@JsonSerializable(fieldRename: FieldRename.none)
+class _CreateSessionModel implements CreateSessionModel {
+  const _CreateSessionModel(
+      {required this.gymId,
+      required this.sessionType,
+      required this.title,
+      required this.startTime,
+      required this.endTime,
+      required this.maxParticipants});
+  factory _CreateSessionModel.fromJson(Map<String, dynamic> json) =>
+      _$CreateSessionModelFromJson(json);
+
+  @override
+  final String gymId;
+  @override
+  final SessionType sessionType;
+  @override
+  final String title;
+  @override
+  final String startTime;
+// Send as ISO 8601 String
+  @override
+  final String endTime;
+// Send as ISO 8601 String
+  @override
+  final int maxParticipants;
+
+  /// Create a copy of CreateSessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$CreateSessionModelCopyWith<_CreateSessionModel> get copyWith =>
+      __$CreateSessionModelCopyWithImpl<_CreateSessionModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$CreateSessionModelToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _CreateSessionModel &&
+            (identical(other.gymId, gymId) || other.gymId == gymId) &&
+            (identical(other.sessionType, sessionType) ||
+                other.sessionType == sessionType) &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.startTime, startTime) ||
+                other.startTime == startTime) &&
+            (identical(other.endTime, endTime) || other.endTime == endTime) &&
+            (identical(other.maxParticipants, maxParticipants) ||
+                other.maxParticipants == maxParticipants));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, gymId, sessionType, title,
+      startTime, endTime, maxParticipants);
+
+  @override
+  String toString() {
+    return 'CreateSessionModel(gymId: $gymId, sessionType: $sessionType, title: $title, startTime: $startTime, endTime: $endTime, maxParticipants: $maxParticipants)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$CreateSessionModelCopyWith<$Res>
+    implements $CreateSessionModelCopyWith<$Res> {
+  factory _$CreateSessionModelCopyWith(
+          _CreateSessionModel value, $Res Function(_CreateSessionModel) _then) =
+      __$CreateSessionModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String gymId,
+      SessionType sessionType,
+      String title,
+      String startTime,
+      String endTime,
+      int maxParticipants});
+}
+
+/// @nodoc
+class __$CreateSessionModelCopyWithImpl<$Res>
+    implements _$CreateSessionModelCopyWith<$Res> {
+  __$CreateSessionModelCopyWithImpl(this._self, this._then);
+
+  final _CreateSessionModel _self;
+  final $Res Function(_CreateSessionModel) _then;
+
+  /// Create a copy of CreateSessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? gymId = null,
+    Object? sessionType = null,
+    Object? title = null,
+    Object? startTime = null,
+    Object? endTime = null,
+    Object? maxParticipants = null,
+  }) {
+    return _then(_CreateSessionModel(
+      gymId: null == gymId
+          ? _self.gymId
+          : gymId // ignore: cast_nullable_to_non_nullable
+              as String,
+      sessionType: null == sessionType
+          ? _self.sessionType
+          : sessionType // ignore: cast_nullable_to_non_nullable
+              as SessionType,
+      title: null == title
+          ? _self.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      startTime: null == startTime
+          ? _self.startTime
+          : startTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      endTime: null == endTime
+          ? _self.endTime
+          : endTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      maxParticipants: null == maxParticipants
+          ? _self.maxParticipants
+          : maxParticipants // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+// dart format on
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\create_session_model.g.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'create_session_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_CreateSessionModel _$CreateSessionModelFromJson(Map<String, dynamic> json) =>
+    _CreateSessionModel(
+      gymId: json['gymId'] as String,
+      sessionType: $enumDecode(_$SessionTypeEnumMap, json['sessionType']),
+      title: json['title'] as String,
+      startTime: json['startTime'] as String,
+      endTime: json['endTime'] as String,
+      maxParticipants: (json['maxParticipants'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$CreateSessionModelToJson(_CreateSessionModel instance) =>
+    <String, dynamic>{
+      'gymId': instance.gymId,
+      'sessionType': _$SessionTypeEnumMap[instance.sessionType]!,
+      'title': instance.title,
+      'startTime': instance.startTime,
+      'endTime': instance.endTime,
+      'maxParticipants': instance.maxParticipants,
+    };
+
+const _$SessionTypeEnumMap = {
+  SessionType.group: 'group',
+  SessionType.oneOnOne: 'one_on_one',
+};
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\mark_attendance_model.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit/features/session/domain/enums/participant_status.dart';
+
+part 'mark_attendance_model.freezed.dart';
+part 'mark_attendance_model.g.dart';
+
+@freezed
+class MarkAttendanceModel with _$MarkAttendanceModel {
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory MarkAttendanceModel({
+    required String sessionId,
+    required String participantUserId,
+    @JsonKey(name: 'newStatus') // Match the DTO
+    required ParticipantStatus status,
+  }) = _MarkAttendanceModel;
+
+  factory MarkAttendanceModel.fromJson(Map<String, dynamic> json) =>
+      _$MarkAttendanceModelFromJson(json);
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\mark_attendance_model.freezed.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'mark_attendance_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$MarkAttendanceModel {
+  String get sessionId;
+  String get participantUserId;
+  @JsonKey(name: 'newStatus')
+  ParticipantStatus get status;
+
+  /// Create a copy of MarkAttendanceModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $MarkAttendanceModelCopyWith<MarkAttendanceModel> get copyWith =>
+      _$MarkAttendanceModelCopyWithImpl<MarkAttendanceModel>(
+          this as MarkAttendanceModel, _$identity);
+
+  /// Serializes this MarkAttendanceModel to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is MarkAttendanceModel &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.participantUserId, participantUserId) ||
+                other.participantUserId == participantUserId) &&
+            (identical(other.status, status) || other.status == status));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, sessionId, participantUserId, status);
+
+  @override
+  String toString() {
+    return 'MarkAttendanceModel(sessionId: $sessionId, participantUserId: $participantUserId, status: $status)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $MarkAttendanceModelCopyWith<$Res> {
+  factory $MarkAttendanceModelCopyWith(
+          MarkAttendanceModel value, $Res Function(MarkAttendanceModel) _then) =
+      _$MarkAttendanceModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String sessionId,
+      String participantUserId,
+      @JsonKey(name: 'newStatus') ParticipantStatus status});
+}
+
+/// @nodoc
+class _$MarkAttendanceModelCopyWithImpl<$Res>
+    implements $MarkAttendanceModelCopyWith<$Res> {
+  _$MarkAttendanceModelCopyWithImpl(this._self, this._then);
+
+  final MarkAttendanceModel _self;
+  final $Res Function(MarkAttendanceModel) _then;
+
+  /// Create a copy of MarkAttendanceModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sessionId = null,
+    Object? participantUserId = null,
+    Object? status = null,
+  }) {
+    return _then(_self.copyWith(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      participantUserId: null == participantUserId
+          ? _self.participantUserId
+          : participantUserId // ignore: cast_nullable_to_non_nullable
+              as String,
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as ParticipantStatus,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [MarkAttendanceModel].
+extension MarkAttendanceModelPatterns on MarkAttendanceModel {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_MarkAttendanceModel value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _MarkAttendanceModel() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_MarkAttendanceModel value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _MarkAttendanceModel():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_MarkAttendanceModel value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _MarkAttendanceModel() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(String sessionId, String participantUserId,
+            @JsonKey(name: 'newStatus') ParticipantStatus status)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _MarkAttendanceModel() when $default != null:
+        return $default(_that.sessionId, _that.participantUserId, _that.status);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(String sessionId, String participantUserId,
+            @JsonKey(name: 'newStatus') ParticipantStatus status)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _MarkAttendanceModel():
+        return $default(_that.sessionId, _that.participantUserId, _that.status);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(String sessionId, String participantUserId,
+            @JsonKey(name: 'newStatus') ParticipantStatus status)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _MarkAttendanceModel() when $default != null:
+        return $default(_that.sessionId, _that.participantUserId, _that.status);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+@JsonSerializable(fieldRename: FieldRename.none)
+class _MarkAttendanceModel implements MarkAttendanceModel {
+  const _MarkAttendanceModel(
+      {required this.sessionId,
+      required this.participantUserId,
+      @JsonKey(name: 'newStatus') required this.status});
+  factory _MarkAttendanceModel.fromJson(Map<String, dynamic> json) =>
+      _$MarkAttendanceModelFromJson(json);
+
+  @override
+  final String sessionId;
+  @override
+  final String participantUserId;
+  @override
+  @JsonKey(name: 'newStatus')
+  final ParticipantStatus status;
+
+  /// Create a copy of MarkAttendanceModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$MarkAttendanceModelCopyWith<_MarkAttendanceModel> get copyWith =>
+      __$MarkAttendanceModelCopyWithImpl<_MarkAttendanceModel>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$MarkAttendanceModelToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _MarkAttendanceModel &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.participantUserId, participantUserId) ||
+                other.participantUserId == participantUserId) &&
+            (identical(other.status, status) || other.status == status));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, sessionId, participantUserId, status);
+
+  @override
+  String toString() {
+    return 'MarkAttendanceModel(sessionId: $sessionId, participantUserId: $participantUserId, status: $status)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$MarkAttendanceModelCopyWith<$Res>
+    implements $MarkAttendanceModelCopyWith<$Res> {
+  factory _$MarkAttendanceModelCopyWith(_MarkAttendanceModel value,
+          $Res Function(_MarkAttendanceModel) _then) =
+      __$MarkAttendanceModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String sessionId,
+      String participantUserId,
+      @JsonKey(name: 'newStatus') ParticipantStatus status});
+}
+
+/// @nodoc
+class __$MarkAttendanceModelCopyWithImpl<$Res>
+    implements _$MarkAttendanceModelCopyWith<$Res> {
+  __$MarkAttendanceModelCopyWithImpl(this._self, this._then);
+
+  final _MarkAttendanceModel _self;
+  final $Res Function(_MarkAttendanceModel) _then;
+
+  /// Create a copy of MarkAttendanceModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? sessionId = null,
+    Object? participantUserId = null,
+    Object? status = null,
+  }) {
+    return _then(_MarkAttendanceModel(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      participantUserId: null == participantUserId
+          ? _self.participantUserId
+          : participantUserId // ignore: cast_nullable_to_non_nullable
+              as String,
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as ParticipantStatus,
+    ));
+  }
+}
+
+// dart format on
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\mark_attendance_model.g.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'mark_attendance_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_MarkAttendanceModel _$MarkAttendanceModelFromJson(Map<String, dynamic> json) =>
+    _MarkAttendanceModel(
+      sessionId: json['sessionId'] as String,
+      participantUserId: json['participantUserId'] as String,
+      status: $enumDecode(_$ParticipantStatusEnumMap, json['newStatus']),
+    );
+
+Map<String, dynamic> _$MarkAttendanceModelToJson(
+        _MarkAttendanceModel instance) =>
+    <String, dynamic>{
+      'sessionId': instance.sessionId,
+      'participantUserId': instance.participantUserId,
+      'newStatus': _$ParticipantStatusEnumMap[instance.status]!,
+    };
+
+const _$ParticipantStatusEnumMap = {
+  ParticipantStatus.joined: 'joined',
+  ParticipantStatus.attended: 'attended',
+  ParticipantStatus.noShow: 'no_show',
+  ParticipantStatus.left: 'left',
+};
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\session_model.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit/features/gym/data/models/gym_model.dart'; // We'll re-use the GymModel
+import 'package:sahbifit/features/session/domain/entities/session.dart';
+import 'package:sahbifit/features/session/domain/enums/session_status.dart';
+import 'package:sahbifit/features/session/domain/enums/session_type.dart';
+import 'package:sahbifit/features/user/data/models/user_model.dart'; // We'll re-use the UserModel
+
+part 'session_model.freezed.dart';
+part 'session_model.g.dart';
+
+@freezed
+class SessionModel with _$SessionModel {
+  const SessionModel._(); // Private constructor for methods
+
+  @JsonSerializable(fieldRename: FieldRename.none)
+  const factory SessionModel({
+    required String sessionId,
+    required String title,
+    required SessionType sessionType,
+    required SessionStatus status,
+    required String startTime, // Receive as ISO 8601 String
+    required String endTime,   // Receive as ISO 8601 String
+    required int maxParticipants,
+    required int participantCount,
+    required UserModel creator, // Nested JSON object
+    required GymModel gym,       // Nested JSON object
+  }) = _SessionModel;
+
+  factory SessionModel.fromJson(Map<String, dynamic> json) =>
+      _$SessionModelFromJson(json);
+
+  // Converts the data-layer model to a domain-layer entity
+  Session toEntity() {
+    return Session(
+      sessionId: sessionId,
+      title: title,
+      sessionType: sessionType,
+      status: status,
+      startTime: DateTime.parse(startTime), // Convert String to DateTime
+      endTime: DateTime.parse(endTime),     // Convert String to DateTime
+      maxParticipants: maxParticipants,
+      participantCount: participantCount,
+      creator: creator.toEntity(), // Convert nested model to entity
+      gym: gym.toEntity(),         // Convert nested model to entity
+    );
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\session_model.freezed.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'session_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$SessionModel {
+  String get sessionId;
+  String get title;
+  SessionType get sessionType;
+  SessionStatus get status;
+  String get startTime; // Receive as ISO 8601 String
+  String get endTime; // Receive as ISO 8601 String
+  int get maxParticipants;
+  int get participantCount;
+  UserModel get creator; // Nested JSON object
+  GymModel get gym;
+
+  /// Create a copy of SessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $SessionModelCopyWith<SessionModel> get copyWith =>
+      _$SessionModelCopyWithImpl<SessionModel>(
+          this as SessionModel, _$identity);
+
+  /// Serializes this SessionModel to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is SessionModel &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.sessionType, sessionType) ||
+                other.sessionType == sessionType) &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.startTime, startTime) ||
+                other.startTime == startTime) &&
+            (identical(other.endTime, endTime) || other.endTime == endTime) &&
+            (identical(other.maxParticipants, maxParticipants) ||
+                other.maxParticipants == maxParticipants) &&
+            (identical(other.participantCount, participantCount) ||
+                other.participantCount == participantCount) &&
+            const DeepCollectionEquality().equals(other.creator, creator) &&
+            (identical(other.gym, gym) || other.gym == gym));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      sessionId,
+      title,
+      sessionType,
+      status,
+      startTime,
+      endTime,
+      maxParticipants,
+      participantCount,
+      const DeepCollectionEquality().hash(creator),
+      gym);
+
+  @override
+  String toString() {
+    return 'SessionModel(sessionId: $sessionId, title: $title, sessionType: $sessionType, status: $status, startTime: $startTime, endTime: $endTime, maxParticipants: $maxParticipants, participantCount: $participantCount, creator: $creator, gym: $gym)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $SessionModelCopyWith<$Res> {
+  factory $SessionModelCopyWith(
+          SessionModel value, $Res Function(SessionModel) _then) =
+      _$SessionModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String sessionId,
+      String title,
+      SessionType sessionType,
+      SessionStatus status,
+      String startTime,
+      String endTime,
+      int maxParticipants,
+      int participantCount,
+      UserModel creator,
+      GymModel gym});
+
+  $GymModelCopyWith<$Res> get gym;
+}
+
+/// @nodoc
+class _$SessionModelCopyWithImpl<$Res> implements $SessionModelCopyWith<$Res> {
+  _$SessionModelCopyWithImpl(this._self, this._then);
+
+  final SessionModel _self;
+  final $Res Function(SessionModel) _then;
+
+  /// Create a copy of SessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sessionId = null,
+    Object? title = null,
+    Object? sessionType = null,
+    Object? status = null,
+    Object? startTime = null,
+    Object? endTime = null,
+    Object? maxParticipants = null,
+    Object? participantCount = null,
+    Object? creator = freezed,
+    Object? gym = null,
+  }) {
+    return _then(_self.copyWith(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      title: null == title
+          ? _self.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      sessionType: null == sessionType
+          ? _self.sessionType
+          : sessionType // ignore: cast_nullable_to_non_nullable
+              as SessionType,
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as SessionStatus,
+      startTime: null == startTime
+          ? _self.startTime
+          : startTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      endTime: null == endTime
+          ? _self.endTime
+          : endTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      maxParticipants: null == maxParticipants
+          ? _self.maxParticipants
+          : maxParticipants // ignore: cast_nullable_to_non_nullable
+              as int,
+      participantCount: null == participantCount
+          ? _self.participantCount
+          : participantCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      creator: freezed == creator
+          ? _self.creator
+          : creator // ignore: cast_nullable_to_non_nullable
+              as UserModel,
+      gym: null == gym
+          ? _self.gym
+          : gym // ignore: cast_nullable_to_non_nullable
+              as GymModel,
+    ));
+  }
+
+  /// Create a copy of SessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $GymModelCopyWith<$Res> get gym {
+    return $GymModelCopyWith<$Res>(_self.gym, (value) {
+      return _then(_self.copyWith(gym: value));
+    });
+  }
+}
+
+/// Adds pattern-matching-related methods to [SessionModel].
+extension SessionModelPatterns on SessionModel {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_SessionModel value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _SessionModel() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_SessionModel value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionModel():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_SessionModel value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionModel() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(
+            String sessionId,
+            String title,
+            SessionType sessionType,
+            SessionStatus status,
+            String startTime,
+            String endTime,
+            int maxParticipants,
+            int participantCount,
+            UserModel creator,
+            GymModel gym)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _SessionModel() when $default != null:
+        return $default(
+            _that.sessionId,
+            _that.title,
+            _that.sessionType,
+            _that.status,
+            _that.startTime,
+            _that.endTime,
+            _that.maxParticipants,
+            _that.participantCount,
+            _that.creator,
+            _that.gym);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(
+            String sessionId,
+            String title,
+            SessionType sessionType,
+            SessionStatus status,
+            String startTime,
+            String endTime,
+            int maxParticipants,
+            int participantCount,
+            UserModel creator,
+            GymModel gym)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionModel():
+        return $default(
+            _that.sessionId,
+            _that.title,
+            _that.sessionType,
+            _that.status,
+            _that.startTime,
+            _that.endTime,
+            _that.maxParticipants,
+            _that.participantCount,
+            _that.creator,
+            _that.gym);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(
+            String sessionId,
+            String title,
+            SessionType sessionType,
+            SessionStatus status,
+            String startTime,
+            String endTime,
+            int maxParticipants,
+            int participantCount,
+            UserModel creator,
+            GymModel gym)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionModel() when $default != null:
+        return $default(
+            _that.sessionId,
+            _that.title,
+            _that.sessionType,
+            _that.status,
+            _that.startTime,
+            _that.endTime,
+            _that.maxParticipants,
+            _that.participantCount,
+            _that.creator,
+            _that.gym);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+@JsonSerializable(fieldRename: FieldRename.none)
+class _SessionModel extends SessionModel {
+  const _SessionModel(
+      {required this.sessionId,
+      required this.title,
+      required this.sessionType,
+      required this.status,
+      required this.startTime,
+      required this.endTime,
+      required this.maxParticipants,
+      required this.participantCount,
+      required this.creator,
+      required this.gym})
+      : super._();
+  factory _SessionModel.fromJson(Map<String, dynamic> json) =>
+      _$SessionModelFromJson(json);
+
+  @override
+  final String sessionId;
+  @override
+  final String title;
+  @override
+  final SessionType sessionType;
+  @override
+  final SessionStatus status;
+  @override
+  final String startTime;
+// Receive as ISO 8601 String
+  @override
+  final String endTime;
+// Receive as ISO 8601 String
+  @override
+  final int maxParticipants;
+  @override
+  final int participantCount;
+  @override
+  final UserModel creator;
+// Nested JSON object
+  @override
+  final GymModel gym;
+
+  /// Create a copy of SessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$SessionModelCopyWith<_SessionModel> get copyWith =>
+      __$SessionModelCopyWithImpl<_SessionModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$SessionModelToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _SessionModel &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.sessionType, sessionType) ||
+                other.sessionType == sessionType) &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.startTime, startTime) ||
+                other.startTime == startTime) &&
+            (identical(other.endTime, endTime) || other.endTime == endTime) &&
+            (identical(other.maxParticipants, maxParticipants) ||
+                other.maxParticipants == maxParticipants) &&
+            (identical(other.participantCount, participantCount) ||
+                other.participantCount == participantCount) &&
+            const DeepCollectionEquality().equals(other.creator, creator) &&
+            (identical(other.gym, gym) || other.gym == gym));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      sessionId,
+      title,
+      sessionType,
+      status,
+      startTime,
+      endTime,
+      maxParticipants,
+      participantCount,
+      const DeepCollectionEquality().hash(creator),
+      gym);
+
+  @override
+  String toString() {
+    return 'SessionModel(sessionId: $sessionId, title: $title, sessionType: $sessionType, status: $status, startTime: $startTime, endTime: $endTime, maxParticipants: $maxParticipants, participantCount: $participantCount, creator: $creator, gym: $gym)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$SessionModelCopyWith<$Res>
+    implements $SessionModelCopyWith<$Res> {
+  factory _$SessionModelCopyWith(
+          _SessionModel value, $Res Function(_SessionModel) _then) =
+      __$SessionModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String sessionId,
+      String title,
+      SessionType sessionType,
+      SessionStatus status,
+      String startTime,
+      String endTime,
+      int maxParticipants,
+      int participantCount,
+      UserModel creator,
+      GymModel gym});
+
+  @override
+  $GymModelCopyWith<$Res> get gym;
+}
+
+/// @nodoc
+class __$SessionModelCopyWithImpl<$Res>
+    implements _$SessionModelCopyWith<$Res> {
+  __$SessionModelCopyWithImpl(this._self, this._then);
+
+  final _SessionModel _self;
+  final $Res Function(_SessionModel) _then;
+
+  /// Create a copy of SessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? sessionId = null,
+    Object? title = null,
+    Object? sessionType = null,
+    Object? status = null,
+    Object? startTime = null,
+    Object? endTime = null,
+    Object? maxParticipants = null,
+    Object? participantCount = null,
+    Object? creator = freezed,
+    Object? gym = null,
+  }) {
+    return _then(_SessionModel(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      title: null == title
+          ? _self.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      sessionType: null == sessionType
+          ? _self.sessionType
+          : sessionType // ignore: cast_nullable_to_non_nullable
+              as SessionType,
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as SessionStatus,
+      startTime: null == startTime
+          ? _self.startTime
+          : startTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      endTime: null == endTime
+          ? _self.endTime
+          : endTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      maxParticipants: null == maxParticipants
+          ? _self.maxParticipants
+          : maxParticipants // ignore: cast_nullable_to_non_nullable
+              as int,
+      participantCount: null == participantCount
+          ? _self.participantCount
+          : participantCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      creator: freezed == creator
+          ? _self.creator
+          : creator // ignore: cast_nullable_to_non_nullable
+              as UserModel,
+      gym: null == gym
+          ? _self.gym
+          : gym // ignore: cast_nullable_to_non_nullable
+              as GymModel,
+    ));
+  }
+
+  /// Create a copy of SessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $GymModelCopyWith<$Res> get gym {
+    return $GymModelCopyWith<$Res>(_self.gym, (value) {
+      return _then(_self.copyWith(gym: value));
+    });
+  }
+}
+
+// dart format on
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\session_participant_model.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\repositories\session_repository_impl.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\domain\entities\session.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:sahbifit/features/gym/domain/entities/gym.dart';
+import 'package:sahbifit/features/session/domain/enums/session_status.dart';
+import 'package:sahbifit/features/session/domain/enums/session_type.dart';
+import 'package:sahbifit/features/user/domain/entities/user.dart';
+
+class Session extends Equatable {
+  final String sessionId;
+  final String title;
+  final SessionType sessionType;
+  final SessionStatus status;
+  final DateTime startTime;
+  final DateTime endTime;
+  final int maxParticipants;
+  final int participantCount; // From the @Formula
+  final User creator; // Nested User entity
+  final Gym gym;     // Nested Gym entity
+
+  const Session({
+    required this.sessionId,
+    required this.title,
+    required this.sessionType,
+    required this.status,
+    required this.startTime,
+    required this.endTime,
+    required this.maxParticipants,
+    required this.participantCount,
+    required this.creator,
+    required this.gym,
+  });
+
+  @override
+  List<Object?> get props => [
+        sessionId,
+        title,
+        sessionType,
+        status,
+        startTime,
+        endTime,
+        participantCount,
+        creator,
+        gym,
+      ];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\domain\entities\session_participant.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\domain\enums\participant_status.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+// Matches ParticipantStatus.java
+enum ParticipantStatus {
+  @JsonValue('joined')
+  joined,
+  @JsonValue('attended')
+  attended,
+  @JsonValue('no_show')
+  noShow,
+  @JsonValue('left')
+  left,
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\domain\enums\session_status.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+// Matches SessionStatus.java
+enum SessionStatus {
+  @JsonValue('active')
+  active,
+  @JsonValue('cancelled')
+  cancelled,
+  @JsonValue('completed')
+  completed,
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\domain\enums\session_type.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+// Matches SessionType.java
+enum SessionType {
+  @JsonValue('group')
+  group,
+  @JsonValue('one_on_one')
+  oneOnOne,
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\domain\repositories\session_repository.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\domain\usecases\create_session.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/session/data/models/create_session_model.dart';
+import 'package:sahbifit/features/session/domain/entities/session.dart';
+import 'package:sahbifit/features/session/domain/enums/session_type.dart';
+import 'package:sahbifit/features/session/domain/repositories/session_repository.dart';
+
+@injectable
+class CreateSession implements UseCase<Session, CreateSessionParams> {
+  final SessionRepository _repository;
+
+  CreateSession(this._repository);
+
+  @override
+  Future<Session> call(CreateSessionParams params) async {
+    // Map from clean params to the data model
+    final requestModel = CreateSessionModel(
+      gymId: params.gymId,
+      sessionType: params.sessionType,
+      title: params.title,
+      startTime: params.startTime.toIso8601String(), // Convert DateTime to String
+      endTime: params.endTime.toIso8601String(),     // Convert DateTime to String
+      maxParticipants: params.maxParticipants,
+    );
+    return _repository.createSession(requestModel);
+  }
+}
+
+class CreateSessionParams extends Equatable {
+  final String gymId;
+  final SessionType sessionType;
+  final String title;
+  final DateTime startTime;
+  final DateTime endTime;
+  final int maxParticipants;
+
+  const CreateSessionParams({
+    required this.gymId,
+    required this.sessionType,
+    required this.title,
+    required this.startTime,
+    required this.endTime,
+    required this.maxParticipants,
+  });
+
+  @override
+  List<Object?> get props => [
+        gymId,
+        sessionType,
+        title,
+        startTime,
+        endTime,
+        maxParticipants,
+      ];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\domain\usecases\get_active_sessions.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/session/domain/entities/session.dart';
+import 'package:sahbifit/features/session/domain/repositories/session_repository.dart';
+import 'package:sahbifit/features/user/domain/enums/verified_gender_enum.dart';
+
+@injectable
+class GetActiveSessions implements UseCase<List<Session>, GetActiveSessionsParams> {
+  final SessionRepository _repository;
+
+  GetActiveSessions(this._repository);
+
+  @override
+  Future<List<Session>> call(GetActiveSessionsParams params) async {
+    return _repository.getActiveSessions(params.genderFilter);
+  }
+}
+
+class GetActiveSessionsParams extends Equatable {
+  final VerifiedGender? genderFilter;
+
+  const GetActiveSessionsParams({this.genderFilter});
+
+  @override
+  List<Object?> get props => [genderFilter];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\domain\usecases\join_session.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/session/domain/repositories/session_repository.dart';
+
+@injectable
+class JoinSession implements UseCase<void, JoinSessionParams> {
+  final SessionRepository _repository;
+
+  JoinSession(this._repository);
+
+  @override
+  Future<void> call(JoinSessionParams params) async {
+    return _repository.joinSession(params.sessionId);
+  }
+}
+
+class JoinSessionParams extends Equatable {
+  final String sessionId;
+
+  const JoinSessionParams({required this.sessionId});
+
+  @override
+  List<Object?> get props => [sessionId];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\domain\usecases\mark_attendance.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'packagepackage:equatable/equatable.dart';
+import 'packagepackage:injectable/injectable.dart';
+import 'packagepackage:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/session/domain/enums/participant_status.dart';
+import 'package:sahbifit/features/session/domain/repositories/session_repository.dart';
+
+@injectable
+class MarkAttendance implements UseCase<void, MarkAttendanceParams> {
+  final SessionRepository _repository;
+
+  MarkAttendance(this._repository);
+
+  @override
+  Future<void> call(MarkAttendanceParams params) async {
+    return _repository.markAttendance(
+      params.sessionId,
+      params.userId,
+      params.status,
+    );
+  }
+}
+
+class MarkAttendanceParams extends Equatable {
+  final String sessionId;
+  final String userId;
+  final ParticipantStatus status;
+
+  const MarkAttendanceParams({
+    required this.sessionId,
+    required this.userId,
+    required this.status,
+  });
+
+  @override
+  List<Object?> get props => [sessionId, userId, status];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\cubit\session_feed_cubit.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\cubit\session_feed_state.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\pages\create_session_page.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\pages\mark_attendance_page.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\pages\session_details_page.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\pages\session_feed_page.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\widgets\probation_locked_tooltip.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\widgets\reputation_gate_dialog.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\widgets\session_card.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\widgets\session_participant_list.dart
+==================================================
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\widgets\session_type_toggle.dart
+==================================================
+

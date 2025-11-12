@@ -1,40 +1,31 @@
-import 'package:dartz/dartz.dart';
-import 'create_report_model.dart';
-import 'report_remote_datasource.dart';
-import 'report_repository.dart';
-// Assume a core network_info file exists
-// import 'package:your_app/core/network/network_info.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/features/report/data/datasources/report_remote_datasource.dart';
+import 'package:sahbifit/features/report/data/models/create_report_model.dart';
+import 'package:sahbifit/features/report/domain/repositories/report_repository.dart';
 
-// Placeholder for NetworkInfo
-abstract class NetworkInfo {
-  Future<bool> get isConnected;
-}
-class NetworkFailure extends Failure {}
-
-/// Implementation of the [ReportRepository] contract.
-/// It coordinates data from the remote data source.
+@Injectable(as: ReportRepository)
 class ReportRepositoryImpl implements ReportRepository {
-  final ReportRemoteDataSource remoteDataSource;
-  final NetworkInfo networkInfo; // To check internet connection
+  final ReportRemoteDatasource _remoteDatasource;
 
-  ReportRepositoryImpl({
-    required this.remoteDataSource,
-    required this.networkInfo,
-  });
+  ReportRepositoryImpl(this._remoteDatasource);
 
   @override
-  Future<Either<Failure, void>> createReport(
-      CreateReportModel createReportModel) async {
-    if (await networkInfo.isConnected) {
-      try {
-        await remoteDataSource.createReport(createReportModel);
-        // Successful API call (void response)
-        return const Right(null);
-      } on ServerException {
-        return Left(ServerFailure());
-      }
-    } else {
-      return Left(NetworkFailure());
+  Future<void> createReport({
+    required String reportedUserId,
+    required String reason,
+    String? sessionId,
+  }) async {
+    try {
+      final requestModel = CreateReportModel(
+        reportedUserId: reportedUserId,
+        reason: reason,
+        sessionId: sessionId,
+      );
+      await _remoteDatasource.createReport(requestModel);
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
     }
   }
 }

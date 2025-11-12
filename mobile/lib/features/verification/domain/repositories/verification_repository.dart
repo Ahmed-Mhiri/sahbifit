@@ -1,7 +1,7 @@
-import 'package:sahbifit_mobile/features/verification/data/models/verification_status_model.dart';
-
+import 'dart:io';
+import 'package:sahbifit/features/verification/domain/entities/verification_status_entity.dart';
 
 abstract class VerificationRepository {
-  Future<VerificationStatusModel> getVerificationStatus();
-  Future<String> submitVerificationVideo(String videoPath);
+  Future<VerificationStatusEntity> getVerificationStatus();
+  Future<void> submitVerificationVideo(File video);
 }
