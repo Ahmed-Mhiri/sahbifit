@@ -7,7 +7,7 @@ part 'user_block_model.g.dart';
 // This model maps to UserBlockId.java
 @freezed
 class UserBlockIdModel with _$UserBlockIdModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory UserBlockIdModel({
     required String blockerUserId,
     required String blockedUserId,
@@ -20,7 +20,7 @@ class UserBlockIdModel with _$UserBlockIdModel {
 // This model maps to UserBlock.java
 @freezed
 class UserBlockModel with _$UserBlockModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory UserBlockModel({
     required UserBlockIdModel id,
     required UserModel blocker, // The user who did the blocking

@@ -291,7 +291,7 @@ extension CreateSessionModelPatterns on CreateSessionModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _CreateSessionModel implements CreateSessionModel {
   const _CreateSessionModel(
       {required this.gymId,

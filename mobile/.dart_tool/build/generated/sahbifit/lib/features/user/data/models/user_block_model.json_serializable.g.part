@@ -24,8 +24,8 @@ _UserBlockModel _$UserBlockModelFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$UserBlockModelToJson(_UserBlockModel instance) =>
     <String, dynamic>{
-      'id': instance.id,
-      'blocker': instance.blocker,
-      'blocked': instance.blocked,
+      'id': instance.id.toJson(),
+      'blocker': instance.blocker.toJson(),
+      'blocked': instance.blocked.toJson(),
       'createdAt': instance.createdAt,
     };

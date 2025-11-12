@@ -378,7 +378,7 @@ extension RegisterRequestModelPatterns on RegisterRequestModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _RegisterRequestModel implements RegisterRequestModel {
   const _RegisterRequestModel(
       {required this.phoneNumber,

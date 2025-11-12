@@ -244,7 +244,7 @@ extension UserBadgeIdModelPatterns on UserBadgeIdModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _UserBadgeIdModel implements UserBadgeIdModel {
   const _UserBadgeIdModel({required this.userId, required this.badgeId});
   factory _UserBadgeIdModel.fromJson(Map<String, dynamic> json) =>
@@ -595,7 +595,7 @@ extension UserBadgeModelPatterns on UserBadgeModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _UserBadgeModel implements UserBadgeModel {
   const _UserBadgeModel(
       {required this.id, required this.badge, required this.earnedAt});

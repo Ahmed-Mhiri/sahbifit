@@ -9,7 +9,7 @@ part 'gym_model.g.dart';
 class GymModel with _$GymModel {
   const GymModel._(); // Private constructor for methods
 
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory GymModel({
     required String gymId,
     required String name,

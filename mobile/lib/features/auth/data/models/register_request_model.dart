@@ -5,7 +5,7 @@ part 'register_request_model.g.dart';
 
 @freezed
 class RegisterRequestModel with _$RegisterRequestModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory RegisterRequestModel({
     required String phoneNumber,
     required String password,

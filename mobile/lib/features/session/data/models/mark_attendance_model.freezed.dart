@@ -264,7 +264,7 @@ extension MarkAttendanceModelPatterns on MarkAttendanceModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _MarkAttendanceModel implements MarkAttendanceModel {
   const _MarkAttendanceModel(
       {required this.sessionId,

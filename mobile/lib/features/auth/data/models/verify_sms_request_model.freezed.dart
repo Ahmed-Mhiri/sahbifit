@@ -245,7 +245,7 @@ extension VerifySmsRequestModelPatterns on VerifySmsRequestModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _VerifySmsRequestModel implements VerifySmsRequestModel {
   const _VerifySmsRequestModel({required this.phoneNumber, required this.otp});
   factory _VerifySmsRequestModel.fromJson(Map<String, dynamic> json) =>

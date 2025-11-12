@@ -238,7 +238,7 @@ extension UpdateVisibilityModelPatterns on UpdateVisibilityModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _UpdateVisibilityModel implements UpdateVisibilityModel {
   const _UpdateVisibilityModel({required this.visibility});
   factory _UpdateVisibilityModel.fromJson(Map<String, dynamic> json) =>

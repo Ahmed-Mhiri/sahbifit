@@ -238,7 +238,7 @@ extension AuthResponseModelPatterns on AuthResponseModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _AuthResponseModel extends AuthResponseModel {
   const _AuthResponseModel({required this.jwtToken}) : super._();
   factory _AuthResponseModel.fromJson(Map<String, dynamic> json) =>

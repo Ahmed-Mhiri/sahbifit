@@ -95,7 +95,7 @@ part 'badge_model.g.dart';
 class BadgeModel with _$BadgeModel {
   const BadgeModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory BadgeModel({
     required int badgeId,
     required String badgeName,
@@ -390,7 +390,7 @@ extension BadgeModelPatterns on BadgeModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _BadgeModel extends BadgeModel {
   const _BadgeModel(
       {required this.badgeId,
@@ -538,7 +538,7 @@ part 'update_fcm_token_model.g.dart';
 // Matches UpdateFcmTokenDto.java
 @freezed
 class UpdateFcmTokenModel with _$UpdateFcmTokenModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory UpdateFcmTokenModel({
     required String fcmToken,
   }) = _UpdateFcmTokenModel;
@@ -790,7 +790,7 @@ extension UpdateFcmTokenModelPatterns on UpdateFcmTokenModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _UpdateFcmTokenModel implements UpdateFcmTokenModel {
   const _UpdateFcmTokenModel({required this.fcmToken});
   factory _UpdateFcmTokenModel.fromJson(Map<String, dynamic> json) =>
@@ -905,7 +905,7 @@ part 'update_visibility_model.g.dart';
 // Matches UpdateVisibilityDto.java
 @freezed
 class UpdateVisibilityModel with _$UpdateVisibilityModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory UpdateVisibilityModel({
     required ProfileVisibility visibility,
   }) = _UpdateVisibilityModel;
@@ -1157,7 +1157,7 @@ extension UpdateVisibilityModelPatterns on UpdateVisibilityModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _UpdateVisibilityModel implements UpdateVisibilityModel {
   const _UpdateVisibilityModel({required this.visibility});
   factory _UpdateVisibilityModel.fromJson(Map<String, dynamic> json) =>
@@ -1278,7 +1278,7 @@ part 'user_badge_model.g.dart';
 // This model maps to UserBadgeId.java
 @freezed
 class UserBadgeIdModel with _$UserBadgeIdModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory UserBadgeIdModel({
     required String userId,
     required int badgeId,
@@ -1291,7 +1291,7 @@ class UserBadgeIdModel with _$UserBadgeIdModel {
 // This model maps to UserBadge.java
 @freezed
 class UserBadgeModel with _$UserBadgeModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory UserBadgeModel({
     required UserBadgeIdModel id,
     required BadgeModel badge, // The badge that was earned
@@ -1551,7 +1551,7 @@ extension UserBadgeIdModelPatterns on UserBadgeIdModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _UserBadgeIdModel implements UserBadgeIdModel {
   const _UserBadgeIdModel({required this.userId, required this.badgeId});
   factory _UserBadgeIdModel.fromJson(Map<String, dynamic> json) =>
@@ -1902,7 +1902,7 @@ extension UserBadgeModelPatterns on UserBadgeModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _UserBadgeModel implements UserBadgeModel {
   const _UserBadgeModel(
       {required this.id, required this.badge, required this.earnedAt});
@@ -2074,7 +2074,7 @@ part 'user_block_model.g.dart';
 // This model maps to UserBlockId.java
 @freezed
 class UserBlockIdModel with _$UserBlockIdModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory UserBlockIdModel({
     required String blockerUserId,
     required String blockedUserId,
@@ -2087,7 +2087,7 @@ class UserBlockIdModel with _$UserBlockIdModel {
 // This model maps to UserBlock.java
 @freezed
 class UserBlockModel with _$UserBlockModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory UserBlockModel({
     required UserBlockIdModel id,
     required UserModel blocker, // The user who did the blocking
@@ -2350,7 +2350,7 @@ extension UserBlockIdModelPatterns on UserBlockIdModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _UserBlockIdModel implements UserBlockIdModel {
   const _UserBlockIdModel(
       {required this.blockerUserId, required this.blockedUserId});
@@ -2732,7 +2732,7 @@ extension UserBlockModelPatterns on UserBlockModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _UserBlockModel implements UserBlockModel {
   const _UserBlockModel(
       {required this.id,
@@ -2942,7 +2942,7 @@ part 'user_model.g.dart';
 class UserModel with _$UserModel {
   const UserModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory UserModel({
     required String userId,
     required String firstName,
@@ -3420,7 +3420,7 @@ extension UserModelPatterns on UserModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _UserModel extends UserModel {
   const _UserModel(
       {required this.userId,

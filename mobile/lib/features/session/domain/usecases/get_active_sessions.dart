@@ -3,7 +3,7 @@ import 'package:injectable/injectable.dart';
 import 'package:sahbifit/core/usecases/usecase.dart';
 import 'package:sahbifit/features/session/domain/entities/session.dart';
 import 'package:sahbifit/features/session/domain/repositories/session_repository.dart';
-import 'package:sahbifit/features/user/domain/enums/verified_gender_enum.dart';
+import 'package:sahbifit/features/verification/domain/enums/verified_gender_enum.dart';
 
 @injectable
 class GetActiveSessions implements UseCase<List<Session>, GetActiveSessionsParams> {

@@ -15,7 +15,7 @@ part 'user_model.g.dart';
 class UserModel with _$UserModel {
   const UserModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory UserModel({
     required String userId,
     required String firstName,

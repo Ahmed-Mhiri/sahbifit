@@ -246,7 +246,7 @@ extension UserBlockIdModelPatterns on UserBlockIdModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _UserBlockIdModel implements UserBlockIdModel {
   const _UserBlockIdModel(
       {required this.blockerUserId, required this.blockedUserId});
@@ -628,7 +628,7 @@ extension UserBlockModelPatterns on UserBlockModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _UserBlockModel implements UserBlockModel {
   const _UserBlockModel(
       {required this.id,

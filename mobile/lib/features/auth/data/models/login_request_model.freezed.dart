@@ -246,7 +246,7 @@ extension LoginRequestModelPatterns on LoginRequestModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _LoginRequestModel implements LoginRequestModel {
   const _LoginRequestModel({required this.phoneNumber, required this.password});
   factory _LoginRequestModel.fromJson(Map<String, dynamic> json) =>

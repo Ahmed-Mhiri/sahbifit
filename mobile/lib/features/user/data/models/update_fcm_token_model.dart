@@ -6,7 +6,7 @@ part 'update_fcm_token_model.g.dart';
 // Matches UpdateFcmTokenDto.java
 @freezed
 class UpdateFcmTokenModel with _$UpdateFcmTokenModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory UpdateFcmTokenModel({
     required String fcmToken,
   }) = _UpdateFcmTokenModel;

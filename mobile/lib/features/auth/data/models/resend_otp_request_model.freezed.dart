@@ -246,7 +246,7 @@ extension ResendOtpRequestModelPatterns on ResendOtpRequestModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _ResendOtpRequestModel implements ResendOtpRequestModel {
   const _ResendOtpRequestModel(
       {required this.phoneNumber, required this.recaptchaToken});

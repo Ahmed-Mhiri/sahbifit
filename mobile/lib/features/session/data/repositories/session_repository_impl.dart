@@ -7,7 +7,7 @@ import 'package:sahbifit/features/session/data/models/mark_attendance_model.dart
 import 'package:sahbifit/features/session/domain/entities/session.dart';
 import 'package:sahbifit/features/session/domain/enums/participant_status.dart';
 import 'package:sahbifit/features/session/domain/repositories/session_repository.dart';
-import 'package:sahbifit/features/user/domain/enums/verified_gender_enum.dart';
+import 'package:sahbifit/features/verification/domain/enums/verified_gender_enum.dart';
 
 @Injectable(as: SessionRepository)
 class SessionRepositoryImpl implements SessionRepository {

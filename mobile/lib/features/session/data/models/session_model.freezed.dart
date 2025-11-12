@@ -411,7 +411,7 @@ extension SessionModelPatterns on SessionModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _SessionModel extends SessionModel {
   const _SessionModel(
       {required this.sessionId,

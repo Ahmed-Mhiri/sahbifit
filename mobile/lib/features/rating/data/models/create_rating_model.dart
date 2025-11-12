@@ -5,7 +5,7 @@ part 'create_rating_model.g.dart';
 
 @freezed
 class CreateRatingModel with _$CreateRatingModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory CreateRatingModel({
     required String sessionId,
     required String ratedUserId,

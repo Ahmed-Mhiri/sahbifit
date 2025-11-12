@@ -5,7 +5,7 @@ part 'login_request_model.g.dart';
 
 @freezed
 class LoginRequestModel with _$LoginRequestModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory LoginRequestModel({
     required String phoneNumber,
     required String password,

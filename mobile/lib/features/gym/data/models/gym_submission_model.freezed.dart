@@ -244,7 +244,7 @@ extension GymSubmissionModelPatterns on GymSubmissionModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _GymSubmissionModel implements GymSubmissionModel {
   const _GymSubmissionModel({required this.name, required this.address});
   factory _GymSubmissionModel.fromJson(Map<String, dynamic> json) =>

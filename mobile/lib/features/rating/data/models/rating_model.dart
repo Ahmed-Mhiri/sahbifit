@@ -9,7 +9,7 @@ part 'rating_model.g.dart';
 // We only extract the ID, as seen in the Rating entity
 @freezed
 class RatingSessionModel with _$RatingSessionModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory RatingSessionModel({
     required String sessionId,
   }) = _RatingSessionModel;
@@ -23,7 +23,7 @@ class RatingSessionModel with _$RatingSessionModel {
 class RatingModel with _$RatingModel {
   const RatingModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory RatingModel({
     required String ratingId,
     required RatingSessionModel session, // Nested session object

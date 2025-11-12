@@ -436,7 +436,7 @@ extension UserModelPatterns on UserModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _UserModel extends UserModel {
   const _UserModel(
       {required this.userId,

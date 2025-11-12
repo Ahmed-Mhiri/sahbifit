@@ -12,7 +12,7 @@ part 'session_model.g.dart';
 class SessionModel with _$SessionModel {
   const SessionModel._(); // Private constructor for methods
 
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory SessionModel({
     required String sessionId,
     required String title,

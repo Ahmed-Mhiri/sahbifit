@@ -91,7 +91,7 @@ part 'auth_response_model.g.dart';
 class AuthResponseModel with _$AuthResponseModel {
   const AuthResponseModel._(); // Private constructor for methods
 
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory AuthResponseModel({
     required String jwtToken,
   }) = _AuthResponseModel;
@@ -348,7 +348,7 @@ extension AuthResponseModelPatterns on AuthResponseModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _AuthResponseModel extends AuthResponseModel {
   const _AuthResponseModel({required this.jwtToken}) : super._();
   factory _AuthResponseModel.fromJson(Map<String, dynamic> json) =>
@@ -459,7 +459,7 @@ part 'login_request_model.g.dart';
 
 @freezed
 class LoginRequestModel with _$LoginRequestModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory LoginRequestModel({
     required String phoneNumber,
     required String password,
@@ -720,7 +720,7 @@ extension LoginRequestModelPatterns on LoginRequestModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _LoginRequestModel implements LoginRequestModel {
   const _LoginRequestModel({required this.phoneNumber, required this.password});
   factory _LoginRequestModel.fromJson(Map<String, dynamic> json) =>
@@ -842,7 +842,7 @@ part 'register_request_model.g.dart';
 
 @freezed
 class RegisterRequestModel with _$RegisterRequestModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory RegisterRequestModel({
     required String phoneNumber,
     required String password,
@@ -1242,7 +1242,7 @@ extension RegisterRequestModelPatterns on RegisterRequestModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _RegisterRequestModel implements RegisterRequestModel {
   const _RegisterRequestModel(
       {required this.phoneNumber,
@@ -1493,7 +1493,7 @@ part 'resend_otp_request_model.g.dart';
 
 @freezed
 class ResendOtpRequestModel with _$ResendOtpRequestModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory ResendOtpRequestModel({
     required String phoneNumber,
     required String recaptchaToken,
@@ -1754,7 +1754,7 @@ extension ResendOtpRequestModelPatterns on ResendOtpRequestModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _ResendOtpRequestModel implements ResendOtpRequestModel {
   const _ResendOtpRequestModel(
       {required this.phoneNumber, required this.recaptchaToken});
@@ -1880,7 +1880,7 @@ part 'verify_sms_request_model.g.dart';
 
 @freezed
 class VerifySmsRequestModel with _$VerifySmsRequestModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory VerifySmsRequestModel({
     required String phoneNumber,
     required String otp,
@@ -2140,7 +2140,7 @@ extension VerifySmsRequestModelPatterns on VerifySmsRequestModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _VerifySmsRequestModel implements VerifySmsRequestModel {
   const _VerifySmsRequestModel({required this.phoneNumber, required this.otp});
   factory _VerifySmsRequestModel.fromJson(Map<String, dynamic> json) =>

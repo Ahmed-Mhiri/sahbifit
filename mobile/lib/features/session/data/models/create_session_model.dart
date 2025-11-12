@@ -6,7 +6,7 @@ part 'create_session_model.g.dart';
 
 @freezed
 class CreateSessionModel with _$CreateSessionModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory CreateSessionModel({
     required String gymId,
     required SessionType sessionType,

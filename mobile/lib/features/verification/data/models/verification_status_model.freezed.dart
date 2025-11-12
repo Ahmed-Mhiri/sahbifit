@@ -246,7 +246,7 @@ extension VerificationStatusModelPatterns on VerificationStatusModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _VerificationStatusModel extends VerificationStatusModel {
   const _VerificationStatusModel({required this.status, required this.gender})
       : super._();

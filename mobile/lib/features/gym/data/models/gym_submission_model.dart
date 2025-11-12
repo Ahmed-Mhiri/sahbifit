@@ -4,7 +4,7 @@ part 'gym_submission_model.g.dart';
 
 @freezed
 class GymSubmissionModel with _$GymSubmissionModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory GymSubmissionModel({
     required String name,
     required String address,

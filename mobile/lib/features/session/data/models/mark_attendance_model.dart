@@ -6,7 +6,7 @@ part 'mark_attendance_model.g.dart';
 
 @freezed
 class MarkAttendanceModel with _$MarkAttendanceModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory MarkAttendanceModel({
     required String sessionId,
     required String participantUserId,

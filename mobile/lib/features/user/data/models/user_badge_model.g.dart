@@ -27,7 +27,7 @@ _UserBadgeModel _$UserBadgeModelFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$UserBadgeModelToJson(_UserBadgeModel instance) =>
     <String, dynamic>{
-      'id': instance.id,
-      'badge': instance.badge,
+      'id': instance.id.toJson(),
+      'badge': instance.badge.toJson(),
       'earnedAt': instance.earnedAt,
     };

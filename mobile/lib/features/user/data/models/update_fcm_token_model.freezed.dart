@@ -238,7 +238,7 @@ extension UpdateFcmTokenModelPatterns on UpdateFcmTokenModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _UpdateFcmTokenModel implements UpdateFcmTokenModel {
   const _UpdateFcmTokenModel({required this.fcmToken});
   factory _UpdateFcmTokenModel.fromJson(Map<String, dynamic> json) =>

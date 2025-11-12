@@ -276,7 +276,7 @@ extension PendingRatingModelPatterns on PendingRatingModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _PendingRatingModel extends PendingRatingModel {
   const _PendingRatingModel(
       {required this.sessionId,

@@ -11,7 +11,7 @@ part 'verification_status_model.g.dart';
 class VerificationStatusModel with _$VerificationStatusModel {
   const VerificationStatusModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory VerificationStatusModel({
     required VerificationStatus status,
     required VerifiedGender gender,

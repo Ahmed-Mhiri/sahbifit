@@ -8,7 +8,7 @@ part 'badge_model.g.dart';
 class BadgeModel with _$BadgeModel {
   const BadgeModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory BadgeModel({
     required int badgeId,
     required String badgeName,

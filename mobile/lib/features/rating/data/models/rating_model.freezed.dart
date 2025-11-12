@@ -238,7 +238,7 @@ extension RatingSessionModelPatterns on RatingSessionModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _RatingSessionModel implements RatingSessionModel {
   const _RatingSessionModel({required this.sessionId});
   factory _RatingSessionModel.fromJson(Map<String, dynamic> json) =>
@@ -655,7 +655,7 @@ extension RatingModelPatterns on RatingModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _RatingModel extends RatingModel {
   const _RatingModel(
       {required this.ratingId,

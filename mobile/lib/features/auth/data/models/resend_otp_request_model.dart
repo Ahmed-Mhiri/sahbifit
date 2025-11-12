@@ -5,7 +5,7 @@ part 'resend_otp_request_model.g.dart';
 
 @freezed
 class ResendOtpRequestModel with _$ResendOtpRequestModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory ResendOtpRequestModel({
     required String phoneNumber,
     required String recaptchaToken,

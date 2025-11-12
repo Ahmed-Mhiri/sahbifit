@@ -5,7 +5,7 @@ part 'verify_sms_request_model.g.dart';
 
 @freezed
 class VerifySmsRequestModel with _$VerifySmsRequestModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory VerifySmsRequestModel({
     required String phoneNumber,
     required String otp,

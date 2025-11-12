@@ -248,7 +248,7 @@ extension TagModelPatterns on TagModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _TagModel extends TagModel {
   const _TagModel(
       {required this.tagId, required this.tagName, required this.tagType})

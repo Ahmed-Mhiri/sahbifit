@@ -272,7 +272,7 @@ extension CreateRatingModelPatterns on CreateRatingModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _CreateRatingModel implements CreateRatingModel {
   const _CreateRatingModel(
       {required this.sessionId,

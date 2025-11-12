@@ -8,7 +8,7 @@ part 'pending_rating_model.g.dart';
 class PendingRatingModel with _$PendingRatingModel {
   const PendingRatingModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory PendingRatingModel({
     required String sessionId,
     required String sessionTitle,

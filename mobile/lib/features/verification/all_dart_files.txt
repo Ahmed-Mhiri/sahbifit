@@ -82,7 +82,7 @@ part 'verification_status_model.g.dart';
 class VerificationStatusModel with _$VerificationStatusModel {
   const VerificationStatusModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory VerificationStatusModel({
     required VerificationStatus status,
     required VerifiedGender gender,
@@ -351,7 +351,7 @@ extension VerificationStatusModelPatterns on VerificationStatusModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _VerificationStatusModel extends VerificationStatusModel {
   const _VerificationStatusModel({required this.status, required this.gender})
       : super._();

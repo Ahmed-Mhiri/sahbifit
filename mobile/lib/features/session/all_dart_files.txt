@@ -158,7 +158,7 @@ part 'create_session_model.g.dart';
 
 @freezed
 class CreateSessionModel with _$CreateSessionModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory CreateSessionModel({
     required String gymId,
     required SessionType sessionType,
@@ -468,7 +468,7 @@ extension CreateSessionModelPatterns on CreateSessionModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _CreateSessionModel implements CreateSessionModel {
   const _CreateSessionModel(
       {required this.gymId,
@@ -652,7 +652,7 @@ part 'mark_attendance_model.g.dart';
 
 @freezed
 class MarkAttendanceModel with _$MarkAttendanceModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory MarkAttendanceModel({
     required String sessionId,
     required String participantUserId,
@@ -933,7 +933,7 @@ extension MarkAttendanceModelPatterns on MarkAttendanceModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _MarkAttendanceModel implements MarkAttendanceModel {
   const _MarkAttendanceModel(
       {required this.sessionId,
@@ -1089,7 +1089,7 @@ part 'session_model.g.dart';
 class SessionModel with _$SessionModel {
   const SessionModel._(); // Private constructor for methods
 
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory SessionModel({
     required String sessionId,
     required String title,
@@ -1528,7 +1528,7 @@ extension SessionModelPatterns on SessionModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
 class _SessionModel extends SessionModel {
   const _SessionModel(
       {required this.sessionId,

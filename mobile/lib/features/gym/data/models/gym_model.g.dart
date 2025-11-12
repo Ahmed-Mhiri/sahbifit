@@ -1,0 +1,29 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'gym_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_GymModel _$GymModelFromJson(Map<String, dynamic> json) => _GymModel(
+      gymId: json['gymId'] as String,
+      name: json['name'] as String,
+      address: json['address'] as String?,
+      status: $enumDecode(_$GymStatusEnumMap, json['status']),
+      memberCount: (json['memberCount'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$GymModelToJson(_GymModel instance) => <String, dynamic>{
+      'gymId': instance.gymId,
+      'name': instance.name,
+      'address': instance.address,
+      'status': _$GymStatusEnumMap[instance.status]!,
+      'memberCount': instance.memberCount,
+    };
+
+const _$GymStatusEnumMap = {
+  GymStatus.pending: 'pending',
+  GymStatus.approved: 'approved',
+  GymStatus.rejected: 'rejected',
+};

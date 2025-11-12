@@ -269,7 +269,7 @@ extension BadgeModelPatterns on BadgeModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _BadgeModel extends BadgeModel {
   const _BadgeModel(
       {required this.badgeId,

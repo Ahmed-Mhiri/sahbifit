@@ -257,7 +257,7 @@ extension CreateReportModelPatterns on CreateReportModel {
 
 /// @nodoc
 
-@JsonSerializable(fieldRename: FieldRename.none)
+@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
 class _CreateReportModel implements CreateReportModel {
   const _CreateReportModel(
       {required this.reportedUserId, required this.reason, this.sessionId});

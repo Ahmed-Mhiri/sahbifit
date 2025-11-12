@@ -5,7 +5,7 @@ part 'create_report_model.g.dart';
 
 @freezed
 class CreateReportModel with _$CreateReportModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory CreateReportModel({
     required String reportedUserId,
     required String reason,

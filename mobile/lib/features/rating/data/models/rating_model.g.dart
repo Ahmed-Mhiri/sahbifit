@@ -30,9 +30,9 @@ _RatingModel _$RatingModelFromJson(Map<String, dynamic> json) => _RatingModel(
 Map<String, dynamic> _$RatingModelToJson(_RatingModel instance) =>
     <String, dynamic>{
       'ratingId': instance.ratingId,
-      'session': instance.session,
-      'ratingBy': instance.ratingBy,
-      'ratingFor': instance.ratingFor,
+      'session': instance.session.toJson(),
+      'ratingBy': instance.ratingBy.toJson(),
+      'ratingFor': instance.ratingFor.toJson(),
       'ratingValue': instance.ratingValue,
       'comment': instance.comment,
       'createdAt': instance.createdAt,

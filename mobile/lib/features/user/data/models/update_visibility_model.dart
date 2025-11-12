@@ -7,7 +7,7 @@ part 'update_visibility_model.g.dart';
 // Matches UpdateVisibilityDto.java
 @freezed
 class UpdateVisibilityModel with _$UpdateVisibilityModel {
-  @JsonSerializable(fieldRename: FieldRename.none)
+  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory UpdateVisibilityModel({
     required ProfileVisibility visibility,
   }) = _UpdateVisibilityModel;
