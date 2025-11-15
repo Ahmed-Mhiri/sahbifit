@@ -61,7 +61,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
         color: AppTheme.cleanWhite,
         boxShadow: [
           BoxShadow(
-            color: AppTheme.darkGray.withOpacity(0.1),
+            color: AppTheme.darkGray.withAlpha(26),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),

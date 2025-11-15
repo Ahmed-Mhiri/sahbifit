@@ -64,7 +64,6 @@ part 'message_model.freezed.dart';
 part 'message_model.g.dart';
 
 @freezed
-abstract
 class MessageModel with _$MessageModel {
   const MessageModel._();
 
@@ -1272,7 +1271,6 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\presentation\cubi
 part of 'chat_cubit.dart';
 
 @freezed
-abstract
 class ChatState with _$ChatState {
   /// Chat has not been initialized or connected.
   const factory ChatState.initial() = _Initial;

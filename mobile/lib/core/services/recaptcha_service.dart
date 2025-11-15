@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
-import 'package:recaptcha_enterprise_flutter/recaptcha_action.dart' show RecaptchaAction;
+import 'package:recaptcha_enterprise_flutter/recaptcha.dart';
+import 'package:recaptcha_enterprise_flutter/recaptcha_action.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha_client.dart';
-import 'package:recaptcha_enterprise_flutter/recaptcha_enterprise_flutter.dart';
+// 1. CONSOLIDATED IMPORT:
+// This single import, as shown in the guide's examples, should provide
+// Recaptcha, RecaptchaClient, and RecaptchaAction.
 
 @lazySingleton
 class ReCaptchaService {
@@ -31,8 +34,9 @@ class ReCaptchaService {
         return;
       }
 
-      // Initialize the client using the correct method from the guide
-      _client = await RecaptchaEnterpriseFlutter.fetchClient(siteKey);
+      // 2. FIXED CLASS NAME:
+      // The guide uses `Recaptcha.fetchClient`, not `RecaptchaEnterpriseFlutter.fetchClient`.
+      _client = await Recaptcha.fetchClient(siteKey);
       _isInitialized = true;
       debugPrint("reCAPTCHA Enterprise initialized for ${defaultTargetPlatform}");
       
@@ -53,8 +57,11 @@ class ReCaptchaService {
     }
 
     try {
-      // Use the client instance we already initialized
-      final String token = await _client.execute(RecaptchaAction(action));
+      // 3. ERROR FIXED BY IMPORT:
+      // The "method 'RecaptchaAction' isn't defined" error was a cascade
+      // from the bad import. With the correct import (Fix #1),
+      // Dart now recognizes `RecaptchaAction(action)` as a class constructor.
+      final String token = await _client.execute(RecaptchaAction.custom(action));
       debugPrint("reCAPTCHA Enterprise token for action '$action': ${token.substring(0, 50)}...");
       return token;
     } catch (e) {

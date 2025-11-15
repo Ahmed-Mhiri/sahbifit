@@ -107,14 +107,14 @@ class SessionCard extends StatelessWidget {
               Icon(
                 Icons.access_time,
                 size: 16,
-                // Replaced .withOpacity(0.6) with .withAlpha(153)
+                // Replaced .withAlpha(153) with .withAlpha(153)
                 color: AppTheme.darkGray.withAlpha(153),
               ),
               const SizedBox(width: 4),
               Text(
                 time,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      // Replaced .withOpacity(0.8) with .withAlpha(204)
+                      // Replaced .withAlpha(204) with .withAlpha(204)
                       color: AppTheme.darkGray.withAlpha(204),
                     ),
               ),
@@ -122,7 +122,7 @@ class SessionCard extends StatelessWidget {
               Icon(
                 Icons.location_on_outlined,
                 size: 16,
-                // Replaced .withOpacity(0.6) with .withAlpha(153)
+                // Replaced .withAlpha(153) with .withAlpha(153)
                 color: AppTheme.darkGray.withAlpha(153),
               ),
               const SizedBox(width: 4),
@@ -130,7 +130,7 @@ class SessionCard extends StatelessWidget {
                 child: Text(
                   location,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        // Replaced .withOpacity(0.8) with .withAlpha(204)
+                        // Replaced .withAlpha(204) with .withAlpha(204)
                         color: AppTheme.darkGray.withAlpha(204),
                       ),
                   maxLines: 1,
@@ -145,14 +145,14 @@ class SessionCard extends StatelessWidget {
               Icon(
                 Icons.people_outline,
                 size: 16,
-                // Replaced .withOpacity(0.6) with .withAlpha(153)
+                // Replaced .withAlpha(153) with .withAlpha(153)
                 color: AppTheme.darkGray.withAlpha(153),
               ),
               const SizedBox(width: 4),
               Text(
                 '$participants/$maxParticipants',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      // Replaced .withOpacity(0.8) with .withAlpha(204)
+                      // Replaced .withAlpha(204) with .withAlpha(204)
                       color: AppTheme.darkGray.withAlpha(204),
                     ),
               ),

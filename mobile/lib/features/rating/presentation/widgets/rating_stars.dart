@@ -44,8 +44,8 @@ class _RatingStarsState extends State<RatingStars> {
         color: color,
         size: 36, // Make stars a good size for tapping
       ),
-      splashColor: AppTheme.warningYellow.withOpacity(0.1),
-      highlightColor: AppTheme.warningYellow.withOpacity(0.1),
+      splashColor: AppTheme.warningYellow.withAlpha(26),
+      highlightColor: AppTheme.warningYellow.withAlpha(26),
     );
   }
 

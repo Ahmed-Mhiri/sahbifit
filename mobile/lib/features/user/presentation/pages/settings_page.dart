@@ -75,15 +75,16 @@ class SettingsPage extends StatelessWidget {
             context.push('/submit-gym');
           },
         ),
-        // TODO: Add 'Blocked Users' page
-        // ListTile(
-        //   leading: const Icon(Icons.block),
-        //   title: const Text('Blocked Users'),
-        //   trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-        //   onTap: () {
-        //     // context.push('/blocked-users');
-        //   },
-        // ),
+        
+        // --- UPDATED THIS TILE ---
+        ListTile(
+          leading: const Icon(Icons.block),
+          title: const Text('Blocked Users'),
+          trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+          onTap: () {
+            context.push('/blocked-users');
+          },
+        ),
 
         const Divider(),
 

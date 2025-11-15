@@ -40,7 +40,6 @@ part 'create_report_model.freezed.dart';
 part 'create_report_model.g.dart';
 
 @freezed
-abstract
 class CreateReportModel with _$CreateReportModel {
   
   const factory CreateReportModel({
@@ -944,7 +943,6 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\report\presentation\cu
 part of 'report_cubit.dart';
 
 @freezed
-abstract
 class ReportState with _$ReportState {
   /// The initial, idle state of the report form.
   const factory ReportState.initial() = _Initial;

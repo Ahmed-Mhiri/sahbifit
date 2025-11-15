@@ -7,4 +7,8 @@ abstract class UserRepository {
   Future<void> blockUser(String userId);
   Future<void> updateFcmToken(String token);
   Future<void> updateProfileVisibility(ProfileVisibility visibility);
+
+  // --- ADDED METHODS ---
+  Future<List<User>> getMyBlockedUsers();
+  Future<void> unblockUser(String userId);
 }

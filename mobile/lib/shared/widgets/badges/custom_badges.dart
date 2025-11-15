@@ -16,7 +16,7 @@ class StatusBadge extends StatelessWidget {
   factory StatusBadge.verified() {
     return StatusBadge(
       text: 'Verified',
-      // Replaced .withOpacity(0.1) with .withAlpha(26)
+      // Replaced .withAlpha(26) with .withAlpha(26)
       backgroundColor: AppTheme.trustBlue.withAlpha(26),
       textColor: AppTheme.trustBlue,
     );
@@ -25,7 +25,7 @@ class StatusBadge extends StatelessWidget {
   factory StatusBadge.probationary() {
     return StatusBadge(
       text: 'Under Review',
-      // Replaced .withOpacity(0.1) with .withAlpha(26)
+      // Replaced .withAlpha(26) with .withAlpha(26)
       backgroundColor: AppTheme.warningYellow.withAlpha(26),
       textColor: AppTheme.darkGray,
     );
@@ -34,7 +34,7 @@ class StatusBadge extends StatelessWidget {
   factory StatusBadge.reliable() {
     return StatusBadge(
       text: 'Reliable',
-      // Replaced .withOpacity(0.1) with .withAlpha(26)
+      // Replaced .withAlpha(26) with .withAlpha(26)
       backgroundColor: AppTheme.successGreen.withAlpha(26),
       textColor: AppTheme.successGreen,
     );
@@ -43,7 +43,7 @@ class StatusBadge extends StatelessWidget {
   factory StatusBadge.unreliable() {
     return StatusBadge(
       text: 'Unreliable',
-      // Replaced .withOpacity(0.1) with .withAlpha(26)
+      // Replaced .withAlpha(26) with .withAlpha(26)
       backgroundColor: AppTheme.primaryRed.withAlpha(26),
       textColor: AppTheme.primaryRed,
     );
@@ -56,7 +56,7 @@ class StatusBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12),
-        // Replaced .withOpacity(0.3) with .withAlpha(77)
+        // Replaced .withAlpha(77) with .withAlpha(77)
         border: Border.all(color: textColor.withAlpha(77)),
       ),
       child: Text(

@@ -5,14 +5,17 @@ import 'package:sahbifit/features/chat/domain/entities/message.dart'; // Ensure 
 part 'message_model.freezed.dart';
 part 'message_model.g.dart';
 
-// [DELETED] @JsonSerializable annotation removed from here
-
 @freezed
 abstract class MessageModel with _$MessageModel {
   const MessageModel._();
-  
+
+  @JsonSerializable( // <-- MOVED HERE
+    fieldRename: FieldRename.snake,
+    converters: [TimestampConverter()],
+    explicitToJson: true,
+  )
   const factory MessageModel({
-    String? id, // [FIXED]
+    String? id,
     required String senderId,
     required String text,
     // When reading, 'timestamp' will be a Timestamp.
@@ -40,11 +43,7 @@ abstract class MessageModel with _$MessageModel {
   }
 
   /// Factory for creating a model from a JSON map (required by freezed)
-  @JsonSerializable( // [MOVED] Annotation is now here
-    fieldRename: FieldRename.snake,
-    converters: [TimestampConverter()],
-    explicitToJson: true,
-  )
+  // <-- Annotation removed from here
   factory MessageModel.fromJson(Map<String, dynamic> json) =>
       _$MessageModelFromJson(json);
 
@@ -75,12 +74,11 @@ abstract class MessageModel with _$MessageModel {
 }
 
 // This is the custom converter for handling Firestore Timestamps
-// [FIXED] Changed Object to Object? to handle null values correctly.
 class TimestampConverter implements JsonConverter<DateTime?, Object?> {
   const TimestampConverter();
 
   @override
-  DateTime? fromJson(Object? json) { // [FIXED] Changed Object to Object?
+  DateTime? fromJson(Object? json) {
     if (json is Timestamp) {
       return json.toDate();
     }

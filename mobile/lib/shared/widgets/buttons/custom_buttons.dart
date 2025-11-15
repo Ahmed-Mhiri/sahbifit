@@ -3,7 +3,7 @@ import 'package:sahbifit/core/config/app_theme.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool isLoading;
   final bool enabled;
   final double? width;
@@ -22,7 +22,7 @@ class PrimaryButton extends StatelessWidget {
     return SizedBox(
       width: width ?? double.infinity,
       child: ElevatedButton(
-        onPressed: enabled && !isLoading ? onPressed : null,
+        onPressed: enabled && !isLoading && onPressed != null ? onPressed : null,
         style: AppTheme.primaryButtonStyle,
         child: isLoading
             ? SizedBox(
@@ -46,7 +46,7 @@ class PrimaryButton extends StatelessWidget {
 
 class SecondaryButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool isLoading;
   final bool enabled;
   final double? width;
@@ -65,7 +65,7 @@ class SecondaryButton extends StatelessWidget {
     return SizedBox(
       width: width ?? double.infinity,
       child: OutlinedButton(
-        onPressed: enabled && !isLoading ? onPressed : null,
+        onPressed: enabled && !isLoading && onPressed != null ? onPressed : null,
         style: AppTheme.secondaryButtonStyle,
         child: isLoading
             ? SizedBox(

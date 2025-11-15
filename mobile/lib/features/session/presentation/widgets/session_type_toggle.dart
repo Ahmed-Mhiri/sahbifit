@@ -56,7 +56,7 @@ class _ToggleButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = isSelected ? AppTheme.primaryRed : AppTheme.darkGray;
     final bgColor =
-        isSelected ? AppTheme.primaryRed.withOpacity(0.1) : AppTheme.lightGray;
+        isSelected ? AppTheme.primaryRed.withAlpha(26) : AppTheme.lightGray;
 
     return GestureDetector(
       onTap: onTap,

@@ -122,8 +122,6 @@ class AppTheme {
         onPrimary: cleanWhite,
         secondary: darkGray,
         onSecondary: cleanWhite,
-        background: cleanWhite,
-        onBackground: darkGray,
         surface: cleanWhite,
         onSurface: darkGray,
         error: primaryRed,
@@ -379,7 +377,7 @@ class AppTheme {
     borderRadius: BorderRadius.circular(12),
     boxShadow: [
       BoxShadow(
-        color: darkGray.withOpacity(0.1),
+        color: darkGray.withAlpha(26),
         blurRadius: 8,
         offset: const Offset(0, 2),
       ),
@@ -392,7 +390,7 @@ class AppTheme {
   );
 
   static BoxDecoration get verifiedBadgeDecoration => BoxDecoration(
-    color: trustBlue.withOpacity(0.1),
+    color: trustBlue.withAlpha(26),
     borderRadius: BorderRadius.circular(12),
     border: Border.all(color: trustBlue, width: 1),
   );

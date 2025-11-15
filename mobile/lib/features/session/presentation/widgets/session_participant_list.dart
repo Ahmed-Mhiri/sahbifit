@@ -16,9 +16,9 @@ class SessionParticipantList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (participants.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(32.0),
+          padding: const EdgeInsets.all(32.0), // Added const here for best practice
           child: Text(
             'No one has joined yet. Be the first!',
             style: AppTheme.lockedFeatureText,

@@ -90,6 +90,13 @@ class ProfileHeader extends StatelessWidget {
   }
 
   Widget _buildStatusBadges(BuildContext context, User user) {
+    // --- START: New Logic ---
+
+    // Define the business logic for being "Reliable"
+    final bool isReliable = user.groupSessionCount >= 5 && user.noShowCount == 0;
+
+    // --- END: New Logic ---
+
     return Wrap(
       spacing: AppTheme.elementSpacing,
       runSpacing: AppTheme.elementSpacing,
@@ -97,10 +104,17 @@ class ProfileHeader extends StatelessWidget {
       children: [
         if (user.verificationStatus == VerificationStatus.verified)
           StatusBadge.verified(),
+
         if (user.verificationStatus == VerificationStatus.pendingReview)
           StatusBadge.probationary(),
-        if (user.status == UserStatus.suspended) StatusBadge.unreliable(),
-        // TODO: Add 'Reliable' badge based on logic
+
+        if (user.status == UserStatus.suspended)
+          StatusBadge.unreliable()
+        // --- START: New Logic ---
+        // Only show "Reliable" if they aren't "Unreliable"
+        else if (isReliable)
+          StatusBadge.reliable(),
+        // --- END: New Logic ---
       ],
     );
   }

@@ -15,8 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$MessageModel {
 
- String? get id;// [FIXED]
- String get senderId; String get text;// When reading, 'timestamp' will be a Timestamp.
+ String? get id; String get senderId; String get text;// When reading, 'timestamp' will be a Timestamp.
 // When writing, this will be null and replaced by toFirestore
  DateTime? get timestamp;
 /// Create a copy of MessageModel
@@ -212,14 +211,13 @@ return $default(_that.id,_that.senderId,_that.text,_that.timestamp);case _:
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(fieldRename: FieldRename.snake, converters: [TimestampConverter()], explicitToJson: true)
 class _MessageModel extends MessageModel {
   const _MessageModel({this.id, required this.senderId, required this.text, required this.timestamp}): super._();
   factory _MessageModel.fromJson(Map<String, dynamic> json) => _$MessageModelFromJson(json);
 
 @override final  String? id;
-// [FIXED]
 @override final  String senderId;
 @override final  String text;
 // When reading, 'timestamp' will be a Timestamp.

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sahbifit/core/config/app_theme.dart';
 import 'package:sahbifit/core/di/service_locator.dart';
 import 'package:sahbifit/features/gym/domain/entities/gym.dart';
 import 'package:sahbifit/features/gym/presentation/cubit/gym_list_cubit.dart';
@@ -67,7 +66,7 @@ class _GymPickerState extends State<GymPicker> {
     }
 
     return DropdownButtonFormField<Gym>(
-      value: _selectedValue,
+      initialValue: _selectedValue,
       items: gyms
           ?.map((gym) => DropdownMenuItem<Gym>(
                 value: gym,

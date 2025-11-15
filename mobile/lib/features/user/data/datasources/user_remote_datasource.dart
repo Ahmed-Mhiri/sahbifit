@@ -13,6 +13,11 @@ abstract class UserRemoteDatasource {
   Future<void> blockUser(String userId);
   Future<void> updateFcmToken(UpdateFcmTokenModel request);
   Future<void> updateProfileVisibility(UpdateVisibilityModel request);
+  
+  // --- ADDED ---
+  Future<List<UserModel>> getMyBlockedUsers();
+  Future<void> unblockUser(String userId);
+  // --- END ADDED ---
 }
 
 @Injectable(as: UserRemoteDatasource)
@@ -77,4 +82,30 @@ class UserRemoteDatasourceImpl implements UserRemoteDatasource {
       throw ServerException.fromDio(e);
     }
   }
+
+  // --- ADDED ---
+  @override
+  Future<List<UserModel>> getMyBlockedUsers() async {
+    try {
+      final response = await _apiClient.dio.get(ApiEndpoints.myBlockedUsers);
+      // Assuming response.data is a List<dynamic>
+      final List<dynamic> data = response.data;
+      return data.map((json) => UserModel.fromJson(json)).toList();
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<void> unblockUser(String userId) async {
+    try {
+      // Unblocking is typically a DELETE request
+      await _apiClient.dio.delete(
+        ApiEndpoints.unblockUser(userId),
+      );
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+  // --- END ADDED ---
 }

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart'; // ADD THIS IMPORT
+import 'package:go_router/go_router.dart';
 import 'package:sahbifit/app/bloc/app_bloc.dart';
 import 'package:sahbifit/core/di/service_locator.dart';
 import 'package:sahbifit/features/session/presentation/cubit/session_feed_cubit.dart';
 import 'package:sahbifit/features/session/presentation/widgets/session_card.dart';
-import 'package:sahbifit/features/user/domain/enums/user_status.dart';
 import 'package:sahbifit/features/user/domain/enums/user_role.dart';
+import 'package:sahbifit/features/verification/domain/enums/verification_status_enum.dart'; // ADDED THIS IMPORT
 import 'package:sahbifit/shared/widgets/app_bars/custom_app_bar.dart';
 import 'package:sahbifit/shared/widgets/states/loading_states.dart';
 
@@ -70,7 +70,7 @@ class SessionFeedPage extends StatelessWidget {
                       final bool isAmbassadorSession =
                           session.creator.role == UserRole.admin; // Placeholder logic
                       final bool isLocked =
-                          currentUser.status == UserStatus.probationary &&
+                          currentUser.verificationStatus == VerificationStatus.pendingReview && // CHANGED THIS LINE
                               !isAmbassadorSession;
 
                       return SessionCardWrapper(

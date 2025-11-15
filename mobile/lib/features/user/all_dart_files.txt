@@ -92,7 +92,6 @@ part 'badge_model.freezed.dart';
 part 'badge_model.g.dart';
 
 @freezed
-abstract
 class BadgeModel with _$BadgeModel {
   const BadgeModel._();
 
@@ -537,7 +536,6 @@ part 'update_fcm_token_model.g.dart';
 
 // Matches UpdateFcmTokenDto.java
 @freezed
-abstract
 class UpdateFcmTokenModel with _$UpdateFcmTokenModel {
   
   const factory UpdateFcmTokenModel({
@@ -904,7 +902,6 @@ part 'update_visibility_model.g.dart';
 
 // Matches UpdateVisibilityDto.java
 @freezed
-abstract
 class UpdateVisibilityModel with _$UpdateVisibilityModel {
   
   const factory UpdateVisibilityModel({
@@ -1277,7 +1274,6 @@ part 'user_badge_model.g.dart';
 
 // This model maps to UserBadgeId.java
 @freezed
-abstract
 class UserBadgeIdModel with _$UserBadgeIdModel {
   
   const factory UserBadgeIdModel({
@@ -1291,7 +1287,6 @@ class UserBadgeIdModel with _$UserBadgeIdModel {
 
 // This model maps to UserBadge.java
 @freezed
-abstract
 class UserBadgeModel with _$UserBadgeModel {
   
   const factory UserBadgeModel({
@@ -2073,7 +2068,6 @@ part 'user_block_model.g.dart';
 
 // This model maps to UserBlockId.java
 @freezed
-abstract
 class UserBlockIdModel with _$UserBlockIdModel {
   
   const factory UserBlockIdModel({
@@ -2087,7 +2081,6 @@ class UserBlockIdModel with _$UserBlockIdModel {
 
 // This model maps to UserBlock.java
 @freezed
-abstract
 class UserBlockModel with _$UserBlockModel {
   
   const factory UserBlockModel({
@@ -2939,7 +2932,6 @@ part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
 @freezed
-abstract
 class UserModel with _$UserModel {
   const UserModel._();
 
@@ -4857,7 +4849,6 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\user\presentation\bloc
 part of 'profile_bloc.dart';
 
 @freezed
-abstract
 class ProfileEvent with _$ProfileEvent {
   /// Dispatched to fetch the current user's profile (e.g., when the page loads).
   const factory ProfileEvent.loadMyProfile() = _LoadMyProfile;
@@ -4874,7 +4865,6 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\user\presentation\bloc
 part of 'profile_bloc.dart';
 
 @freezed
-abstract
 class ProfileState with _$ProfileState {
   /// The initial state, before the profile has been loaded.
   const factory ProfileState.initial() = _Initial;

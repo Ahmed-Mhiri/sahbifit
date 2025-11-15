@@ -24,7 +24,7 @@ class ChatDisabledPlaceholder extends StatelessWidget {
             Icon(
               icon,
               size: 64,
-              color: AppTheme.disabledGray.withOpacity(0.5),
+              color: AppTheme.disabledGray.withAlpha(128),
             ),
             const SizedBox(height: 16),
             Text(

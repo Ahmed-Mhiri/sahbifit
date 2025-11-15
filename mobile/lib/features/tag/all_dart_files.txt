@@ -50,7 +50,6 @@ part 'tag_model.freezed.dart';
 part 'tag_model.g.dart';
 
 @freezed
-abstract
 class TagModel with _$TagModel {
   const TagModel._(); // Private constructor for methods
 
@@ -1049,7 +1048,6 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\tag\presentation\cubit
 part of 'tags_cubit.dart';
 
 @freezed
-abstract
 class TagsState with _$TagsState {
   /// The initial state, before tags are fetched.
   const factory TagsState.initial() = _Initial;

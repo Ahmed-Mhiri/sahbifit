@@ -5,17 +5,15 @@
 _MessageModel _$MessageModelFromJson(Map<String, dynamic> json) =>
     _MessageModel(
       id: json['id'] as String?,
-      senderId: json['senderId'] as String,
+      senderId: json['sender_id'] as String,
       text: json['text'] as String,
-      timestamp: json['timestamp'] == null
-          ? null
-          : DateTime.parse(json['timestamp'] as String),
+      timestamp: const TimestampConverter().fromJson(json['timestamp']),
     );
 
 Map<String, dynamic> _$MessageModelToJson(_MessageModel instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'senderId': instance.senderId,
+      'sender_id': instance.senderId,
       'text': instance.text,
-      'timestamp': instance.timestamp?.toIso8601String(),
+      'timestamp': const TimestampConverter().toJson(instance.timestamp),
     };

@@ -6,6 +6,7 @@ import 'package:sahbifit/core/config/app_theme.dart';
 import 'package:sahbifit/core/di/service_locator.dart';
 import 'package:sahbifit/core/utils/date_formatters.dart';
 import 'package:sahbifit/features/session/domain/entities/session.dart';
+import 'package:sahbifit/features/session/domain/entities/session_participant.dart'; // ADD THIS IMPORT
 import 'package:sahbifit/features/session/domain/enums/session_type.dart';
 import 'package:sahbifit/features/session/presentation/cubit/session_details_cubit.dart';
 import 'package:sahbifit/features/session/presentation/widgets/reputation_gate_dialog.dart';
@@ -68,17 +69,28 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
             );
           },
           builder: (context, state) {
-            return state.map(
-              initial: (_) => const LoadingIndicator(),
-              loading: (_) => const LoadingIndicator(),
-              error: (e) => Center(
+            // UPDATED from .map to .when
+            return state.when(
+              initial: () => const LoadingIndicator(),
+              loading: () => const LoadingIndicator(),
+              error: (message) => Center(
                 child: ErrorStateWidget(
-                  message: e.message,
+                  message: message,
                   buttonText: 'Try Again',
                   onRetry: () => _cubit.fetchSessionDetails(widget.sessionId),
                 ),
               ),
-              loaded: (s) => _buildLoadedBody(context, s),
+              loaded: (session, participants, isJoined, isJoinLoading,
+                  errorMessage) {
+                return _buildLoadedBody(
+                  context,
+                  session,
+                  participants,
+                  isJoined,
+                  isJoinLoading,
+                  errorMessage,
+                );
+              },
             );
           },
         ),
@@ -86,8 +98,16 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
     );
   }
 
-  Widget _buildLoadedBody(BuildContext context, _Loaded state) {
-    final session = state.session;
+  // UPDATED function signature
+  Widget _buildLoadedBody(
+    BuildContext context,
+    Session session,
+    List<SessionParticipant> participants,
+    bool isJoined,
+    bool isJoinLoading,
+    String? errorMessage,
+  ) {
+    // final session = state.session; // This line is no longer needed
     final isCreator = session.creator.userId == _currentUser.userId;
 
     return CustomScrollView(
@@ -119,7 +139,7 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
                   icon: Icons.people_rounded,
                   title: 'Participants',
                   subtitle:
-                      '${state.participants.length} / ${session.maxParticipants} joined',
+                      '${participants.length} / ${session.maxParticipants} joined', // UPDATED
                 ),
                 const SizedBox(height: AppTheme.elementSpacing),
                 ListTile(
@@ -130,20 +150,28 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
                   title: Text('Hosted by ${session.creator.firstName}',
                       style: context.textTheme.titleMedium),
                   subtitle: const Text('View Profile'),
-                  onTap: () => context.push('/user/${session.creator.userId}'), // UPDATED
+                  onTap: () =>
+                      context.push('/user/${session.creator.userId}'), // UPDATED
                 ),
                 const Divider(),
                 const SizedBox(height: AppTheme.elementSpacing),
                 Text('Who\'s Going', style: context.textTheme.headlineSmall),
                 const SizedBox(height: AppTheme.elementSpacing),
-                SessionParticipantList(participants: state.participants),
+                SessionParticipantList(participants: participants), // UPDATED
               ],
             ),
           ),
         ),
         SliverFillRemaining(
           hasScrollBody: false,
-          child: _buildBottomButton(context, state, isCreator),
+          child: _buildBottomButton(
+            context,
+            session,
+            participants,
+            isJoined,
+            isJoinLoading,
+            isCreator,
+          ), // UPDATED
         ),
       ],
     );
@@ -177,10 +205,16 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
     );
   }
 
+  // UPDATED function signature
   Widget _buildBottomButton(
-      BuildContext context, _Loaded state, bool isCreator) {
-    final session = state.session;
-    final bool isFull = state.participants.length >= session.maxParticipants;
+    BuildContext context,
+    Session session,
+    List<SessionParticipant> participants,
+    bool isJoined,
+    bool isJoinLoading,
+    bool isCreator,
+  ) {
+    final bool isFull = participants.length >= session.maxParticipants; // UPDATED
 
     // Feature 3: Reputation Gate Logic
     // This assumes AppBloc's user entity has this info.
@@ -190,9 +224,9 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
     final bool isGated = isOneOnOne && !hasAttendedGroupSession;
 
     // Feature 3: Ephemeral Chat Logic
-    final bool canChat =
-        DateTime.now().isAfter(session.startTime.subtract(const Duration(hours: 1))) &&
-            DateTime.now().isBefore(session.endTime.add(const Duration(hours: 1)));
+    final bool canChat = DateTime.now()
+            .isAfter(session.startTime.subtract(const Duration(hours: 1))) &&
+        DateTime.now().isBefore(session.endTime.add(const Duration(hours: 1)));
 
     return Container(
       padding: const EdgeInsets.all(AppTheme.defaultPadding),
@@ -200,7 +234,7 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
         color: AppTheme.cleanWhite,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha(13),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -212,13 +246,15 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
           if (isCreator)
             PrimaryButton(
               text: 'Mark Attendance',
-              onPressed: () => context.push('/session/${session.sessionId}/attendance'), // UPDATED
+              onPressed: () => context
+                  .push('/session/${session.sessionId}/attendance'), // UPDATED
             )
-          else if (state.isJoined)
+          else if (isJoined) // UPDATED
             PrimaryButton(
               text: canChat ? 'Open Chat' : 'Chat (Locked)',
               onPressed: canChat
-                  ? () => context.push('/session/${session.sessionId}/chat') // UPDATED
+                  ? () => context
+                      .push('/session/${session.sessionId}/chat') // UPDATED
                   : null,
             )
           else if (isFull)
@@ -229,7 +265,7 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
           else
             PrimaryButton(
               text: isGated ? 'Join (Requires 1 Group Session)' : 'Join Session',
-              isLoading: state.isJoinLoading,
+              isLoading: isJoinLoading, // UPDATED
               onPressed: isGated
                   ? () => showReputationGateDialog(context)
                   : () => _cubit.joinSession(session.sessionId),

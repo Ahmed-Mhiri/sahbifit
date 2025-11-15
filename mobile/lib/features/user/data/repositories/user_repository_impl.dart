@@ -62,4 +62,24 @@ class UserRepositoryImpl implements UserRepository {
       throw ServerFailure(message: e.message);
     }
   }
+
+  // --- ADDED METHODS ---
+  @override
+  Future<List<User>> getMyBlockedUsers() async {
+    try {
+      final userModels = await _remoteDatasource.getMyBlockedUsers();
+      return userModels.map((model) => model.toEntity()).toList();
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+
+  @override
+  Future<void> unblockUser(String userId) async {
+    try {
+      await _remoteDatasource.unblockUser(userId);
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
 }

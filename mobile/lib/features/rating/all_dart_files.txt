@@ -72,7 +72,6 @@ part 'create_rating_model.freezed.dart';
 part 'create_rating_model.g.dart';
 
 @freezed
-abstract
 class CreateRatingModel with _$CreateRatingModel {
   
   const factory CreateRatingModel({
@@ -512,7 +511,6 @@ part 'pending_rating_model.freezed.dart';
 part 'pending_rating_model.g.dart';
 
 @freezed
-abstract
 class PendingRatingModel with _$PendingRatingModel {
   const PendingRatingModel._();
 
@@ -974,7 +972,6 @@ part 'rating_model.g.dart';
 // Helper model to represent the nested 'session' object
 // We only extract the ID, as seen in the Rating entity
 @freezed
-abstract
 class RatingSessionModel with _$RatingSessionModel {
   
   const factory RatingSessionModel({
@@ -987,7 +984,6 @@ class RatingSessionModel with _$RatingSessionModel {
 
 
 @freezed
-abstract
 class RatingModel with _$RatingModel {
   const RatingModel._();
 
@@ -2975,7 +2971,6 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\presentation\bl
 part of 'pending_rating_bloc.dart';
 
 @freezed
-abstract
 class PendingRatingEvent with _$PendingRatingEvent {
   /// Dispatched to load the initial list of pending ratings.
   const factory PendingRatingEvent.fetchList() = _FetchList;
@@ -2995,7 +2990,6 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\presentation\bl
 part of 'pending_rating_bloc.dart';
 
 @freezed
-abstract
 class PendingRatingState with _$PendingRatingState {
   /// The initial state, before anything is loaded.
   const factory PendingRatingState.initial() = _Initial;

@@ -1,4 +1,3 @@
-// lib/core/config/app_router.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -48,33 +47,27 @@ class AppRouter {
           '/verify-sms',
         ];
 
-        // If the app is still checking auth, don't redirect.
-        // The AppView's builder will show a loading screen.
-        if (appState is _Initial) {
-          return null;
-        }
+        // Use appState.mapOrNull to handle all states publicly
+        return appState.mapOrNull(
+          // If initial, don't redirect. The AppView builder will show a loading screen.
+          initial: (_) => null,
 
-        // Handle unauthenticated users
-        if (appState is _Unauthenticated) {
-          // If the user is on an auth page, allow them.
-          if (authRoutes.contains(location)) {
-            return null;
-          }
-          // Otherwise, redirect to login.
-          return '/login';
-        }
+          // Handle unauthenticated users
+          unauthenticated: (_) {
+            if (authRoutes.contains(location)) {
+              return null; // Allow user to stay on auth pages
+            }
+            return '/login'; // Redirect all other routes to login
+          },
 
-        // Handle authenticated users
-        if (appState is _Authenticated) {
-          // If the user is on an auth page, redirect to home.
-          if (authRoutes.contains(location)) {
-            return '/home';
-          }
-          // Otherwise, allow them to go anywhere.
-          return null;
-        }
-
-        return null; // Default case
+          // Handle authenticated users
+          authenticated: (_) {
+            if (authRoutes.contains(location)) {
+              return '/home'; // If on an auth page, redirect to home
+            }
+            return null; // Allow navigation to any other page
+          },
+        );
       },
 
       // 4. Define all your app routes

@@ -79,7 +79,6 @@ part 'verification_status_model.g.dart';
 
 // Matches VerificationStatusDto.java
 @freezed
-abstract
 class VerificationStatusModel with _$VerificationStatusModel {
   const VerificationStatusModel._();
 
@@ -1119,7 +1118,6 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\verification\presentat
 part of 'verification_cubit.dart';
 
 @freezed
-abstract
 class VerificationState with _$VerificationState {
   /// We haven't fetched the status yet.
   const factory VerificationState.initial() = _Initial;

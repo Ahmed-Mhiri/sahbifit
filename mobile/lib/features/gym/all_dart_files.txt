@@ -62,7 +62,6 @@ part 'gym_model.freezed.dart';
 part 'gym_model.g.dart';
 
 @freezed
-abstract
 class GymModel with _$GymModel {
   const GymModel._(); // Private constructor for methods
 
@@ -535,7 +534,6 @@ part 'gym_submission_model.freezed.dart';
 part 'gym_submission_model.g.dart';
 
 @freezed
-abstract
 class GymSubmissionModel with _$GymSubmissionModel {
   
   const factory GymSubmissionModel({
@@ -1522,7 +1520,6 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\gym\presentation\cubit
 part of 'gym_list_cubit.dart';
 
 @freezed
-abstract
 class GymListState with _$GymListState {
   /// The initial state, before gyms are fetched.
   const factory GymListState.initial() = _Initial;

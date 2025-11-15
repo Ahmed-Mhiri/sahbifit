@@ -18,9 +18,7 @@ class ApiEndpoints {
   static const String markAttendance = '/sessions/attendance';
   static String joinSession(String sessionId) => '/sessions/$sessionId/join';
 
-  // --- 
-  // 💡 NEWLY ADDED 
-  // ---
+  // --- User ---
   static const String myProfile = '/users/me'; // Assumed endpoint for getting current user
   static const String updateFcmToken = '/users/me/fcm-token';
   static const String updateVisibility = '/users/me/visibility';
@@ -28,23 +26,26 @@ class ApiEndpoints {
   static String getUserProfile(String userId) => '/users/$userId'; // Assumed
   static String blockUser(String userId) => '/users/$userId/block';
 
+  // --- ADDED ---
+  static const String myBlockedUsers = '/users/me/blocked';
+  static String unblockUser(String userId) => '/users/me/blocked/$userId';
+  // --- END ADDED ---
 
-  // --- 
-  // 💡 NEWLY ADDED 
-  // ---
+  // --- Verification ---
   static const String verificationStatus = '/verification/status';
   static const String submitVerification = '/verification/submit';
 
-  // --- 
-  // 💡 NEWLY ADDED 
-  // ---
+  // --- Rating ---
   static const String ratings = '/ratings';
   static const String pendingRatings = '/ratings/pending';
   // Dynamic endpoint for getting a user's ratings
   static String ratingsForUser(String userId) => '/ratings/user/$userId';
 
+  // --- Report ---
   static const String reports = '/reports';
 
-
-  
+  // ---
+  // 💡 NEWLY ADDED
+  // ---
+  static const String uploadImage = '/api/files/upload-image';
 }

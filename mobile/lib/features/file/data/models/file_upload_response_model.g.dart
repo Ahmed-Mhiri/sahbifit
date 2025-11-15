@@ -1,0 +1,15 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'file_upload_response_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_FileUploadResponseModel _$FileUploadResponseModelFromJson(
+  Map<String, dynamic> json,
+) => _FileUploadResponseModel(url: json['url'] as String);
+
+Map<String, dynamic> _$FileUploadResponseModelToJson(
+  _FileUploadResponseModel instance,
+) => <String, dynamic>{'url': instance.url};

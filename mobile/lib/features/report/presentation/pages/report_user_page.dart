@@ -5,6 +5,8 @@ import 'package:sahbifit/features/report/presentation/cubit/report_cubit.dart';
 import 'package:sahbifit/features/report/presentation/widgets/report_form.dart';
 import 'package:sahbifit/shared/widgets/app_bars/custom_app_bar.dart';
 import 'package:sahbifit/shared/widgets/dialogs/custom_dialogs.dart';
+import 'package:go_router/go_router.dart'; // ADD THIS IMPORT
+
 
 
 class ReportUserPage extends StatelessWidget {
@@ -41,7 +43,7 @@ class ReportUserPage extends StatelessWidget {
                     // Pop the bottom sheet
                     Navigator.of(ctx).pop();
                     // Pop the ReportUserPage
-                    context.router.pop();
+                    context.pop();
                   },
                 ),
               );

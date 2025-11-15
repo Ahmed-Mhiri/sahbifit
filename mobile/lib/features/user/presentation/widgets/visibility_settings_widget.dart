@@ -42,7 +42,9 @@ class VisibilitySettingsWidget extends StatelessWidget {
           RadioListTile<ProfileVisibility>(
             title: const Text('Show to all users'),
             value: ProfileVisibility.all,
+            // ignore: deprecated_member_use
             groupValue: currentVisibility,
+            // ignore: deprecated_member_use
             onChanged: (value) => onChanged(ProfileVisibility.all),
             activeColor: AppTheme.primaryRed,
           ),
@@ -57,8 +59,10 @@ class VisibilitySettingsWidget extends StatelessWidget {
                   )
                 : null,
             value: ProfileVisibility.sameGender,
+            // ignore: deprecated_member_use
             groupValue: currentVisibility,
             // Disable if gender is not verified
+            // ignore: deprecated_member_use
             onChanged: canSelectSameGender
                 ? (value) => onChanged(ProfileVisibility.sameGender)
                 : null,
