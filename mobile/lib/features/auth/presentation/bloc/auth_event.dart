@@ -1,7 +1,7 @@
 part of 'auth_bloc.dart';
 
 @freezed
-class AuthEvent with _$AuthEvent {
+sealed class AuthEvent with _$AuthEvent {
   /// Dispatched when the user presses the login button.
   const factory AuthEvent.loginButtonPressed({
     required String phoneNumber,

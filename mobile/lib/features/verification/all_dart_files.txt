@@ -79,10 +79,11 @@ part 'verification_status_model.g.dart';
 
 // Matches VerificationStatusDto.java
 @freezed
+abstract
 class VerificationStatusModel with _$VerificationStatusModel {
   const VerificationStatusModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory VerificationStatusModel({
     required VerificationStatus status,
     required VerifiedGender gender,
@@ -103,8 +104,8 @@ class VerificationStatusModel with _$VerificationStatusModel {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\verification\data\models\verification_status_model.freezed.dart
 ==================================================
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -114,149 +115,30 @@ part of 'verification_status_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
-VerificationStatusModel _$VerificationStatusModelFromJson(
-  Map<String, dynamic> json,
-) {
-  return _VerificationStatusModel.fromJson(json);
-}
 
 /// @nodoc
 mixin _$VerificationStatusModel {
-  VerificationStatus get status => throw _privateConstructorUsedError;
-  VerifiedGender get gender => throw _privateConstructorUsedError;
-
-  /// Serializes this VerificationStatusModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  VerificationStatus get status;
+  VerifiedGender get gender;
 
   /// Create a copy of VerificationStatusModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $VerificationStatusModelCopyWith<VerificationStatusModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$VerificationStatusModelCopyWithImpl<VerificationStatusModel>(
+          this as VerificationStatusModel, _$identity);
 
-/// @nodoc
-abstract class $VerificationStatusModelCopyWith<$Res> {
-  factory $VerificationStatusModelCopyWith(
-    VerificationStatusModel value,
-    $Res Function(VerificationStatusModel) then,
-  ) = _$VerificationStatusModelCopyWithImpl<$Res, VerificationStatusModel>;
-  @useResult
-  $Res call({VerificationStatus status, VerifiedGender gender});
-}
-
-/// @nodoc
-class _$VerificationStatusModelCopyWithImpl<
-  $Res,
-  $Val extends VerificationStatusModel
->
-    implements $VerificationStatusModelCopyWith<$Res> {
-  _$VerificationStatusModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of VerificationStatusModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? status = null, Object? gender = null}) {
-    return _then(
-      _value.copyWith(
-            status: null == status
-                ? _value.status
-                : status // ignore: cast_nullable_to_non_nullable
-                      as VerificationStatus,
-            gender: null == gender
-                ? _value.gender
-                : gender // ignore: cast_nullable_to_non_nullable
-                      as VerifiedGender,
-          )
-          as $Val,
-    );
-  }
-}
-
-/// @nodoc
-abstract class _$$VerificationStatusModelImplCopyWith<$Res>
-    implements $VerificationStatusModelCopyWith<$Res> {
-  factory _$$VerificationStatusModelImplCopyWith(
-    _$VerificationStatusModelImpl value,
-    $Res Function(_$VerificationStatusModelImpl) then,
-  ) = __$$VerificationStatusModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({VerificationStatus status, VerifiedGender gender});
-}
-
-/// @nodoc
-class __$$VerificationStatusModelImplCopyWithImpl<$Res>
-    extends
-        _$VerificationStatusModelCopyWithImpl<
-          $Res,
-          _$VerificationStatusModelImpl
-        >
-    implements _$$VerificationStatusModelImplCopyWith<$Res> {
-  __$$VerificationStatusModelImplCopyWithImpl(
-    _$VerificationStatusModelImpl _value,
-    $Res Function(_$VerificationStatusModelImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of VerificationStatusModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? status = null, Object? gender = null}) {
-    return _then(
-      _$VerificationStatusModelImpl(
-        status: null == status
-            ? _value.status
-            : status // ignore: cast_nullable_to_non_nullable
-                  as VerificationStatus,
-        gender: null == gender
-            ? _value.gender
-            : gender // ignore: cast_nullable_to_non_nullable
-                  as VerifiedGender,
-      ),
-    );
-  }
-}
-
-/// @nodoc
-
-@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
-class _$VerificationStatusModelImpl extends _VerificationStatusModel {
-  const _$VerificationStatusModelImpl({
-    required this.status,
-    required this.gender,
-  }) : super._();
-
-  factory _$VerificationStatusModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$VerificationStatusModelImplFromJson(json);
-
-  @override
-  final VerificationStatus status;
-  @override
-  final VerifiedGender gender;
-
-  @override
-  String toString() {
-    return 'VerificationStatusModel(status: $status, gender: $gender)';
-  }
+  /// Serializes this VerificationStatusModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$VerificationStatusModelImpl &&
+            other is VerificationStatusModel &&
             (identical(other.status, status) || other.status == status) &&
             (identical(other.gender, gender) || other.gender == gender));
   }
@@ -265,45 +147,298 @@ class _$VerificationStatusModelImpl extends _VerificationStatusModel {
   @override
   int get hashCode => Object.hash(runtimeType, status, gender);
 
-  /// Create a copy of VerificationStatusModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$VerificationStatusModelImplCopyWith<_$VerificationStatusModelImpl>
-  get copyWith =>
-      __$$VerificationStatusModelImplCopyWithImpl<
-        _$VerificationStatusModelImpl
-      >(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$VerificationStatusModelImplToJson(this);
+  String toString() {
+    return 'VerificationStatusModel(status: $status, gender: $gender)';
   }
 }
 
-abstract class _VerificationStatusModel extends VerificationStatusModel {
-  const factory _VerificationStatusModel({
-    required final VerificationStatus status,
-    required final VerifiedGender gender,
-  }) = _$VerificationStatusModelImpl;
-  const _VerificationStatusModel._() : super._();
+/// @nodoc
+abstract mixin class $VerificationStatusModelCopyWith<$Res> {
+  factory $VerificationStatusModelCopyWith(VerificationStatusModel value,
+          $Res Function(VerificationStatusModel) _then) =
+      _$VerificationStatusModelCopyWithImpl;
+  @useResult
+  $Res call({VerificationStatus status, VerifiedGender gender});
+}
 
-  factory _VerificationStatusModel.fromJson(Map<String, dynamic> json) =
-      _$VerificationStatusModelImpl.fromJson;
+/// @nodoc
+class _$VerificationStatusModelCopyWithImpl<$Res>
+    implements $VerificationStatusModelCopyWith<$Res> {
+  _$VerificationStatusModelCopyWithImpl(this._self, this._then);
+
+  final VerificationStatusModel _self;
+  final $Res Function(VerificationStatusModel) _then;
+
+  /// Create a copy of VerificationStatusModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? status = null,
+    Object? gender = null,
+  }) {
+    return _then(_self.copyWith(
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as VerificationStatus,
+      gender: null == gender
+          ? _self.gender
+          : gender // ignore: cast_nullable_to_non_nullable
+              as VerifiedGender,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [VerificationStatusModel].
+extension VerificationStatusModelPatterns on VerificationStatusModel {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_VerificationStatusModel value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _VerificationStatusModel() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_VerificationStatusModel value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VerificationStatusModel():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_VerificationStatusModel value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VerificationStatusModel() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(VerificationStatus status, VerifiedGender gender)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _VerificationStatusModel() when $default != null:
+        return $default(_that.status, _that.gender);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(VerificationStatus status, VerifiedGender gender) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VerificationStatusModel():
+        return $default(_that.status, _that.gender);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(VerificationStatus status, VerifiedGender gender)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VerificationStatusModel() when $default != null:
+        return $default(_that.status, _that.gender);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+class _VerificationStatusModel extends VerificationStatusModel {
+  const _VerificationStatusModel({required this.status, required this.gender})
+      : super._();
+  factory _VerificationStatusModel.fromJson(Map<String, dynamic> json) =>
+      _$VerificationStatusModelFromJson(json);
 
   @override
-  VerificationStatus get status;
+  final VerificationStatus status;
   @override
-  VerifiedGender get gender;
+  final VerifiedGender gender;
 
   /// Create a copy of VerificationStatusModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$VerificationStatusModelImplCopyWith<_$VerificationStatusModelImpl>
-  get copyWith => throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$VerificationStatusModelCopyWith<_VerificationStatusModel> get copyWith =>
+      __$VerificationStatusModelCopyWithImpl<_VerificationStatusModel>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$VerificationStatusModelToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _VerificationStatusModel &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.gender, gender) || other.gender == gender));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, status, gender);
+
+  @override
+  String toString() {
+    return 'VerificationStatusModel(status: $status, gender: $gender)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$VerificationStatusModelCopyWith<$Res>
+    implements $VerificationStatusModelCopyWith<$Res> {
+  factory _$VerificationStatusModelCopyWith(_VerificationStatusModel value,
+          $Res Function(_VerificationStatusModel) _then) =
+      __$VerificationStatusModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call({VerificationStatus status, VerifiedGender gender});
+}
+
+/// @nodoc
+class __$VerificationStatusModelCopyWithImpl<$Res>
+    implements _$VerificationStatusModelCopyWith<$Res> {
+  __$VerificationStatusModelCopyWithImpl(this._self, this._then);
+
+  final _VerificationStatusModel _self;
+  final $Res Function(_VerificationStatusModel) _then;
+
+  /// Create a copy of VerificationStatusModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? status = null,
+    Object? gender = null,
+  }) {
+    return _then(_VerificationStatusModel(
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as VerificationStatus,
+      gender: null == gender
+          ? _self.gender
+          : gender // ignore: cast_nullable_to_non_nullable
+              as VerifiedGender,
+    ));
+  }
+}
+
+// dart format on
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\verification\data\models\verification_status_model.g.dart
@@ -316,19 +451,19 @@ part of 'verification_status_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$VerificationStatusModelImpl _$$VerificationStatusModelImplFromJson(
-  Map<String, dynamic> json,
-) => _$VerificationStatusModelImpl(
-  status: $enumDecode(_$VerificationStatusEnumMap, json['status']),
-  gender: $enumDecode(_$VerifiedGenderEnumMap, json['gender']),
-);
+_VerificationStatusModel _$VerificationStatusModelFromJson(
+        Map<String, dynamic> json) =>
+    _VerificationStatusModel(
+      status: $enumDecode(_$VerificationStatusEnumMap, json['status']),
+      gender: $enumDecode(_$VerifiedGenderEnumMap, json['gender']),
+    );
 
-Map<String, dynamic> _$$VerificationStatusModelImplToJson(
-  _$VerificationStatusModelImpl instance,
-) => <String, dynamic>{
-  'status': _$VerificationStatusEnumMap[instance.status]!,
-  'gender': _$VerifiedGenderEnumMap[instance.gender]!,
-};
+Map<String, dynamic> _$VerificationStatusModelToJson(
+        _VerificationStatusModel instance) =>
+    <String, dynamic>{
+      'status': _$VerificationStatusEnumMap[instance.status]!,
+      'gender': _$VerifiedGenderEnumMap[instance.gender]!,
+    };
 
 const _$VerificationStatusEnumMap = {
   VerificationStatus.notStarted: 'not_started',
@@ -385,6 +520,23 @@ class VerificationRepositoryImpl implements VerificationRepository {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\verification\domain\entities\verification_status_entity.dart
 ==================================================
+import 'package:equatable/equatable.dart';
+import 'package:sahbifit/features/verification/domain/enums/verification_status_enum.dart';
+import 'package:sahbifit/features/verification/domain/enums/verified_gender_enum.dart';
+
+// This is the clean object based on VerificationStatusDto.java
+class VerificationStatusEntity extends Equatable {
+  final VerificationStatus status;
+  final VerifiedGender gender;
+
+  const VerificationStatusEntity({
+    required this.status,
+    required this.gender,
+  });
+
+  @override
+  List<Object?> get props => [status, gender];
+}
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\verification\domain\enums\verification_status_enum.dart
@@ -486,10 +638,501 @@ class SubmitVerificationVideoParams extends Equatable {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\verification\presentation\cubit\verification_cubit.dart
 ==================================================
+import 'dart:io';
+
+import 'package:bloc/bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/verification/domain/entities/verification_status_entity.dart';
+import 'package:sahbifit/features/verification/domain/usecases/get_verification_status.dart';
+import 'package:sahbifit/features/verification/domain/usecases/submit_verification_video.dart';
+
+part 'verification_cubit.freezed.dart';
+part 'verification_state.dart';
+
+@injectable
+class VerificationCubit extends Cubit<VerificationState> {
+  final GetVerificationStatus _getVerificationStatus;
+  final SubmitVerificationVideo _submitVerificationVideo;
+
+  VerificationCubit(
+    this._getVerificationStatus,
+    this._submitVerificationVideo,
+  ) : super(const VerificationState.initial());
+
+  /// Fetches the user's current verification status from the server.
+  /// This is called from main.dart on app start.
+  Future<void> fetchStatus() async {
+    emit(const VerificationState.loading());
+    try {
+      final status = await _getVerificationStatus(NoParams());
+      emit(VerificationState.loaded(status));
+    } on ServerFailure catch (e) {
+      emit(VerificationState.error(e.message));
+    } catch (e) {
+      emit(VerificationState.error(e.toString()));
+    }
+  }
+
+  /// Submits the verification video.
+  /// On success, it immediately re-fetches the status to update
+  /// the state from 'not_started' to 'pending_review'.
+  Future<void> submitVideo(File video) async {
+    emit(const VerificationState.loading());
+    try {
+      final params = SubmitVerificationVideoParams(video: video);
+      await _submitVerificationVideo(params);
+
+      // On success, refresh the status
+      await fetchStatus();
+    } on ServerFailure catch (e) {
+      emit(VerificationState.error(e.message));
+    } catch (e) {
+      emit(VerificationState.error(e.toString()));
+    }
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\verification\presentation\cubit\verification_cubit.freezed.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'verification_cubit.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$VerificationState {
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is VerificationState);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() {
+    return 'VerificationState()';
+  }
+}
+
+/// @nodoc
+class $VerificationStateCopyWith<$Res> {
+  $VerificationStateCopyWith(
+      VerificationState _, $Res Function(VerificationState) __);
+}
+
+/// Adds pattern-matching-related methods to [VerificationState].
+extension VerificationStatePatterns on VerificationState {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Initial value)? initial,
+    TResult Function(_Loading value)? loading,
+    TResult Function(_Loaded value)? loaded,
+    TResult Function(_Error value)? error,
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial() when initial != null:
+        return initial(_that);
+      case _Loading() when loading != null:
+        return loading(_that);
+      case _Loaded() when loaded != null:
+        return loaded(_that);
+      case _Error() when error != null:
+        return error(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Initial value) initial,
+    required TResult Function(_Loading value) loading,
+    required TResult Function(_Loaded value) loaded,
+    required TResult Function(_Error value) error,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial():
+        return initial(_that);
+      case _Loading():
+        return loading(_that);
+      case _Loaded():
+        return loaded(_that);
+      case _Error():
+        return error(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Initial value)? initial,
+    TResult? Function(_Loading value)? loading,
+    TResult? Function(_Loaded value)? loaded,
+    TResult? Function(_Error value)? error,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial() when initial != null:
+        return initial(_that);
+      case _Loading() when loading != null:
+        return loading(_that);
+      case _Loaded() when loaded != null:
+        return loaded(_that);
+      case _Error() when error != null:
+        return error(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(VerificationStatusEntity status)? loaded,
+    TResult Function(String message)? error,
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial() when initial != null:
+        return initial();
+      case _Loading() when loading != null:
+        return loading();
+      case _Loaded() when loaded != null:
+        return loaded(_that.status);
+      case _Error() when error != null:
+        return error(_that.message);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(VerificationStatusEntity status) loaded,
+    required TResult Function(String message) error,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial():
+        return initial();
+      case _Loading():
+        return loading();
+      case _Loaded():
+        return loaded(_that.status);
+      case _Error():
+        return error(_that.message);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(VerificationStatusEntity status)? loaded,
+    TResult? Function(String message)? error,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial() when initial != null:
+        return initial();
+      case _Loading() when loading != null:
+        return loading();
+      case _Loaded() when loaded != null:
+        return loaded(_that.status);
+      case _Error() when error != null:
+        return error(_that.message);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+class _Initial implements VerificationState {
+  const _Initial();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _Initial);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() {
+    return 'VerificationState.initial()';
+  }
+}
+
+/// @nodoc
+
+class _Loading implements VerificationState {
+  const _Loading();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _Loading);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() {
+    return 'VerificationState.loading()';
+  }
+}
+
+/// @nodoc
+
+class _Loaded implements VerificationState {
+  const _Loaded(this.status);
+
+  final VerificationStatusEntity status;
+
+  /// Create a copy of VerificationState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$LoadedCopyWith<_Loaded> get copyWith =>
+      __$LoadedCopyWithImpl<_Loaded>(this, _$identity);
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _Loaded &&
+            const DeepCollectionEquality().equals(other.status, status));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, const DeepCollectionEquality().hash(status));
+
+  @override
+  String toString() {
+    return 'VerificationState.loaded(status: $status)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$LoadedCopyWith<$Res>
+    implements $VerificationStateCopyWith<$Res> {
+  factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) =
+      __$LoadedCopyWithImpl;
+  @useResult
+  $Res call({VerificationStatusEntity status});
+}
+
+/// @nodoc
+class __$LoadedCopyWithImpl<$Res> implements _$LoadedCopyWith<$Res> {
+  __$LoadedCopyWithImpl(this._self, this._then);
+
+  final _Loaded _self;
+  final $Res Function(_Loaded) _then;
+
+  /// Create a copy of VerificationState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? status = freezed,
+  }) {
+    return _then(_Loaded(
+      freezed == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as VerificationStatusEntity,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _Error implements VerificationState {
+  const _Error(this.message);
+
+  final String message;
+
+  /// Create a copy of VerificationState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$ErrorCopyWith<_Error> get copyWith =>
+      __$ErrorCopyWithImpl<_Error>(this, _$identity);
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _Error &&
+            (identical(other.message, message) || other.message == message));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, message);
+
+  @override
+  String toString() {
+    return 'VerificationState.error(message: $message)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$ErrorCopyWith<$Res>
+    implements $VerificationStateCopyWith<$Res> {
+  factory _$ErrorCopyWith(_Error value, $Res Function(_Error) _then) =
+      __$ErrorCopyWithImpl;
+  @useResult
+  $Res call({String message});
+}
+
+/// @nodoc
+class __$ErrorCopyWithImpl<$Res> implements _$ErrorCopyWith<$Res> {
+  __$ErrorCopyWithImpl(this._self, this._then);
+
+  final _Error _self;
+  final $Res Function(_Error) _then;
+
+  /// Create a copy of VerificationState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? message = null,
+  }) {
+    return _then(_Error(
+      null == message
+          ? _self.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+// dart format on
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\verification\presentation\cubit\verification_state.dart
 ==================================================
+part of 'verification_cubit.dart';
+
+@freezed
+abstract
+class VerificationState with _$VerificationState {
+  /// We haven't fetched the status yet.
+  const factory VerificationState.initial() = _Initial;
+
+  /// We are currently fetching the status.
+  const factory VerificationState.loading() = _Loading;
+
+  /// We have successfully fetched the status.
+  const factory VerificationState.loaded(VerificationStatusEntity status) = _Loaded;
+
+  /// An error occurred.
+  const factory VerificationState.error(String message) = _Error;
+}
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\verification\presentation\pages\submit_verification_page.dart

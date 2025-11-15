@@ -4,11 +4,11 @@ import 'package:sahbifit/features/auth/domain/entities/auth_token.dart';
 part 'auth_response_model.freezed.dart';
 part 'auth_response_model.g.dart';
 
+
 @freezed
-class AuthResponseModel with _$AuthResponseModel {
+abstract class AuthResponseModel with _$AuthResponseModel {
   const AuthResponseModel._(); // Private constructor for methods
 
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
   const factory AuthResponseModel({
     required String jwtToken,
   }) = _AuthResponseModel;

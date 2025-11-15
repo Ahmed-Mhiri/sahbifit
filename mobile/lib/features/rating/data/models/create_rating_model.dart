@@ -3,9 +3,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'create_rating_model.freezed.dart';
 part 'create_rating_model.g.dart';
 
+
 @freezed
-class CreateRatingModel with _$CreateRatingModel {
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+abstract class CreateRatingModel with _$CreateRatingModel {
+  
   const factory CreateRatingModel({
     required String sessionId,
     required String ratedUserId,

@@ -5,9 +5,10 @@ part 'user_badge_model.freezed.dart';
 part 'user_badge_model.g.dart';
 
 // This model maps to UserBadgeId.java
+
 @freezed
-class UserBadgeIdModel with _$UserBadgeIdModel {
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+abstract class UserBadgeIdModel with _$UserBadgeIdModel {
+  
   const factory UserBadgeIdModel({
     required String userId,
     required int badgeId,
@@ -18,9 +19,10 @@ class UserBadgeIdModel with _$UserBadgeIdModel {
 }
 
 // This model maps to UserBadge.java
+
 @freezed
-class UserBadgeModel with _$UserBadgeModel {
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+abstract class UserBadgeModel with _$UserBadgeModel {
+  
   const factory UserBadgeModel({
     required UserBadgeIdModel id,
     required BadgeModel badge, // The badge that was earned

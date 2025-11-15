@@ -11,11 +11,12 @@ import 'package:sahbifit/features/verification/domain/enums/verified_gender_enum
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
+
 @freezed
-class UserModel with _$UserModel {
+abstract class UserModel with _$UserModel {
   const UserModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory UserModel({
     required String userId,
     required String firstName,

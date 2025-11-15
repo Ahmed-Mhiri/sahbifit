@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sahbifit/core/usecases/usecase.dart';
 import 'package:sahbifit/features/session/domain/enums/participant_status.dart';

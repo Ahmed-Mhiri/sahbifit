@@ -6,8 +6,8 @@ part of 'session_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$SessionModelImpl _$$SessionModelImplFromJson(Map<String, dynamic> json) =>
-    _$SessionModelImpl(
+_SessionModel _$SessionModelFromJson(Map<String, dynamic> json) =>
+    _SessionModel(
       sessionId: json['sessionId'] as String,
       title: json['title'] as String,
       sessionType: $enumDecode(_$SessionTypeEnumMap, json['sessionType']),
@@ -20,7 +20,7 @@ _$SessionModelImpl _$$SessionModelImplFromJson(Map<String, dynamic> json) =>
       gym: GymModel.fromJson(json['gym'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$$SessionModelImplToJson(_$SessionModelImpl instance) =>
+Map<String, dynamic> _$SessionModelToJson(_SessionModel instance) =>
     <String, dynamic>{
       'sessionId': instance.sessionId,
       'title': instance.title,
@@ -30,8 +30,8 @@ Map<String, dynamic> _$$SessionModelImplToJson(_$SessionModelImpl instance) =>
       'endTime': instance.endTime,
       'maxParticipants': instance.maxParticipants,
       'participantCount': instance.participantCount,
-      'creator': instance.creator.toJson(),
-      'gym': instance.gym.toJson(),
+      'creator': instance.creator,
+      'gym': instance.gym,
     };
 
 const _$SessionTypeEnumMap = {

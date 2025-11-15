@@ -1,7 +1,7 @@
 part of 'tags_cubit.dart';
 
 @freezed
-class TagsState with _$TagsState {
+sealed class TagsState with _$TagsState {
   /// The initial state, before tags are fetched.
   const factory TagsState.initial() = _Initial;
 

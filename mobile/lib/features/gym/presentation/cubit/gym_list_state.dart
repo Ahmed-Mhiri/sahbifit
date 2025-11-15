@@ -1,7 +1,7 @@
 part of 'gym_list_cubit.dart';
 
 @freezed
-class GymListState with _$GymListState {
+sealed class GymListState with _$GymListState {
   /// The initial state, before gyms are fetched.
   const factory GymListState.initial() = _Initial;
 

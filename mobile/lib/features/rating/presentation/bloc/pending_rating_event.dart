@@ -1,7 +1,7 @@
 part of 'pending_rating_bloc.dart';
 
 @freezed
-class PendingRatingEvent with _$PendingRatingEvent {
+sealed class PendingRatingEvent with _$PendingRatingEvent {
   /// Dispatched to load the initial list of pending ratings.
   const factory PendingRatingEvent.fetchList() = _FetchList;
 

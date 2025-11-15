@@ -1,7 +1,7 @@
 part of 'verification_cubit.dart';
 
 @freezed
-class VerificationState with _$VerificationState {
+sealed class VerificationState with _$VerificationState {
   /// We haven't fetched the status yet.
   const factory VerificationState.initial() = _Initial;
 

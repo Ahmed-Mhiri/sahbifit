@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
-import 'package:sahbifit/core/errors/failure.dart';
 import 'package:sahbifit/core/usecases/usecase.dart';
 import 'package:sahbifit/features/auth/domain/entities/auth_token.dart';
 import 'package:sahbifit/features/auth/domain/repositories/auth_repository.dart';

@@ -4,41 +4,67 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.8.0 <4.0.0'
+  sdk: '>=3.10.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
+
+  #--- CORE BLoC & STATE ---
   flutter_bloc: ^9.1.1
   bloc: ^9.1.0
   equatable: ^2.0.7
+
+  #--- SERVICE LOCATOR ---
   get_it: ^9.0.5
   injectable: ^2.6.0
+
+  #--- NETWORKING & API ---
   dio: ^5.9.0
-  
-  # --- CORRECTED ---
-  freezed_annotation: ^2.4.1
-  
-  json_annotation: ^4.9.0
+
+  #--- FUNCTIONAL PROGRAMMING ---
+  dartz: ^0.10.1
+
+  #--- AUTH & STORAGE ---
   flutter_secure_storage: ^9.2.4
+
+  #--- FIREBASE (These were correct) ---
   firebase_core: ^4.2.1
   firebase_messaging: ^16.0.4
   cloud_firestore: ^6.1.0
-  auto_route: ^10.2.0
+
+  #--- PUSH NOTIFICATIONS ---
+  flutter_local_notifications: ^19.5.0
+
+  #--- MEDIA (These were correct) ---
+  image_picker: ^1.2.1
+  video_player: ^2.10.1
+  camera: ^0.11.3
+
+  #--- ROUTING ---
+  go_router: ^14.2.0 # <--- ADDED
+
+  #--- UTILITIES ---
+  cached_network_image: ^3.4.1
+  intl: ^0.20.2
+
+  #--- SERIALIZATION ---
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.9.0
+  recaptcha_enterprise_flutter: ^18.8.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
   flutter_lints: ^6.0.0
-  
-  # --- ALL VERSIONS BELOW ARE NOW CORRECT AND COMPATIBLE ---
+
+  #--- CODE GENERATORS ---
   build_runner: ^2.4.11
-  freezed: ^2.5.2
+  freezed: ^3.2.3
   json_serializable: ^6.8.0
-  injectable_generator: ^2.6.1 
-  
-  # --- THIS IS THE KEY FIX from the last error ---
-  auto_route_generator: ^10.2.3 # Downgraded to 10.2.3 to match freezed
+  injectable_generator: ^2.9.1
+  # auto_route_generator: ^10.2.6 # <--- REMOVED
 
 flutter:
   uses-material-design: true
@@ -65,3 +91,8 @@ flutter:
           weight: 800
         - asset: assets/fonts/Poppins/Poppins-Black.ttf
           weight: 900
+
+#
+# The dependency_overrides block has been REMOVED.
+# It is no longer needed because the dev_dependencies are up-to-date.
+#

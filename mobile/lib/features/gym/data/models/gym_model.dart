@@ -5,11 +5,12 @@ import 'package:sahbifit/features/gym/domain/entities/gym_status.dart';
 part 'gym_model.freezed.dart';
 part 'gym_model.g.dart';
 
+
 @freezed
-class GymModel with _$GymModel {
+abstract class GymModel with _$GymModel {
   const GymModel._(); // Private constructor for methods
 
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory GymModel({
     required String gymId,
     required String name,

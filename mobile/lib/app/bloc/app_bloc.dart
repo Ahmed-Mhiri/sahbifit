@@ -2,7 +2,9 @@ import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sahbifit/core/services/secure_storage_service.dart';
-
+import 'package:sahbifit/features/user/domain/usecases/get_my_profile.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/user/domain/entities/user.dart';
 part 'app_bloc.freezed.dart';
 part 'app_event.dart';
 part 'app_state.dart';
@@ -10,8 +12,10 @@ part 'app_state.dart';
 @injectable
 class AppBloc extends Bloc<AppEvent, AppState> {
   final SecureStorageService _storageService;
+  final GetMyProfile _getMyProfile; // <-- ADDED
 
-  AppBloc(this._storageService) : super(const AppState.initial()) {
+  AppBloc(this._storageService, this._getMyProfile) // <-- UPDATED CONSTRUCTOR
+      : super(const AppState.initial()) {
     on<_CheckAuthStatus>(_onCheckAuthStatus);
     on<_LogoutRequested>(_onLogoutRequested);
   }
@@ -28,12 +32,15 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     try {
       final token = await _storageService.readToken();
       if (token != null) {
-        emit(const AppState.authenticated());
+        // --- THIS IS THE NEW LOGIC ---
+        final user = await _getMyProfile(NoParams());
+        emit(AppState.authenticated(user));
+        // -----------------------------
       } else {
         emit(const AppState.unauthenticated());
       }
     } catch (e) {
-      // In case storage fails, default to unauthenticated
+      // If getting profile fails, log them out
       emit(const AppState.unauthenticated());
     }
   }

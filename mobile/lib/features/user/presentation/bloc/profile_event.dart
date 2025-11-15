@@ -1,7 +1,7 @@
 part of 'profile_bloc.dart';
 
 @freezed
-class ProfileEvent with _$ProfileEvent {
+sealed class ProfileEvent with _$ProfileEvent {
   /// Dispatched to fetch the current user's profile (e.g., when the page loads).
   const factory ProfileEvent.loadMyProfile() = _LoadMyProfile;
 

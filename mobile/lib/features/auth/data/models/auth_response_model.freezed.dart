@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,166 +9,269 @@ part of 'auth_response_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
-AuthResponseModel _$AuthResponseModelFromJson(Map<String, dynamic> json) {
-  return _AuthResponseModel.fromJson(json);
-}
 
 /// @nodoc
 mixin _$AuthResponseModel {
-  String get jwtToken => throw _privateConstructorUsedError;
+
+ String get jwtToken;
+/// Create a copy of AuthResponseModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AuthResponseModelCopyWith<AuthResponseModel> get copyWith => _$AuthResponseModelCopyWithImpl<AuthResponseModel>(this as AuthResponseModel, _$identity);
 
   /// Serializes this AuthResponseModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of AuthResponseModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $AuthResponseModelCopyWith<AuthResponseModel> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthResponseModel&&(identical(other.jwtToken, jwtToken) || other.jwtToken == jwtToken));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,jwtToken);
+
+@override
+String toString() {
+  return 'AuthResponseModel(jwtToken: $jwtToken)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $AuthResponseModelCopyWith<$Res> {
-  factory $AuthResponseModelCopyWith(
-    AuthResponseModel value,
-    $Res Function(AuthResponseModel) then,
-  ) = _$AuthResponseModelCopyWithImpl<$Res, AuthResponseModel>;
-  @useResult
-  $Res call({String jwtToken});
-}
+abstract mixin class $AuthResponseModelCopyWith<$Res>  {
+  factory $AuthResponseModelCopyWith(AuthResponseModel value, $Res Function(AuthResponseModel) _then) = _$AuthResponseModelCopyWithImpl;
+@useResult
+$Res call({
+ String jwtToken
+});
 
+
+
+
+}
 /// @nodoc
-class _$AuthResponseModelCopyWithImpl<$Res, $Val extends AuthResponseModel>
+class _$AuthResponseModelCopyWithImpl<$Res>
     implements $AuthResponseModelCopyWith<$Res> {
-  _$AuthResponseModelCopyWithImpl(this._value, this._then);
+  _$AuthResponseModelCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final AuthResponseModel _self;
+  final $Res Function(AuthResponseModel) _then;
 
-  /// Create a copy of AuthResponseModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? jwtToken = null}) {
-    return _then(
-      _value.copyWith(
-            jwtToken: null == jwtToken
-                ? _value.jwtToken
-                : jwtToken // ignore: cast_nullable_to_non_nullable
-                      as String,
-          )
-          as $Val,
-    );
-  }
+/// Create a copy of AuthResponseModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? jwtToken = null,}) {
+  return _then(_self.copyWith(
+jwtToken: null == jwtToken ? _self.jwtToken : jwtToken // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [AuthResponseModel].
+extension AuthResponseModelPatterns on AuthResponseModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AuthResponseModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AuthResponseModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AuthResponseModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _AuthResponseModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AuthResponseModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AuthResponseModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String jwtToken)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AuthResponseModel() when $default != null:
+return $default(_that.jwtToken);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String jwtToken)  $default,) {final _that = this;
+switch (_that) {
+case _AuthResponseModel():
+return $default(_that.jwtToken);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String jwtToken)?  $default,) {final _that = this;
+switch (_that) {
+case _AuthResponseModel() when $default != null:
+return $default(_that.jwtToken);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
-abstract class _$$AuthResponseModelImplCopyWith<$Res>
-    implements $AuthResponseModelCopyWith<$Res> {
-  factory _$$AuthResponseModelImplCopyWith(
-    _$AuthResponseModelImpl value,
-    $Res Function(_$AuthResponseModelImpl) then,
-  ) = __$$AuthResponseModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({String jwtToken});
+@JsonSerializable()
+
+class _AuthResponseModel extends AuthResponseModel {
+  const _AuthResponseModel({required this.jwtToken}): super._();
+  factory _AuthResponseModel.fromJson(Map<String, dynamic> json) => _$AuthResponseModelFromJson(json);
+
+@override final  String jwtToken;
+
+/// Create a copy of AuthResponseModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AuthResponseModelCopyWith<_AuthResponseModel> get copyWith => __$AuthResponseModelCopyWithImpl<_AuthResponseModel>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$AuthResponseModelToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthResponseModel&&(identical(other.jwtToken, jwtToken) || other.jwtToken == jwtToken));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,jwtToken);
+
+@override
+String toString() {
+  return 'AuthResponseModel(jwtToken: $jwtToken)';
+}
+
+
 }
 
 /// @nodoc
-class __$$AuthResponseModelImplCopyWithImpl<$Res>
-    extends _$AuthResponseModelCopyWithImpl<$Res, _$AuthResponseModelImpl>
-    implements _$$AuthResponseModelImplCopyWith<$Res> {
-  __$$AuthResponseModelImplCopyWithImpl(
-    _$AuthResponseModelImpl _value,
-    $Res Function(_$AuthResponseModelImpl) _then,
-  ) : super(_value, _then);
+abstract mixin class _$AuthResponseModelCopyWith<$Res> implements $AuthResponseModelCopyWith<$Res> {
+  factory _$AuthResponseModelCopyWith(_AuthResponseModel value, $Res Function(_AuthResponseModel) _then) = __$AuthResponseModelCopyWithImpl;
+@override @useResult
+$Res call({
+ String jwtToken
+});
 
-  /// Create a copy of AuthResponseModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? jwtToken = null}) {
-    return _then(
-      _$AuthResponseModelImpl(
-        jwtToken: null == jwtToken
-            ? _value.jwtToken
-            : jwtToken // ignore: cast_nullable_to_non_nullable
-                  as String,
-      ),
-    );
-  }
+
+
+
 }
-
 /// @nodoc
+class __$AuthResponseModelCopyWithImpl<$Res>
+    implements _$AuthResponseModelCopyWith<$Res> {
+  __$AuthResponseModelCopyWithImpl(this._self, this._then);
 
-@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
-class _$AuthResponseModelImpl extends _AuthResponseModel {
-  const _$AuthResponseModelImpl({required this.jwtToken}) : super._();
+  final _AuthResponseModel _self;
+  final $Res Function(_AuthResponseModel) _then;
 
-  factory _$AuthResponseModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$AuthResponseModelImplFromJson(json);
-
-  @override
-  final String jwtToken;
-
-  @override
-  String toString() {
-    return 'AuthResponseModel(jwtToken: $jwtToken)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$AuthResponseModelImpl &&
-            (identical(other.jwtToken, jwtToken) ||
-                other.jwtToken == jwtToken));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(runtimeType, jwtToken);
-
-  /// Create a copy of AuthResponseModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$AuthResponseModelImplCopyWith<_$AuthResponseModelImpl> get copyWith =>
-      __$$AuthResponseModelImplCopyWithImpl<_$AuthResponseModelImpl>(
-        this,
-        _$identity,
-      );
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$AuthResponseModelImplToJson(this);
-  }
+/// Create a copy of AuthResponseModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? jwtToken = null,}) {
+  return _then(_AuthResponseModel(
+jwtToken: null == jwtToken ? _self.jwtToken : jwtToken // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
 }
 
-abstract class _AuthResponseModel extends AuthResponseModel {
-  const factory _AuthResponseModel({required final String jwtToken}) =
-      _$AuthResponseModelImpl;
-  const _AuthResponseModel._() : super._();
 
-  factory _AuthResponseModel.fromJson(Map<String, dynamic> json) =
-      _$AuthResponseModelImpl.fromJson;
-
-  @override
-  String get jwtToken;
-
-  /// Create a copy of AuthResponseModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$AuthResponseModelImplCopyWith<_$AuthResponseModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
 }
+
+// dart format on

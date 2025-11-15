@@ -6,14 +6,14 @@ part of 'update_visibility_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$UpdateVisibilityModelImpl _$$UpdateVisibilityModelImplFromJson(
+_UpdateVisibilityModel _$UpdateVisibilityModelFromJson(
   Map<String, dynamic> json,
-) => _$UpdateVisibilityModelImpl(
+) => _UpdateVisibilityModel(
   visibility: $enumDecode(_$ProfileVisibilityEnumMap, json['visibility']),
 );
 
-Map<String, dynamic> _$$UpdateVisibilityModelImplToJson(
-  _$UpdateVisibilityModelImpl instance,
+Map<String, dynamic> _$UpdateVisibilityModelToJson(
+  _UpdateVisibilityModel instance,
 ) => <String, dynamic>{
   'visibility': _$ProfileVisibilityEnumMap[instance.visibility]!,
 };

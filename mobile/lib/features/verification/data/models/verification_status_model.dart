@@ -7,11 +7,12 @@ part 'verification_status_model.freezed.dart';
 part 'verification_status_model.g.dart';
 
 // Matches VerificationStatusDto.java
+
 @freezed
-class VerificationStatusModel with _$VerificationStatusModel {
+abstract class VerificationStatusModel with _$VerificationStatusModel {
   const VerificationStatusModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory VerificationStatusModel({
     required VerificationStatus status,
     required VerifiedGender gender,

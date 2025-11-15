@@ -3,9 +3,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'verify_sms_request_model.freezed.dart';
 part 'verify_sms_request_model.g.dart';
 
+
 @freezed
-class VerifySmsRequestModel with _$VerifySmsRequestModel {
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+abstract class VerifySmsRequestModel with _$VerifySmsRequestModel {
+  
   const factory VerifySmsRequestModel({
     required String phoneNumber,
     required String otp,

@@ -4,11 +4,12 @@ import 'package:sahbifit/features/user/domain/entities/badge.dart';
 part 'badge_model.freezed.dart';
 part 'badge_model.g.dart';
 
+
 @freezed
-class BadgeModel with _$BadgeModel {
+abstract class BadgeModel with _$BadgeModel {
   const BadgeModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory BadgeModel({
     required int badgeId,
     required String badgeName,

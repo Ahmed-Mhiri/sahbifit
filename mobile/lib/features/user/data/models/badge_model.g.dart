@@ -6,15 +6,14 @@ part of 'badge_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$BadgeModelImpl _$$BadgeModelImplFromJson(Map<String, dynamic> json) =>
-    _$BadgeModelImpl(
-      badgeId: (json['badgeId'] as num).toInt(),
-      badgeName: json['badgeName'] as String,
-      description: json['description'] as String,
-      iconUrl: json['iconUrl'] as String?,
-    );
+_BadgeModel _$BadgeModelFromJson(Map<String, dynamic> json) => _BadgeModel(
+  badgeId: (json['badgeId'] as num).toInt(),
+  badgeName: json['badgeName'] as String,
+  description: json['description'] as String,
+  iconUrl: json['iconUrl'] as String?,
+);
 
-Map<String, dynamic> _$$BadgeModelImplToJson(_$BadgeModelImpl instance) =>
+Map<String, dynamic> _$BadgeModelToJson(_BadgeModel instance) =>
     <String, dynamic>{
       'badgeId': instance.badgeId,
       'badgeName': instance.badgeName,

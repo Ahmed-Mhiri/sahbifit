@@ -1,11 +1,6 @@
 ﻿==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\datasources\session_remote_datasource.dart
 ==================================================
-import 'package:dio/dio.dart';
-import 'package:injectable/injectable.dart';
-import 'package:sahbifit/core/api/api_client.dart';
-import 'package:sahbifit/core/constants/api_endpoints.dart';
-import 'package:sahbifit/core/errors/exceptions.dart';
 import 'package:sahbifit/features/session/data/models/create_session_model.dart';
 import 'package:sahbifit/features/session/data/models/mark_attendance_model.dart';
 import 'package:sahbifit/features/session/data/models/session_model.dart';
@@ -109,7 +104,7 @@ part 'create_session_model.g.dart';
 
 @freezed
 class CreateSessionModel with _$CreateSessionModel {
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory CreateSessionModel({
     required String gymId,
     required SessionType sessionType,
@@ -126,8 +121,8 @@ class CreateSessionModel with _$CreateSessionModel {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\create_session_model.freezed.dart
 ==================================================
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -137,220 +132,34 @@ part of 'create_session_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
-CreateSessionModel _$CreateSessionModelFromJson(Map<String, dynamic> json) {
-  return _CreateSessionModel.fromJson(json);
-}
 
 /// @nodoc
 mixin _$CreateSessionModel {
-  String get gymId => throw _privateConstructorUsedError;
-  SessionType get sessionType => throw _privateConstructorUsedError;
-  String get title => throw _privateConstructorUsedError;
-  String get startTime =>
-      throw _privateConstructorUsedError; // Send as ISO 8601 String
-  String get endTime =>
-      throw _privateConstructorUsedError; // Send as ISO 8601 String
-  int get maxParticipants => throw _privateConstructorUsedError;
-
-  /// Serializes this CreateSessionModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String get gymId;
+  SessionType get sessionType;
+  String get title;
+  String get startTime; // Send as ISO 8601 String
+  String get endTime; // Send as ISO 8601 String
+  int get maxParticipants;
 
   /// Create a copy of CreateSessionModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $CreateSessionModelCopyWith<CreateSessionModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$CreateSessionModelCopyWithImpl<CreateSessionModel>(
+          this as CreateSessionModel, _$identity);
 
-/// @nodoc
-abstract class $CreateSessionModelCopyWith<$Res> {
-  factory $CreateSessionModelCopyWith(
-    CreateSessionModel value,
-    $Res Function(CreateSessionModel) then,
-  ) = _$CreateSessionModelCopyWithImpl<$Res, CreateSessionModel>;
-  @useResult
-  $Res call({
-    String gymId,
-    SessionType sessionType,
-    String title,
-    String startTime,
-    String endTime,
-    int maxParticipants,
-  });
-}
-
-/// @nodoc
-class _$CreateSessionModelCopyWithImpl<$Res, $Val extends CreateSessionModel>
-    implements $CreateSessionModelCopyWith<$Res> {
-  _$CreateSessionModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of CreateSessionModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? gymId = null,
-    Object? sessionType = null,
-    Object? title = null,
-    Object? startTime = null,
-    Object? endTime = null,
-    Object? maxParticipants = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            gymId: null == gymId
-                ? _value.gymId
-                : gymId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            sessionType: null == sessionType
-                ? _value.sessionType
-                : sessionType // ignore: cast_nullable_to_non_nullable
-                      as SessionType,
-            title: null == title
-                ? _value.title
-                : title // ignore: cast_nullable_to_non_nullable
-                      as String,
-            startTime: null == startTime
-                ? _value.startTime
-                : startTime // ignore: cast_nullable_to_non_nullable
-                      as String,
-            endTime: null == endTime
-                ? _value.endTime
-                : endTime // ignore: cast_nullable_to_non_nullable
-                      as String,
-            maxParticipants: null == maxParticipants
-                ? _value.maxParticipants
-                : maxParticipants // ignore: cast_nullable_to_non_nullable
-                      as int,
-          )
-          as $Val,
-    );
-  }
-}
-
-/// @nodoc
-abstract class _$$CreateSessionModelImplCopyWith<$Res>
-    implements $CreateSessionModelCopyWith<$Res> {
-  factory _$$CreateSessionModelImplCopyWith(
-    _$CreateSessionModelImpl value,
-    $Res Function(_$CreateSessionModelImpl) then,
-  ) = __$$CreateSessionModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    String gymId,
-    SessionType sessionType,
-    String title,
-    String startTime,
-    String endTime,
-    int maxParticipants,
-  });
-}
-
-/// @nodoc
-class __$$CreateSessionModelImplCopyWithImpl<$Res>
-    extends _$CreateSessionModelCopyWithImpl<$Res, _$CreateSessionModelImpl>
-    implements _$$CreateSessionModelImplCopyWith<$Res> {
-  __$$CreateSessionModelImplCopyWithImpl(
-    _$CreateSessionModelImpl _value,
-    $Res Function(_$CreateSessionModelImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of CreateSessionModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? gymId = null,
-    Object? sessionType = null,
-    Object? title = null,
-    Object? startTime = null,
-    Object? endTime = null,
-    Object? maxParticipants = null,
-  }) {
-    return _then(
-      _$CreateSessionModelImpl(
-        gymId: null == gymId
-            ? _value.gymId
-            : gymId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        sessionType: null == sessionType
-            ? _value.sessionType
-            : sessionType // ignore: cast_nullable_to_non_nullable
-                  as SessionType,
-        title: null == title
-            ? _value.title
-            : title // ignore: cast_nullable_to_non_nullable
-                  as String,
-        startTime: null == startTime
-            ? _value.startTime
-            : startTime // ignore: cast_nullable_to_non_nullable
-                  as String,
-        endTime: null == endTime
-            ? _value.endTime
-            : endTime // ignore: cast_nullable_to_non_nullable
-                  as String,
-        maxParticipants: null == maxParticipants
-            ? _value.maxParticipants
-            : maxParticipants // ignore: cast_nullable_to_non_nullable
-                  as int,
-      ),
-    );
-  }
-}
-
-/// @nodoc
-
-@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
-class _$CreateSessionModelImpl implements _CreateSessionModel {
-  const _$CreateSessionModelImpl({
-    required this.gymId,
-    required this.sessionType,
-    required this.title,
-    required this.startTime,
-    required this.endTime,
-    required this.maxParticipants,
-  });
-
-  factory _$CreateSessionModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$CreateSessionModelImplFromJson(json);
-
-  @override
-  final String gymId;
-  @override
-  final SessionType sessionType;
-  @override
-  final String title;
-  @override
-  final String startTime;
-  // Send as ISO 8601 String
-  @override
-  final String endTime;
-  // Send as ISO 8601 String
-  @override
-  final int maxParticipants;
-
-  @override
-  String toString() {
-    return 'CreateSessionModel(gymId: $gymId, sessionType: $sessionType, title: $title, startTime: $startTime, endTime: $endTime, maxParticipants: $maxParticipants)';
-  }
+  /// Serializes this CreateSessionModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$CreateSessionModelImpl &&
+            other is CreateSessionModel &&
             (identical(other.gymId, gymId) || other.gymId == gymId) &&
             (identical(other.sessionType, sessionType) ||
                 other.sessionType == sessionType) &&
@@ -364,66 +173,382 @@ class _$CreateSessionModelImpl implements _CreateSessionModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    gymId,
-    sessionType,
-    title,
-    startTime,
-    endTime,
-    maxParticipants,
-  );
-
-  /// Create a copy of CreateSessionModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$CreateSessionModelImplCopyWith<_$CreateSessionModelImpl> get copyWith =>
-      __$$CreateSessionModelImplCopyWithImpl<_$CreateSessionModelImpl>(
-        this,
-        _$identity,
-      );
+  int get hashCode => Object.hash(runtimeType, gymId, sessionType, title,
+      startTime, endTime, maxParticipants);
 
   @override
-  Map<String, dynamic> toJson() {
-    return _$$CreateSessionModelImplToJson(this);
+  String toString() {
+    return 'CreateSessionModel(gymId: $gymId, sessionType: $sessionType, title: $title, startTime: $startTime, endTime: $endTime, maxParticipants: $maxParticipants)';
   }
 }
 
-abstract class _CreateSessionModel implements CreateSessionModel {
-  const factory _CreateSessionModel({
-    required final String gymId,
-    required final SessionType sessionType,
-    required final String title,
-    required final String startTime,
-    required final String endTime,
-    required final int maxParticipants,
-  }) = _$CreateSessionModelImpl;
+/// @nodoc
+abstract mixin class $CreateSessionModelCopyWith<$Res> {
+  factory $CreateSessionModelCopyWith(
+          CreateSessionModel value, $Res Function(CreateSessionModel) _then) =
+      _$CreateSessionModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String gymId,
+      SessionType sessionType,
+      String title,
+      String startTime,
+      String endTime,
+      int maxParticipants});
+}
 
-  factory _CreateSessionModel.fromJson(Map<String, dynamic> json) =
-      _$CreateSessionModelImpl.fromJson;
+/// @nodoc
+class _$CreateSessionModelCopyWithImpl<$Res>
+    implements $CreateSessionModelCopyWith<$Res> {
+  _$CreateSessionModelCopyWithImpl(this._self, this._then);
+
+  final CreateSessionModel _self;
+  final $Res Function(CreateSessionModel) _then;
+
+  /// Create a copy of CreateSessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? gymId = null,
+    Object? sessionType = null,
+    Object? title = null,
+    Object? startTime = null,
+    Object? endTime = null,
+    Object? maxParticipants = null,
+  }) {
+    return _then(_self.copyWith(
+      gymId: null == gymId
+          ? _self.gymId
+          : gymId // ignore: cast_nullable_to_non_nullable
+              as String,
+      sessionType: null == sessionType
+          ? _self.sessionType
+          : sessionType // ignore: cast_nullable_to_non_nullable
+              as SessionType,
+      title: null == title
+          ? _self.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      startTime: null == startTime
+          ? _self.startTime
+          : startTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      endTime: null == endTime
+          ? _self.endTime
+          : endTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      maxParticipants: null == maxParticipants
+          ? _self.maxParticipants
+          : maxParticipants // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [CreateSessionModel].
+extension CreateSessionModelPatterns on CreateSessionModel {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_CreateSessionModel value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _CreateSessionModel() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_CreateSessionModel value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CreateSessionModel():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_CreateSessionModel value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CreateSessionModel() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(String gymId, SessionType sessionType, String title,
+            String startTime, String endTime, int maxParticipants)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _CreateSessionModel() when $default != null:
+        return $default(_that.gymId, _that.sessionType, _that.title,
+            _that.startTime, _that.endTime, _that.maxParticipants);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(String gymId, SessionType sessionType, String title,
+            String startTime, String endTime, int maxParticipants)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CreateSessionModel():
+        return $default(_that.gymId, _that.sessionType, _that.title,
+            _that.startTime, _that.endTime, _that.maxParticipants);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(String gymId, SessionType sessionType, String title,
+            String startTime, String endTime, int maxParticipants)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CreateSessionModel() when $default != null:
+        return $default(_that.gymId, _that.sessionType, _that.title,
+            _that.startTime, _that.endTime, _that.maxParticipants);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+class _CreateSessionModel implements CreateSessionModel {
+  const _CreateSessionModel(
+      {required this.gymId,
+      required this.sessionType,
+      required this.title,
+      required this.startTime,
+      required this.endTime,
+      required this.maxParticipants});
+  factory _CreateSessionModel.fromJson(Map<String, dynamic> json) =>
+      _$CreateSessionModelFromJson(json);
 
   @override
-  String get gymId;
+  final String gymId;
   @override
-  SessionType get sessionType;
+  final SessionType sessionType;
   @override
-  String get title;
+  final String title;
   @override
-  String get startTime; // Send as ISO 8601 String
+  final String startTime;
+// Send as ISO 8601 String
   @override
-  String get endTime; // Send as ISO 8601 String
+  final String endTime;
+// Send as ISO 8601 String
   @override
-  int get maxParticipants;
+  final int maxParticipants;
 
   /// Create a copy of CreateSessionModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$CreateSessionModelImplCopyWith<_$CreateSessionModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$CreateSessionModelCopyWith<_CreateSessionModel> get copyWith =>
+      __$CreateSessionModelCopyWithImpl<_CreateSessionModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$CreateSessionModelToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _CreateSessionModel &&
+            (identical(other.gymId, gymId) || other.gymId == gymId) &&
+            (identical(other.sessionType, sessionType) ||
+                other.sessionType == sessionType) &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.startTime, startTime) ||
+                other.startTime == startTime) &&
+            (identical(other.endTime, endTime) || other.endTime == endTime) &&
+            (identical(other.maxParticipants, maxParticipants) ||
+                other.maxParticipants == maxParticipants));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, gymId, sessionType, title,
+      startTime, endTime, maxParticipants);
+
+  @override
+  String toString() {
+    return 'CreateSessionModel(gymId: $gymId, sessionType: $sessionType, title: $title, startTime: $startTime, endTime: $endTime, maxParticipants: $maxParticipants)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$CreateSessionModelCopyWith<$Res>
+    implements $CreateSessionModelCopyWith<$Res> {
+  factory _$CreateSessionModelCopyWith(
+          _CreateSessionModel value, $Res Function(_CreateSessionModel) _then) =
+      __$CreateSessionModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String gymId,
+      SessionType sessionType,
+      String title,
+      String startTime,
+      String endTime,
+      int maxParticipants});
+}
+
+/// @nodoc
+class __$CreateSessionModelCopyWithImpl<$Res>
+    implements _$CreateSessionModelCopyWith<$Res> {
+  __$CreateSessionModelCopyWithImpl(this._self, this._then);
+
+  final _CreateSessionModel _self;
+  final $Res Function(_CreateSessionModel) _then;
+
+  /// Create a copy of CreateSessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? gymId = null,
+    Object? sessionType = null,
+    Object? title = null,
+    Object? startTime = null,
+    Object? endTime = null,
+    Object? maxParticipants = null,
+  }) {
+    return _then(_CreateSessionModel(
+      gymId: null == gymId
+          ? _self.gymId
+          : gymId // ignore: cast_nullable_to_non_nullable
+              as String,
+      sessionType: null == sessionType
+          ? _self.sessionType
+          : sessionType // ignore: cast_nullable_to_non_nullable
+              as SessionType,
+      title: null == title
+          ? _self.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      startTime: null == startTime
+          ? _self.startTime
+          : startTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      endTime: null == endTime
+          ? _self.endTime
+          : endTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      maxParticipants: null == maxParticipants
+          ? _self.maxParticipants
+          : maxParticipants // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+// dart format on
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\create_session_model.g.dart
@@ -436,27 +561,25 @@ part of 'create_session_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$CreateSessionModelImpl _$$CreateSessionModelImplFromJson(
-  Map<String, dynamic> json,
-) => _$CreateSessionModelImpl(
-  gymId: json['gymId'] as String,
-  sessionType: $enumDecode(_$SessionTypeEnumMap, json['sessionType']),
-  title: json['title'] as String,
-  startTime: json['startTime'] as String,
-  endTime: json['endTime'] as String,
-  maxParticipants: (json['maxParticipants'] as num).toInt(),
-);
+_CreateSessionModel _$CreateSessionModelFromJson(Map<String, dynamic> json) =>
+    _CreateSessionModel(
+      gymId: json['gymId'] as String,
+      sessionType: $enumDecode(_$SessionTypeEnumMap, json['sessionType']),
+      title: json['title'] as String,
+      startTime: json['startTime'] as String,
+      endTime: json['endTime'] as String,
+      maxParticipants: (json['maxParticipants'] as num).toInt(),
+    );
 
-Map<String, dynamic> _$$CreateSessionModelImplToJson(
-  _$CreateSessionModelImpl instance,
-) => <String, dynamic>{
-  'gymId': instance.gymId,
-  'sessionType': _$SessionTypeEnumMap[instance.sessionType]!,
-  'title': instance.title,
-  'startTime': instance.startTime,
-  'endTime': instance.endTime,
-  'maxParticipants': instance.maxParticipants,
-};
+Map<String, dynamic> _$CreateSessionModelToJson(_CreateSessionModel instance) =>
+    <String, dynamic>{
+      'gymId': instance.gymId,
+      'sessionType': _$SessionTypeEnumMap[instance.sessionType]!,
+      'title': instance.title,
+      'startTime': instance.startTime,
+      'endTime': instance.endTime,
+      'maxParticipants': instance.maxParticipants,
+    };
 
 const _$SessionTypeEnumMap = {
   SessionType.group: 'group',
@@ -474,7 +597,7 @@ part 'mark_attendance_model.g.dart';
 
 @freezed
 class MarkAttendanceModel with _$MarkAttendanceModel {
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory MarkAttendanceModel({
     required String sessionId,
     required String participantUserId,
@@ -489,8 +612,8 @@ class MarkAttendanceModel with _$MarkAttendanceModel {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\mark_attendance_model.freezed.dart
 ==================================================
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -500,170 +623,32 @@ part of 'mark_attendance_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
-MarkAttendanceModel _$MarkAttendanceModelFromJson(Map<String, dynamic> json) {
-  return _MarkAttendanceModel.fromJson(json);
-}
 
 /// @nodoc
 mixin _$MarkAttendanceModel {
-  String get sessionId => throw _privateConstructorUsedError;
-  String get participantUserId => throw _privateConstructorUsedError;
+  String get sessionId;
+  String get participantUserId;
   @JsonKey(name: 'newStatus')
-  ParticipantStatus get status => throw _privateConstructorUsedError;
-
-  /// Serializes this MarkAttendanceModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  ParticipantStatus get status;
 
   /// Create a copy of MarkAttendanceModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $MarkAttendanceModelCopyWith<MarkAttendanceModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$MarkAttendanceModelCopyWithImpl<MarkAttendanceModel>(
+          this as MarkAttendanceModel, _$identity);
 
-/// @nodoc
-abstract class $MarkAttendanceModelCopyWith<$Res> {
-  factory $MarkAttendanceModelCopyWith(
-    MarkAttendanceModel value,
-    $Res Function(MarkAttendanceModel) then,
-  ) = _$MarkAttendanceModelCopyWithImpl<$Res, MarkAttendanceModel>;
-  @useResult
-  $Res call({
-    String sessionId,
-    String participantUserId,
-    @JsonKey(name: 'newStatus') ParticipantStatus status,
-  });
-}
-
-/// @nodoc
-class _$MarkAttendanceModelCopyWithImpl<$Res, $Val extends MarkAttendanceModel>
-    implements $MarkAttendanceModelCopyWith<$Res> {
-  _$MarkAttendanceModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of MarkAttendanceModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? sessionId = null,
-    Object? participantUserId = null,
-    Object? status = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            sessionId: null == sessionId
-                ? _value.sessionId
-                : sessionId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            participantUserId: null == participantUserId
-                ? _value.participantUserId
-                : participantUserId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            status: null == status
-                ? _value.status
-                : status // ignore: cast_nullable_to_non_nullable
-                      as ParticipantStatus,
-          )
-          as $Val,
-    );
-  }
-}
-
-/// @nodoc
-abstract class _$$MarkAttendanceModelImplCopyWith<$Res>
-    implements $MarkAttendanceModelCopyWith<$Res> {
-  factory _$$MarkAttendanceModelImplCopyWith(
-    _$MarkAttendanceModelImpl value,
-    $Res Function(_$MarkAttendanceModelImpl) then,
-  ) = __$$MarkAttendanceModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    String sessionId,
-    String participantUserId,
-    @JsonKey(name: 'newStatus') ParticipantStatus status,
-  });
-}
-
-/// @nodoc
-class __$$MarkAttendanceModelImplCopyWithImpl<$Res>
-    extends _$MarkAttendanceModelCopyWithImpl<$Res, _$MarkAttendanceModelImpl>
-    implements _$$MarkAttendanceModelImplCopyWith<$Res> {
-  __$$MarkAttendanceModelImplCopyWithImpl(
-    _$MarkAttendanceModelImpl _value,
-    $Res Function(_$MarkAttendanceModelImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of MarkAttendanceModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? sessionId = null,
-    Object? participantUserId = null,
-    Object? status = null,
-  }) {
-    return _then(
-      _$MarkAttendanceModelImpl(
-        sessionId: null == sessionId
-            ? _value.sessionId
-            : sessionId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        participantUserId: null == participantUserId
-            ? _value.participantUserId
-            : participantUserId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        status: null == status
-            ? _value.status
-            : status // ignore: cast_nullable_to_non_nullable
-                  as ParticipantStatus,
-      ),
-    );
-  }
-}
-
-/// @nodoc
-
-@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
-class _$MarkAttendanceModelImpl implements _MarkAttendanceModel {
-  const _$MarkAttendanceModelImpl({
-    required this.sessionId,
-    required this.participantUserId,
-    @JsonKey(name: 'newStatus') required this.status,
-  });
-
-  factory _$MarkAttendanceModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$MarkAttendanceModelImplFromJson(json);
-
-  @override
-  final String sessionId;
-  @override
-  final String participantUserId;
-  @override
-  @JsonKey(name: 'newStatus')
-  final ParticipantStatus status;
-
-  @override
-  String toString() {
-    return 'MarkAttendanceModel(sessionId: $sessionId, participantUserId: $participantUserId, status: $status)';
-  }
+  /// Serializes this MarkAttendanceModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$MarkAttendanceModelImpl &&
+            other is MarkAttendanceModel &&
             (identical(other.sessionId, sessionId) ||
                 other.sessionId == sessionId) &&
             (identical(other.participantUserId, participantUserId) ||
@@ -676,48 +661,327 @@ class _$MarkAttendanceModelImpl implements _MarkAttendanceModel {
   int get hashCode =>
       Object.hash(runtimeType, sessionId, participantUserId, status);
 
-  /// Create a copy of MarkAttendanceModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$MarkAttendanceModelImplCopyWith<_$MarkAttendanceModelImpl> get copyWith =>
-      __$$MarkAttendanceModelImplCopyWithImpl<_$MarkAttendanceModelImpl>(
-        this,
-        _$identity,
-      );
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$MarkAttendanceModelImplToJson(this);
+  String toString() {
+    return 'MarkAttendanceModel(sessionId: $sessionId, participantUserId: $participantUserId, status: $status)';
   }
 }
 
-abstract class _MarkAttendanceModel implements MarkAttendanceModel {
-  const factory _MarkAttendanceModel({
-    required final String sessionId,
-    required final String participantUserId,
-    @JsonKey(name: 'newStatus') required final ParticipantStatus status,
-  }) = _$MarkAttendanceModelImpl;
+/// @nodoc
+abstract mixin class $MarkAttendanceModelCopyWith<$Res> {
+  factory $MarkAttendanceModelCopyWith(
+          MarkAttendanceModel value, $Res Function(MarkAttendanceModel) _then) =
+      _$MarkAttendanceModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String sessionId,
+      String participantUserId,
+      @JsonKey(name: 'newStatus') ParticipantStatus status});
+}
 
-  factory _MarkAttendanceModel.fromJson(Map<String, dynamic> json) =
-      _$MarkAttendanceModelImpl.fromJson;
+/// @nodoc
+class _$MarkAttendanceModelCopyWithImpl<$Res>
+    implements $MarkAttendanceModelCopyWith<$Res> {
+  _$MarkAttendanceModelCopyWithImpl(this._self, this._then);
+
+  final MarkAttendanceModel _self;
+  final $Res Function(MarkAttendanceModel) _then;
+
+  /// Create a copy of MarkAttendanceModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sessionId = null,
+    Object? participantUserId = null,
+    Object? status = null,
+  }) {
+    return _then(_self.copyWith(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      participantUserId: null == participantUserId
+          ? _self.participantUserId
+          : participantUserId // ignore: cast_nullable_to_non_nullable
+              as String,
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as ParticipantStatus,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [MarkAttendanceModel].
+extension MarkAttendanceModelPatterns on MarkAttendanceModel {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_MarkAttendanceModel value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _MarkAttendanceModel() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_MarkAttendanceModel value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _MarkAttendanceModel():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_MarkAttendanceModel value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _MarkAttendanceModel() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(String sessionId, String participantUserId,
+            @JsonKey(name: 'newStatus') ParticipantStatus status)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _MarkAttendanceModel() when $default != null:
+        return $default(_that.sessionId, _that.participantUserId, _that.status);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(String sessionId, String participantUserId,
+            @JsonKey(name: 'newStatus') ParticipantStatus status)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _MarkAttendanceModel():
+        return $default(_that.sessionId, _that.participantUserId, _that.status);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(String sessionId, String participantUserId,
+            @JsonKey(name: 'newStatus') ParticipantStatus status)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _MarkAttendanceModel() when $default != null:
+        return $default(_that.sessionId, _that.participantUserId, _that.status);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+class _MarkAttendanceModel implements MarkAttendanceModel {
+  const _MarkAttendanceModel(
+      {required this.sessionId,
+      required this.participantUserId,
+      @JsonKey(name: 'newStatus') required this.status});
+  factory _MarkAttendanceModel.fromJson(Map<String, dynamic> json) =>
+      _$MarkAttendanceModelFromJson(json);
 
   @override
-  String get sessionId;
+  final String sessionId;
   @override
-  String get participantUserId;
+  final String participantUserId;
   @override
   @JsonKey(name: 'newStatus')
-  ParticipantStatus get status;
+  final ParticipantStatus status;
 
   /// Create a copy of MarkAttendanceModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$MarkAttendanceModelImplCopyWith<_$MarkAttendanceModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$MarkAttendanceModelCopyWith<_MarkAttendanceModel> get copyWith =>
+      __$MarkAttendanceModelCopyWithImpl<_MarkAttendanceModel>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$MarkAttendanceModelToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _MarkAttendanceModel &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.participantUserId, participantUserId) ||
+                other.participantUserId == participantUserId) &&
+            (identical(other.status, status) || other.status == status));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, sessionId, participantUserId, status);
+
+  @override
+  String toString() {
+    return 'MarkAttendanceModel(sessionId: $sessionId, participantUserId: $participantUserId, status: $status)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$MarkAttendanceModelCopyWith<$Res>
+    implements $MarkAttendanceModelCopyWith<$Res> {
+  factory _$MarkAttendanceModelCopyWith(_MarkAttendanceModel value,
+          $Res Function(_MarkAttendanceModel) _then) =
+      __$MarkAttendanceModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String sessionId,
+      String participantUserId,
+      @JsonKey(name: 'newStatus') ParticipantStatus status});
+}
+
+/// @nodoc
+class __$MarkAttendanceModelCopyWithImpl<$Res>
+    implements _$MarkAttendanceModelCopyWith<$Res> {
+  __$MarkAttendanceModelCopyWithImpl(this._self, this._then);
+
+  final _MarkAttendanceModel _self;
+  final $Res Function(_MarkAttendanceModel) _then;
+
+  /// Create a copy of MarkAttendanceModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? sessionId = null,
+    Object? participantUserId = null,
+    Object? status = null,
+  }) {
+    return _then(_MarkAttendanceModel(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      participantUserId: null == participantUserId
+          ? _self.participantUserId
+          : participantUserId // ignore: cast_nullable_to_non_nullable
+              as String,
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as ParticipantStatus,
+    ));
+  }
+}
+
+// dart format on
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\mark_attendance_model.g.dart
@@ -730,21 +994,20 @@ part of 'mark_attendance_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$MarkAttendanceModelImpl _$$MarkAttendanceModelImplFromJson(
-  Map<String, dynamic> json,
-) => _$MarkAttendanceModelImpl(
-  sessionId: json['sessionId'] as String,
-  participantUserId: json['participantUserId'] as String,
-  status: $enumDecode(_$ParticipantStatusEnumMap, json['newStatus']),
-);
+_MarkAttendanceModel _$MarkAttendanceModelFromJson(Map<String, dynamic> json) =>
+    _MarkAttendanceModel(
+      sessionId: json['sessionId'] as String,
+      participantUserId: json['participantUserId'] as String,
+      status: $enumDecode(_$ParticipantStatusEnumMap, json['newStatus']),
+    );
 
-Map<String, dynamic> _$$MarkAttendanceModelImplToJson(
-  _$MarkAttendanceModelImpl instance,
-) => <String, dynamic>{
-  'sessionId': instance.sessionId,
-  'participantUserId': instance.participantUserId,
-  'newStatus': _$ParticipantStatusEnumMap[instance.status]!,
-};
+Map<String, dynamic> _$MarkAttendanceModelToJson(
+        _MarkAttendanceModel instance) =>
+    <String, dynamic>{
+      'sessionId': instance.sessionId,
+      'participantUserId': instance.participantUserId,
+      'newStatus': _$ParticipantStatusEnumMap[instance.status]!,
+    };
 
 const _$ParticipantStatusEnumMap = {
   ParticipantStatus.joined: 'joined',
@@ -770,7 +1033,7 @@ part 'session_model.g.dart';
 class SessionModel with _$SessionModel {
   const SessionModel._(); // Private constructor for methods
 
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory SessionModel({
     required String sessionId,
     required String title,
@@ -807,8 +1070,8 @@ class SessionModel with _$SessionModel {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\session_model.freezed.dart
 ==================================================
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -818,314 +1081,38 @@ part of 'session_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
-SessionModel _$SessionModelFromJson(Map<String, dynamic> json) {
-  return _SessionModel.fromJson(json);
-}
 
 /// @nodoc
 mixin _$SessionModel {
-  String get sessionId => throw _privateConstructorUsedError;
-  String get title => throw _privateConstructorUsedError;
-  SessionType get sessionType => throw _privateConstructorUsedError;
-  SessionStatus get status => throw _privateConstructorUsedError;
-  String get startTime =>
-      throw _privateConstructorUsedError; // Receive as ISO 8601 String
-  String get endTime =>
-      throw _privateConstructorUsedError; // Receive as ISO 8601 String
-  int get maxParticipants => throw _privateConstructorUsedError;
-  int get participantCount => throw _privateConstructorUsedError;
-  UserModel get creator =>
-      throw _privateConstructorUsedError; // Nested JSON object
-  GymModel get gym => throw _privateConstructorUsedError;
-
-  /// Serializes this SessionModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String get sessionId;
+  String get title;
+  SessionType get sessionType;
+  SessionStatus get status;
+  String get startTime; // Receive as ISO 8601 String
+  String get endTime; // Receive as ISO 8601 String
+  int get maxParticipants;
+  int get participantCount;
+  UserModel get creator; // Nested JSON object
+  GymModel get gym;
 
   /// Create a copy of SessionModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $SessionModelCopyWith<SessionModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$SessionModelCopyWithImpl<SessionModel>(
+          this as SessionModel, _$identity);
 
-/// @nodoc
-abstract class $SessionModelCopyWith<$Res> {
-  factory $SessionModelCopyWith(
-    SessionModel value,
-    $Res Function(SessionModel) then,
-  ) = _$SessionModelCopyWithImpl<$Res, SessionModel>;
-  @useResult
-  $Res call({
-    String sessionId,
-    String title,
-    SessionType sessionType,
-    SessionStatus status,
-    String startTime,
-    String endTime,
-    int maxParticipants,
-    int participantCount,
-    UserModel creator,
-    GymModel gym,
-  });
-
-  $UserModelCopyWith<$Res> get creator;
-  $GymModelCopyWith<$Res> get gym;
-}
-
-/// @nodoc
-class _$SessionModelCopyWithImpl<$Res, $Val extends SessionModel>
-    implements $SessionModelCopyWith<$Res> {
-  _$SessionModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of SessionModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? sessionId = null,
-    Object? title = null,
-    Object? sessionType = null,
-    Object? status = null,
-    Object? startTime = null,
-    Object? endTime = null,
-    Object? maxParticipants = null,
-    Object? participantCount = null,
-    Object? creator = null,
-    Object? gym = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            sessionId: null == sessionId
-                ? _value.sessionId
-                : sessionId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            title: null == title
-                ? _value.title
-                : title // ignore: cast_nullable_to_non_nullable
-                      as String,
-            sessionType: null == sessionType
-                ? _value.sessionType
-                : sessionType // ignore: cast_nullable_to_non_nullable
-                      as SessionType,
-            status: null == status
-                ? _value.status
-                : status // ignore: cast_nullable_to_non_nullable
-                      as SessionStatus,
-            startTime: null == startTime
-                ? _value.startTime
-                : startTime // ignore: cast_nullable_to_non_nullable
-                      as String,
-            endTime: null == endTime
-                ? _value.endTime
-                : endTime // ignore: cast_nullable_to_non_nullable
-                      as String,
-            maxParticipants: null == maxParticipants
-                ? _value.maxParticipants
-                : maxParticipants // ignore: cast_nullable_to_non_nullable
-                      as int,
-            participantCount: null == participantCount
-                ? _value.participantCount
-                : participantCount // ignore: cast_nullable_to_non_nullable
-                      as int,
-            creator: null == creator
-                ? _value.creator
-                : creator // ignore: cast_nullable_to_non_nullable
-                      as UserModel,
-            gym: null == gym
-                ? _value.gym
-                : gym // ignore: cast_nullable_to_non_nullable
-                      as GymModel,
-          )
-          as $Val,
-    );
-  }
-
-  /// Create a copy of SessionModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $UserModelCopyWith<$Res> get creator {
-    return $UserModelCopyWith<$Res>(_value.creator, (value) {
-      return _then(_value.copyWith(creator: value) as $Val);
-    });
-  }
-
-  /// Create a copy of SessionModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $GymModelCopyWith<$Res> get gym {
-    return $GymModelCopyWith<$Res>(_value.gym, (value) {
-      return _then(_value.copyWith(gym: value) as $Val);
-    });
-  }
-}
-
-/// @nodoc
-abstract class _$$SessionModelImplCopyWith<$Res>
-    implements $SessionModelCopyWith<$Res> {
-  factory _$$SessionModelImplCopyWith(
-    _$SessionModelImpl value,
-    $Res Function(_$SessionModelImpl) then,
-  ) = __$$SessionModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    String sessionId,
-    String title,
-    SessionType sessionType,
-    SessionStatus status,
-    String startTime,
-    String endTime,
-    int maxParticipants,
-    int participantCount,
-    UserModel creator,
-    GymModel gym,
-  });
-
-  @override
-  $UserModelCopyWith<$Res> get creator;
-  @override
-  $GymModelCopyWith<$Res> get gym;
-}
-
-/// @nodoc
-class __$$SessionModelImplCopyWithImpl<$Res>
-    extends _$SessionModelCopyWithImpl<$Res, _$SessionModelImpl>
-    implements _$$SessionModelImplCopyWith<$Res> {
-  __$$SessionModelImplCopyWithImpl(
-    _$SessionModelImpl _value,
-    $Res Function(_$SessionModelImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of SessionModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? sessionId = null,
-    Object? title = null,
-    Object? sessionType = null,
-    Object? status = null,
-    Object? startTime = null,
-    Object? endTime = null,
-    Object? maxParticipants = null,
-    Object? participantCount = null,
-    Object? creator = null,
-    Object? gym = null,
-  }) {
-    return _then(
-      _$SessionModelImpl(
-        sessionId: null == sessionId
-            ? _value.sessionId
-            : sessionId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        title: null == title
-            ? _value.title
-            : title // ignore: cast_nullable_to_non_nullable
-                  as String,
-        sessionType: null == sessionType
-            ? _value.sessionType
-            : sessionType // ignore: cast_nullable_to_non_nullable
-                  as SessionType,
-        status: null == status
-            ? _value.status
-            : status // ignore: cast_nullable_to_non_nullable
-                  as SessionStatus,
-        startTime: null == startTime
-            ? _value.startTime
-            : startTime // ignore: cast_nullable_to_non_nullable
-                  as String,
-        endTime: null == endTime
-            ? _value.endTime
-            : endTime // ignore: cast_nullable_to_non_nullable
-                  as String,
-        maxParticipants: null == maxParticipants
-            ? _value.maxParticipants
-            : maxParticipants // ignore: cast_nullable_to_non_nullable
-                  as int,
-        participantCount: null == participantCount
-            ? _value.participantCount
-            : participantCount // ignore: cast_nullable_to_non_nullable
-                  as int,
-        creator: null == creator
-            ? _value.creator
-            : creator // ignore: cast_nullable_to_non_nullable
-                  as UserModel,
-        gym: null == gym
-            ? _value.gym
-            : gym // ignore: cast_nullable_to_non_nullable
-                  as GymModel,
-      ),
-    );
-  }
-}
-
-/// @nodoc
-
-@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
-class _$SessionModelImpl extends _SessionModel {
-  const _$SessionModelImpl({
-    required this.sessionId,
-    required this.title,
-    required this.sessionType,
-    required this.status,
-    required this.startTime,
-    required this.endTime,
-    required this.maxParticipants,
-    required this.participantCount,
-    required this.creator,
-    required this.gym,
-  }) : super._();
-
-  factory _$SessionModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SessionModelImplFromJson(json);
-
-  @override
-  final String sessionId;
-  @override
-  final String title;
-  @override
-  final SessionType sessionType;
-  @override
-  final SessionStatus status;
-  @override
-  final String startTime;
-  // Receive as ISO 8601 String
-  @override
-  final String endTime;
-  // Receive as ISO 8601 String
-  @override
-  final int maxParticipants;
-  @override
-  final int participantCount;
-  @override
-  final UserModel creator;
-  // Nested JSON object
-  @override
-  final GymModel gym;
-
-  @override
-  String toString() {
-    return 'SessionModel(sessionId: $sessionId, title: $title, sessionType: $sessionType, status: $status, startTime: $startTime, endTime: $endTime, maxParticipants: $maxParticipants, participantCount: $participantCount, creator: $creator, gym: $gym)';
-  }
+  /// Serializes this SessionModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SessionModelImpl &&
+            other is SessionModel &&
             (identical(other.sessionId, sessionId) ||
                 other.sessionId == sessionId) &&
             (identical(other.title, title) || other.title == title) &&
@@ -1146,79 +1133,570 @@ class _$SessionModelImpl extends _SessionModel {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    sessionId,
-    title,
-    sessionType,
-    status,
-    startTime,
-    endTime,
-    maxParticipants,
-    participantCount,
-    creator,
-    gym,
-  );
-
-  /// Create a copy of SessionModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$SessionModelImplCopyWith<_$SessionModelImpl> get copyWith =>
-      __$$SessionModelImplCopyWithImpl<_$SessionModelImpl>(this, _$identity);
+      runtimeType,
+      sessionId,
+      title,
+      sessionType,
+      status,
+      startTime,
+      endTime,
+      maxParticipants,
+      participantCount,
+      creator,
+      gym);
 
   @override
-  Map<String, dynamic> toJson() {
-    return _$$SessionModelImplToJson(this);
+  String toString() {
+    return 'SessionModel(sessionId: $sessionId, title: $title, sessionType: $sessionType, status: $status, startTime: $startTime, endTime: $endTime, maxParticipants: $maxParticipants, participantCount: $participantCount, creator: $creator, gym: $gym)';
   }
 }
 
-abstract class _SessionModel extends SessionModel {
-  const factory _SessionModel({
-    required final String sessionId,
-    required final String title,
-    required final SessionType sessionType,
-    required final SessionStatus status,
-    required final String startTime,
-    required final String endTime,
-    required final int maxParticipants,
-    required final int participantCount,
-    required final UserModel creator,
-    required final GymModel gym,
-  }) = _$SessionModelImpl;
-  const _SessionModel._() : super._();
+/// @nodoc
+abstract mixin class $SessionModelCopyWith<$Res> {
+  factory $SessionModelCopyWith(
+          SessionModel value, $Res Function(SessionModel) _then) =
+      _$SessionModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String sessionId,
+      String title,
+      SessionType sessionType,
+      SessionStatus status,
+      String startTime,
+      String endTime,
+      int maxParticipants,
+      int participantCount,
+      UserModel creator,
+      GymModel gym});
 
-  factory _SessionModel.fromJson(Map<String, dynamic> json) =
-      _$SessionModelImpl.fromJson;
+  $UserModelCopyWith<$Res> get creator;
+  $GymModelCopyWith<$Res> get gym;
+}
+
+/// @nodoc
+class _$SessionModelCopyWithImpl<$Res> implements $SessionModelCopyWith<$Res> {
+  _$SessionModelCopyWithImpl(this._self, this._then);
+
+  final SessionModel _self;
+  final $Res Function(SessionModel) _then;
+
+  /// Create a copy of SessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sessionId = null,
+    Object? title = null,
+    Object? sessionType = null,
+    Object? status = null,
+    Object? startTime = null,
+    Object? endTime = null,
+    Object? maxParticipants = null,
+    Object? participantCount = null,
+    Object? creator = null,
+    Object? gym = null,
+  }) {
+    return _then(_self.copyWith(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      title: null == title
+          ? _self.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      sessionType: null == sessionType
+          ? _self.sessionType
+          : sessionType // ignore: cast_nullable_to_non_nullable
+              as SessionType,
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as SessionStatus,
+      startTime: null == startTime
+          ? _self.startTime
+          : startTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      endTime: null == endTime
+          ? _self.endTime
+          : endTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      maxParticipants: null == maxParticipants
+          ? _self.maxParticipants
+          : maxParticipants // ignore: cast_nullable_to_non_nullable
+              as int,
+      participantCount: null == participantCount
+          ? _self.participantCount
+          : participantCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      creator: null == creator
+          ? _self.creator
+          : creator // ignore: cast_nullable_to_non_nullable
+              as UserModel,
+      gym: null == gym
+          ? _self.gym
+          : gym // ignore: cast_nullable_to_non_nullable
+              as GymModel,
+    ));
+  }
+
+  /// Create a copy of SessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $UserModelCopyWith<$Res> get creator {
+    return $UserModelCopyWith<$Res>(_self.creator, (value) {
+      return _then(_self.copyWith(creator: value));
+    });
+  }
+
+  /// Create a copy of SessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $GymModelCopyWith<$Res> get gym {
+    return $GymModelCopyWith<$Res>(_self.gym, (value) {
+      return _then(_self.copyWith(gym: value));
+    });
+  }
+}
+
+/// Adds pattern-matching-related methods to [SessionModel].
+extension SessionModelPatterns on SessionModel {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_SessionModel value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _SessionModel() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_SessionModel value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionModel():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_SessionModel value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionModel() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(
+            String sessionId,
+            String title,
+            SessionType sessionType,
+            SessionStatus status,
+            String startTime,
+            String endTime,
+            int maxParticipants,
+            int participantCount,
+            UserModel creator,
+            GymModel gym)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _SessionModel() when $default != null:
+        return $default(
+            _that.sessionId,
+            _that.title,
+            _that.sessionType,
+            _that.status,
+            _that.startTime,
+            _that.endTime,
+            _that.maxParticipants,
+            _that.participantCount,
+            _that.creator,
+            _that.gym);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(
+            String sessionId,
+            String title,
+            SessionType sessionType,
+            SessionStatus status,
+            String startTime,
+            String endTime,
+            int maxParticipants,
+            int participantCount,
+            UserModel creator,
+            GymModel gym)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionModel():
+        return $default(
+            _that.sessionId,
+            _that.title,
+            _that.sessionType,
+            _that.status,
+            _that.startTime,
+            _that.endTime,
+            _that.maxParticipants,
+            _that.participantCount,
+            _that.creator,
+            _that.gym);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(
+            String sessionId,
+            String title,
+            SessionType sessionType,
+            SessionStatus status,
+            String startTime,
+            String endTime,
+            int maxParticipants,
+            int participantCount,
+            UserModel creator,
+            GymModel gym)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionModel() when $default != null:
+        return $default(
+            _that.sessionId,
+            _that.title,
+            _that.sessionType,
+            _that.status,
+            _that.startTime,
+            _that.endTime,
+            _that.maxParticipants,
+            _that.participantCount,
+            _that.creator,
+            _that.gym);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+class _SessionModel extends SessionModel {
+  const _SessionModel(
+      {required this.sessionId,
+      required this.title,
+      required this.sessionType,
+      required this.status,
+      required this.startTime,
+      required this.endTime,
+      required this.maxParticipants,
+      required this.participantCount,
+      required this.creator,
+      required this.gym})
+      : super._();
+  factory _SessionModel.fromJson(Map<String, dynamic> json) =>
+      _$SessionModelFromJson(json);
 
   @override
-  String get sessionId;
+  final String sessionId;
   @override
-  String get title;
+  final String title;
   @override
-  SessionType get sessionType;
+  final SessionType sessionType;
   @override
-  SessionStatus get status;
+  final SessionStatus status;
   @override
-  String get startTime; // Receive as ISO 8601 String
+  final String startTime;
+// Receive as ISO 8601 String
   @override
-  String get endTime; // Receive as ISO 8601 String
+  final String endTime;
+// Receive as ISO 8601 String
   @override
-  int get maxParticipants;
+  final int maxParticipants;
   @override
-  int get participantCount;
+  final int participantCount;
   @override
-  UserModel get creator; // Nested JSON object
+  final UserModel creator;
+// Nested JSON object
   @override
-  GymModel get gym;
+  final GymModel gym;
 
   /// Create a copy of SessionModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SessionModelImplCopyWith<_$SessionModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$SessionModelCopyWith<_SessionModel> get copyWith =>
+      __$SessionModelCopyWithImpl<_SessionModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$SessionModelToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _SessionModel &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.sessionType, sessionType) ||
+                other.sessionType == sessionType) &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.startTime, startTime) ||
+                other.startTime == startTime) &&
+            (identical(other.endTime, endTime) || other.endTime == endTime) &&
+            (identical(other.maxParticipants, maxParticipants) ||
+                other.maxParticipants == maxParticipants) &&
+            (identical(other.participantCount, participantCount) ||
+                other.participantCount == participantCount) &&
+            (identical(other.creator, creator) || other.creator == creator) &&
+            (identical(other.gym, gym) || other.gym == gym));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      sessionId,
+      title,
+      sessionType,
+      status,
+      startTime,
+      endTime,
+      maxParticipants,
+      participantCount,
+      creator,
+      gym);
+
+  @override
+  String toString() {
+    return 'SessionModel(sessionId: $sessionId, title: $title, sessionType: $sessionType, status: $status, startTime: $startTime, endTime: $endTime, maxParticipants: $maxParticipants, participantCount: $participantCount, creator: $creator, gym: $gym)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$SessionModelCopyWith<$Res>
+    implements $SessionModelCopyWith<$Res> {
+  factory _$SessionModelCopyWith(
+          _SessionModel value, $Res Function(_SessionModel) _then) =
+      __$SessionModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String sessionId,
+      String title,
+      SessionType sessionType,
+      SessionStatus status,
+      String startTime,
+      String endTime,
+      int maxParticipants,
+      int participantCount,
+      UserModel creator,
+      GymModel gym});
+
+  @override
+  $UserModelCopyWith<$Res> get creator;
+  @override
+  $GymModelCopyWith<$Res> get gym;
+}
+
+/// @nodoc
+class __$SessionModelCopyWithImpl<$Res>
+    implements _$SessionModelCopyWith<$Res> {
+  __$SessionModelCopyWithImpl(this._self, this._then);
+
+  final _SessionModel _self;
+  final $Res Function(_SessionModel) _then;
+
+  /// Create a copy of SessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? sessionId = null,
+    Object? title = null,
+    Object? sessionType = null,
+    Object? status = null,
+    Object? startTime = null,
+    Object? endTime = null,
+    Object? maxParticipants = null,
+    Object? participantCount = null,
+    Object? creator = null,
+    Object? gym = null,
+  }) {
+    return _then(_SessionModel(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      title: null == title
+          ? _self.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      sessionType: null == sessionType
+          ? _self.sessionType
+          : sessionType // ignore: cast_nullable_to_non_nullable
+              as SessionType,
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as SessionStatus,
+      startTime: null == startTime
+          ? _self.startTime
+          : startTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      endTime: null == endTime
+          ? _self.endTime
+          : endTime // ignore: cast_nullable_to_non_nullable
+              as String,
+      maxParticipants: null == maxParticipants
+          ? _self.maxParticipants
+          : maxParticipants // ignore: cast_nullable_to_non_nullable
+              as int,
+      participantCount: null == participantCount
+          ? _self.participantCount
+          : participantCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      creator: null == creator
+          ? _self.creator
+          : creator // ignore: cast_nullable_to_non_nullable
+              as UserModel,
+      gym: null == gym
+          ? _self.gym
+          : gym // ignore: cast_nullable_to_non_nullable
+              as GymModel,
+    ));
+  }
+
+  /// Create a copy of SessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $UserModelCopyWith<$Res> get creator {
+    return $UserModelCopyWith<$Res>(_self.creator, (value) {
+      return _then(_self.copyWith(creator: value));
+    });
+  }
+
+  /// Create a copy of SessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $GymModelCopyWith<$Res> get gym {
+    return $GymModelCopyWith<$Res>(_self.gym, (value) {
+      return _then(_self.copyWith(gym: value));
+    });
+  }
+}
+
+// dart format on
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\session_model.g.dart
@@ -1231,8 +1709,8 @@ part of 'session_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$SessionModelImpl _$$SessionModelImplFromJson(Map<String, dynamic> json) =>
-    _$SessionModelImpl(
+_SessionModel _$SessionModelFromJson(Map<String, dynamic> json) =>
+    _SessionModel(
       sessionId: json['sessionId'] as String,
       title: json['title'] as String,
       sessionType: $enumDecode(_$SessionTypeEnumMap, json['sessionType']),
@@ -1245,7 +1723,7 @@ _$SessionModelImpl _$$SessionModelImplFromJson(Map<String, dynamic> json) =>
       gym: GymModel.fromJson(json['gym'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$$SessionModelImplToJson(_$SessionModelImpl instance) =>
+Map<String, dynamic> _$SessionModelToJson(_SessionModel instance) =>
     <String, dynamic>{
       'sessionId': instance.sessionId,
       'title': instance.title,
@@ -1284,7 +1762,7 @@ part 'session_participant_model.g.dart';
 // This model maps to the backend's SessionParticipantId.java
 @freezed
 class SessionParticipantIdModel with _$SessionParticipantIdModel {
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory SessionParticipantIdModel({
     required String sessionId,
     required String userId,
@@ -1299,7 +1777,7 @@ class SessionParticipantIdModel with _$SessionParticipantIdModel {
 class SessionParticipantModel with _$SessionParticipantModel {
   const SessionParticipantModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory SessionParticipantModel({
     required SessionParticipantIdModel id,
     required UserModel user, // The user who joined
@@ -1325,8 +1803,8 @@ class SessionParticipantModel with _$SessionParticipantModel {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\session_participant_model.freezed.dart
 ==================================================
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -1336,149 +1814,30 @@ part of 'session_participant_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
-SessionParticipantIdModel _$SessionParticipantIdModelFromJson(
-  Map<String, dynamic> json,
-) {
-  return _SessionParticipantIdModel.fromJson(json);
-}
 
 /// @nodoc
 mixin _$SessionParticipantIdModel {
-  String get sessionId => throw _privateConstructorUsedError;
-  String get userId => throw _privateConstructorUsedError;
-
-  /// Serializes this SessionParticipantIdModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String get sessionId;
+  String get userId;
 
   /// Create a copy of SessionParticipantIdModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $SessionParticipantIdModelCopyWith<SessionParticipantIdModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$SessionParticipantIdModelCopyWithImpl<SessionParticipantIdModel>(
+          this as SessionParticipantIdModel, _$identity);
 
-/// @nodoc
-abstract class $SessionParticipantIdModelCopyWith<$Res> {
-  factory $SessionParticipantIdModelCopyWith(
-    SessionParticipantIdModel value,
-    $Res Function(SessionParticipantIdModel) then,
-  ) = _$SessionParticipantIdModelCopyWithImpl<$Res, SessionParticipantIdModel>;
-  @useResult
-  $Res call({String sessionId, String userId});
-}
-
-/// @nodoc
-class _$SessionParticipantIdModelCopyWithImpl<
-  $Res,
-  $Val extends SessionParticipantIdModel
->
-    implements $SessionParticipantIdModelCopyWith<$Res> {
-  _$SessionParticipantIdModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of SessionParticipantIdModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? sessionId = null, Object? userId = null}) {
-    return _then(
-      _value.copyWith(
-            sessionId: null == sessionId
-                ? _value.sessionId
-                : sessionId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            userId: null == userId
-                ? _value.userId
-                : userId // ignore: cast_nullable_to_non_nullable
-                      as String,
-          )
-          as $Val,
-    );
-  }
-}
-
-/// @nodoc
-abstract class _$$SessionParticipantIdModelImplCopyWith<$Res>
-    implements $SessionParticipantIdModelCopyWith<$Res> {
-  factory _$$SessionParticipantIdModelImplCopyWith(
-    _$SessionParticipantIdModelImpl value,
-    $Res Function(_$SessionParticipantIdModelImpl) then,
-  ) = __$$SessionParticipantIdModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({String sessionId, String userId});
-}
-
-/// @nodoc
-class __$$SessionParticipantIdModelImplCopyWithImpl<$Res>
-    extends
-        _$SessionParticipantIdModelCopyWithImpl<
-          $Res,
-          _$SessionParticipantIdModelImpl
-        >
-    implements _$$SessionParticipantIdModelImplCopyWith<$Res> {
-  __$$SessionParticipantIdModelImplCopyWithImpl(
-    _$SessionParticipantIdModelImpl _value,
-    $Res Function(_$SessionParticipantIdModelImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of SessionParticipantIdModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? sessionId = null, Object? userId = null}) {
-    return _then(
-      _$SessionParticipantIdModelImpl(
-        sessionId: null == sessionId
-            ? _value.sessionId
-            : sessionId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        userId: null == userId
-            ? _value.userId
-            : userId // ignore: cast_nullable_to_non_nullable
-                  as String,
-      ),
-    );
-  }
-}
-
-/// @nodoc
-
-@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
-class _$SessionParticipantIdModelImpl implements _SessionParticipantIdModel {
-  const _$SessionParticipantIdModelImpl({
-    required this.sessionId,
-    required this.userId,
-  });
-
-  factory _$SessionParticipantIdModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SessionParticipantIdModelImplFromJson(json);
-
-  @override
-  final String sessionId;
-  @override
-  final String userId;
-
-  @override
-  String toString() {
-    return 'SessionParticipantIdModel(sessionId: $sessionId, userId: $userId)';
-  }
+  /// Serializes this SessionParticipantIdModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SessionParticipantIdModelImpl &&
+            other is SessionParticipantIdModel &&
             (identical(other.sessionId, sessionId) ||
                 other.sessionId == sessionId) &&
             (identical(other.userId, userId) || other.userId == userId));
@@ -1488,256 +1847,320 @@ class _$SessionParticipantIdModelImpl implements _SessionParticipantIdModel {
   @override
   int get hashCode => Object.hash(runtimeType, sessionId, userId);
 
+  @override
+  String toString() {
+    return 'SessionParticipantIdModel(sessionId: $sessionId, userId: $userId)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $SessionParticipantIdModelCopyWith<$Res> {
+  factory $SessionParticipantIdModelCopyWith(SessionParticipantIdModel value,
+          $Res Function(SessionParticipantIdModel) _then) =
+      _$SessionParticipantIdModelCopyWithImpl;
+  @useResult
+  $Res call({String sessionId, String userId});
+}
+
+/// @nodoc
+class _$SessionParticipantIdModelCopyWithImpl<$Res>
+    implements $SessionParticipantIdModelCopyWith<$Res> {
+  _$SessionParticipantIdModelCopyWithImpl(this._self, this._then);
+
+  final SessionParticipantIdModel _self;
+  final $Res Function(SessionParticipantIdModel) _then;
+
   /// Create a copy of SessionParticipantIdModel
   /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
   @pragma('vm:prefer-inline')
-  _$$SessionParticipantIdModelImplCopyWith<_$SessionParticipantIdModelImpl>
-  get copyWith =>
-      __$$SessionParticipantIdModelImplCopyWithImpl<
-        _$SessionParticipantIdModelImpl
-      >(this, _$identity);
+  @override
+  $Res call({
+    Object? sessionId = null,
+    Object? userId = null,
+  }) {
+    return _then(_self.copyWith(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      userId: null == userId
+          ? _self.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [SessionParticipantIdModel].
+extension SessionParticipantIdModelPatterns on SessionParticipantIdModel {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_SessionParticipantIdModel value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _SessionParticipantIdModel() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_SessionParticipantIdModel value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionParticipantIdModel():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_SessionParticipantIdModel value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionParticipantIdModel() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(String sessionId, String userId)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _SessionParticipantIdModel() when $default != null:
+        return $default(_that.sessionId, _that.userId);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(String sessionId, String userId) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionParticipantIdModel():
+        return $default(_that.sessionId, _that.userId);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(String sessionId, String userId)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionParticipantIdModel() when $default != null:
+        return $default(_that.sessionId, _that.userId);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+class _SessionParticipantIdModel implements SessionParticipantIdModel {
+  const _SessionParticipantIdModel(
+      {required this.sessionId, required this.userId});
+  factory _SessionParticipantIdModel.fromJson(Map<String, dynamic> json) =>
+      _$SessionParticipantIdModelFromJson(json);
+
+  @override
+  final String sessionId;
+  @override
+  final String userId;
+
+  /// Create a copy of SessionParticipantIdModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$SessionParticipantIdModelCopyWith<_SessionParticipantIdModel>
+      get copyWith =>
+          __$SessionParticipantIdModelCopyWithImpl<_SessionParticipantIdModel>(
+              this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SessionParticipantIdModelImplToJson(this);
-  }
-}
-
-abstract class _SessionParticipantIdModel implements SessionParticipantIdModel {
-  const factory _SessionParticipantIdModel({
-    required final String sessionId,
-    required final String userId,
-  }) = _$SessionParticipantIdModelImpl;
-
-  factory _SessionParticipantIdModel.fromJson(Map<String, dynamic> json) =
-      _$SessionParticipantIdModelImpl.fromJson;
-
-  @override
-  String get sessionId;
-  @override
-  String get userId;
-
-  /// Create a copy of SessionParticipantIdModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SessionParticipantIdModelImplCopyWith<_$SessionParticipantIdModelImpl>
-  get copyWith => throw _privateConstructorUsedError;
-}
-
-SessionParticipantModel _$SessionParticipantModelFromJson(
-  Map<String, dynamic> json,
-) {
-  return _SessionParticipantModel.fromJson(json);
-}
-
-/// @nodoc
-mixin _$SessionParticipantModel {
-  SessionParticipantIdModel get id => throw _privateConstructorUsedError;
-  UserModel get user =>
-      throw _privateConstructorUsedError; // The user who joined
-  ParticipantStatus get status => throw _privateConstructorUsedError;
-  String get joinedAt => throw _privateConstructorUsedError;
-
-  /// Serializes this SessionParticipantModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of SessionParticipantModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $SessionParticipantModelCopyWith<SessionParticipantModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $SessionParticipantModelCopyWith<$Res> {
-  factory $SessionParticipantModelCopyWith(
-    SessionParticipantModel value,
-    $Res Function(SessionParticipantModel) then,
-  ) = _$SessionParticipantModelCopyWithImpl<$Res, SessionParticipantModel>;
-  @useResult
-  $Res call({
-    SessionParticipantIdModel id,
-    UserModel user,
-    ParticipantStatus status,
-    String joinedAt,
-  });
-
-  $SessionParticipantIdModelCopyWith<$Res> get id;
-  $UserModelCopyWith<$Res> get user;
-}
-
-/// @nodoc
-class _$SessionParticipantModelCopyWithImpl<
-  $Res,
-  $Val extends SessionParticipantModel
->
-    implements $SessionParticipantModelCopyWith<$Res> {
-  _$SessionParticipantModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of SessionParticipantModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? user = null,
-    Object? status = null,
-    Object? joinedAt = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            id: null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                      as SessionParticipantIdModel,
-            user: null == user
-                ? _value.user
-                : user // ignore: cast_nullable_to_non_nullable
-                      as UserModel,
-            status: null == status
-                ? _value.status
-                : status // ignore: cast_nullable_to_non_nullable
-                      as ParticipantStatus,
-            joinedAt: null == joinedAt
-                ? _value.joinedAt
-                : joinedAt // ignore: cast_nullable_to_non_nullable
-                      as String,
-          )
-          as $Val,
+    return _$SessionParticipantIdModelToJson(
+      this,
     );
-  }
-
-  /// Create a copy of SessionParticipantModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $SessionParticipantIdModelCopyWith<$Res> get id {
-    return $SessionParticipantIdModelCopyWith<$Res>(_value.id, (value) {
-      return _then(_value.copyWith(id: value) as $Val);
-    });
-  }
-
-  /// Create a copy of SessionParticipantModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $UserModelCopyWith<$Res> get user {
-    return $UserModelCopyWith<$Res>(_value.user, (value) {
-      return _then(_value.copyWith(user: value) as $Val);
-    });
-  }
-}
-
-/// @nodoc
-abstract class _$$SessionParticipantModelImplCopyWith<$Res>
-    implements $SessionParticipantModelCopyWith<$Res> {
-  factory _$$SessionParticipantModelImplCopyWith(
-    _$SessionParticipantModelImpl value,
-    $Res Function(_$SessionParticipantModelImpl) then,
-  ) = __$$SessionParticipantModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    SessionParticipantIdModel id,
-    UserModel user,
-    ParticipantStatus status,
-    String joinedAt,
-  });
-
-  @override
-  $SessionParticipantIdModelCopyWith<$Res> get id;
-  @override
-  $UserModelCopyWith<$Res> get user;
-}
-
-/// @nodoc
-class __$$SessionParticipantModelImplCopyWithImpl<$Res>
-    extends
-        _$SessionParticipantModelCopyWithImpl<
-          $Res,
-          _$SessionParticipantModelImpl
-        >
-    implements _$$SessionParticipantModelImplCopyWith<$Res> {
-  __$$SessionParticipantModelImplCopyWithImpl(
-    _$SessionParticipantModelImpl _value,
-    $Res Function(_$SessionParticipantModelImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of SessionParticipantModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? user = null,
-    Object? status = null,
-    Object? joinedAt = null,
-  }) {
-    return _then(
-      _$SessionParticipantModelImpl(
-        id: null == id
-            ? _value.id
-            : id // ignore: cast_nullable_to_non_nullable
-                  as SessionParticipantIdModel,
-        user: null == user
-            ? _value.user
-            : user // ignore: cast_nullable_to_non_nullable
-                  as UserModel,
-        status: null == status
-            ? _value.status
-            : status // ignore: cast_nullable_to_non_nullable
-                  as ParticipantStatus,
-        joinedAt: null == joinedAt
-            ? _value.joinedAt
-            : joinedAt // ignore: cast_nullable_to_non_nullable
-                  as String,
-      ),
-    );
-  }
-}
-
-/// @nodoc
-
-@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
-class _$SessionParticipantModelImpl extends _SessionParticipantModel {
-  const _$SessionParticipantModelImpl({
-    required this.id,
-    required this.user,
-    required this.status,
-    required this.joinedAt,
-  }) : super._();
-
-  factory _$SessionParticipantModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SessionParticipantModelImplFromJson(json);
-
-  @override
-  final SessionParticipantIdModel id;
-  @override
-  final UserModel user;
-  // The user who joined
-  @override
-  final ParticipantStatus status;
-  @override
-  final String joinedAt;
-
-  @override
-  String toString() {
-    return 'SessionParticipantModel(id: $id, user: $user, status: $status, joinedAt: $joinedAt)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SessionParticipantModelImpl &&
+            other is _SessionParticipantIdModel &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.userId, userId) || other.userId == userId));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, sessionId, userId);
+
+  @override
+  String toString() {
+    return 'SessionParticipantIdModel(sessionId: $sessionId, userId: $userId)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$SessionParticipantIdModelCopyWith<$Res>
+    implements $SessionParticipantIdModelCopyWith<$Res> {
+  factory _$SessionParticipantIdModelCopyWith(_SessionParticipantIdModel value,
+          $Res Function(_SessionParticipantIdModel) _then) =
+      __$SessionParticipantIdModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call({String sessionId, String userId});
+}
+
+/// @nodoc
+class __$SessionParticipantIdModelCopyWithImpl<$Res>
+    implements _$SessionParticipantIdModelCopyWith<$Res> {
+  __$SessionParticipantIdModelCopyWithImpl(this._self, this._then);
+
+  final _SessionParticipantIdModel _self;
+  final $Res Function(_SessionParticipantIdModel) _then;
+
+  /// Create a copy of SessionParticipantIdModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? sessionId = null,
+    Object? userId = null,
+  }) {
+    return _then(_SessionParticipantIdModel(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      userId: null == userId
+          ? _self.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$SessionParticipantModel {
+  SessionParticipantIdModel get id;
+  UserModel get user; // The user who joined
+  ParticipantStatus get status;
+  String get joinedAt;
+
+  /// Create a copy of SessionParticipantModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $SessionParticipantModelCopyWith<SessionParticipantModel> get copyWith =>
+      _$SessionParticipantModelCopyWithImpl<SessionParticipantModel>(
+          this as SessionParticipantModel, _$identity);
+
+  /// Serializes this SessionParticipantModel to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is SessionParticipantModel &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.user, user) || other.user == user) &&
             (identical(other.status, status) || other.status == status) &&
@@ -1749,51 +2172,390 @@ class _$SessionParticipantModelImpl extends _SessionParticipantModel {
   @override
   int get hashCode => Object.hash(runtimeType, id, user, status, joinedAt);
 
-  /// Create a copy of SessionParticipantModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$SessionParticipantModelImplCopyWith<_$SessionParticipantModelImpl>
-  get copyWith =>
-      __$$SessionParticipantModelImplCopyWithImpl<
-        _$SessionParticipantModelImpl
-      >(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$SessionParticipantModelImplToJson(this);
+  String toString() {
+    return 'SessionParticipantModel(id: $id, user: $user, status: $status, joinedAt: $joinedAt)';
   }
 }
 
-abstract class _SessionParticipantModel extends SessionParticipantModel {
-  const factory _SessionParticipantModel({
-    required final SessionParticipantIdModel id,
-    required final UserModel user,
-    required final ParticipantStatus status,
-    required final String joinedAt,
-  }) = _$SessionParticipantModelImpl;
-  const _SessionParticipantModel._() : super._();
+/// @nodoc
+abstract mixin class $SessionParticipantModelCopyWith<$Res> {
+  factory $SessionParticipantModelCopyWith(SessionParticipantModel value,
+          $Res Function(SessionParticipantModel) _then) =
+      _$SessionParticipantModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {SessionParticipantIdModel id,
+      UserModel user,
+      ParticipantStatus status,
+      String joinedAt});
 
-  factory _SessionParticipantModel.fromJson(Map<String, dynamic> json) =
-      _$SessionParticipantModelImpl.fromJson;
+  $SessionParticipantIdModelCopyWith<$Res> get id;
+  $UserModelCopyWith<$Res> get user;
+}
+
+/// @nodoc
+class _$SessionParticipantModelCopyWithImpl<$Res>
+    implements $SessionParticipantModelCopyWith<$Res> {
+  _$SessionParticipantModelCopyWithImpl(this._self, this._then);
+
+  final SessionParticipantModel _self;
+  final $Res Function(SessionParticipantModel) _then;
+
+  /// Create a copy of SessionParticipantModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? user = null,
+    Object? status = null,
+    Object? joinedAt = null,
+  }) {
+    return _then(_self.copyWith(
+      id: null == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as SessionParticipantIdModel,
+      user: null == user
+          ? _self.user
+          : user // ignore: cast_nullable_to_non_nullable
+              as UserModel,
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as ParticipantStatus,
+      joinedAt: null == joinedAt
+          ? _self.joinedAt
+          : joinedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+
+  /// Create a copy of SessionParticipantModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $SessionParticipantIdModelCopyWith<$Res> get id {
+    return $SessionParticipantIdModelCopyWith<$Res>(_self.id, (value) {
+      return _then(_self.copyWith(id: value));
+    });
+  }
+
+  /// Create a copy of SessionParticipantModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $UserModelCopyWith<$Res> get user {
+    return $UserModelCopyWith<$Res>(_self.user, (value) {
+      return _then(_self.copyWith(user: value));
+    });
+  }
+}
+
+/// Adds pattern-matching-related methods to [SessionParticipantModel].
+extension SessionParticipantModelPatterns on SessionParticipantModel {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_SessionParticipantModel value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _SessionParticipantModel() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_SessionParticipantModel value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionParticipantModel():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_SessionParticipantModel value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionParticipantModel() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(SessionParticipantIdModel id, UserModel user,
+            ParticipantStatus status, String joinedAt)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _SessionParticipantModel() when $default != null:
+        return $default(_that.id, _that.user, _that.status, _that.joinedAt);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(SessionParticipantIdModel id, UserModel user,
+            ParticipantStatus status, String joinedAt)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionParticipantModel():
+        return $default(_that.id, _that.user, _that.status, _that.joinedAt);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(SessionParticipantIdModel id, UserModel user,
+            ParticipantStatus status, String joinedAt)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SessionParticipantModel() when $default != null:
+        return $default(_that.id, _that.user, _that.status, _that.joinedAt);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+class _SessionParticipantModel extends SessionParticipantModel {
+  const _SessionParticipantModel(
+      {required this.id,
+      required this.user,
+      required this.status,
+      required this.joinedAt})
+      : super._();
+  factory _SessionParticipantModel.fromJson(Map<String, dynamic> json) =>
+      _$SessionParticipantModelFromJson(json);
 
   @override
-  SessionParticipantIdModel get id;
+  final SessionParticipantIdModel id;
   @override
-  UserModel get user; // The user who joined
+  final UserModel user;
+// The user who joined
   @override
-  ParticipantStatus get status;
+  final ParticipantStatus status;
   @override
-  String get joinedAt;
+  final String joinedAt;
 
   /// Create a copy of SessionParticipantModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SessionParticipantModelImplCopyWith<_$SessionParticipantModelImpl>
-  get copyWith => throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$SessionParticipantModelCopyWith<_SessionParticipantModel> get copyWith =>
+      __$SessionParticipantModelCopyWithImpl<_SessionParticipantModel>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$SessionParticipantModelToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _SessionParticipantModel &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.user, user) || other.user == user) &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.joinedAt, joinedAt) ||
+                other.joinedAt == joinedAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, user, status, joinedAt);
+
+  @override
+  String toString() {
+    return 'SessionParticipantModel(id: $id, user: $user, status: $status, joinedAt: $joinedAt)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$SessionParticipantModelCopyWith<$Res>
+    implements $SessionParticipantModelCopyWith<$Res> {
+  factory _$SessionParticipantModelCopyWith(_SessionParticipantModel value,
+          $Res Function(_SessionParticipantModel) _then) =
+      __$SessionParticipantModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {SessionParticipantIdModel id,
+      UserModel user,
+      ParticipantStatus status,
+      String joinedAt});
+
+  @override
+  $SessionParticipantIdModelCopyWith<$Res> get id;
+  @override
+  $UserModelCopyWith<$Res> get user;
+}
+
+/// @nodoc
+class __$SessionParticipantModelCopyWithImpl<$Res>
+    implements _$SessionParticipantModelCopyWith<$Res> {
+  __$SessionParticipantModelCopyWithImpl(this._self, this._then);
+
+  final _SessionParticipantModel _self;
+  final $Res Function(_SessionParticipantModel) _then;
+
+  /// Create a copy of SessionParticipantModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? id = null,
+    Object? user = null,
+    Object? status = null,
+    Object? joinedAt = null,
+  }) {
+    return _then(_SessionParticipantModel(
+      id: null == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as SessionParticipantIdModel,
+      user: null == user
+          ? _self.user
+          : user // ignore: cast_nullable_to_non_nullable
+              as UserModel,
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as ParticipantStatus,
+      joinedAt: null == joinedAt
+          ? _self.joinedAt
+          : joinedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+
+  /// Create a copy of SessionParticipantModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $SessionParticipantIdModelCopyWith<$Res> get id {
+    return $SessionParticipantIdModelCopyWith<$Res>(_self.id, (value) {
+      return _then(_self.copyWith(id: value));
+    });
+  }
+
+  /// Create a copy of SessionParticipantModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $UserModelCopyWith<$Res> get user {
+    return $UserModelCopyWith<$Res>(_self.user, (value) {
+      return _then(_self.copyWith(user: value));
+    });
+  }
+}
+
+// dart format on
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\models\session_participant_model.g.dart
@@ -1806,37 +2568,38 @@ part of 'session_participant_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$SessionParticipantIdModelImpl _$$SessionParticipantIdModelImplFromJson(
-  Map<String, dynamic> json,
-) => _$SessionParticipantIdModelImpl(
-  sessionId: json['sessionId'] as String,
-  userId: json['userId'] as String,
-);
+_SessionParticipantIdModel _$SessionParticipantIdModelFromJson(
+        Map<String, dynamic> json) =>
+    _SessionParticipantIdModel(
+      sessionId: json['sessionId'] as String,
+      userId: json['userId'] as String,
+    );
 
-Map<String, dynamic> _$$SessionParticipantIdModelImplToJson(
-  _$SessionParticipantIdModelImpl instance,
-) => <String, dynamic>{
-  'sessionId': instance.sessionId,
-  'userId': instance.userId,
-};
+Map<String, dynamic> _$SessionParticipantIdModelToJson(
+        _SessionParticipantIdModel instance) =>
+    <String, dynamic>{
+      'sessionId': instance.sessionId,
+      'userId': instance.userId,
+    };
 
-_$SessionParticipantModelImpl _$$SessionParticipantModelImplFromJson(
-  Map<String, dynamic> json,
-) => _$SessionParticipantModelImpl(
-  id: SessionParticipantIdModel.fromJson(json['id'] as Map<String, dynamic>),
-  user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
-  status: $enumDecode(_$ParticipantStatusEnumMap, json['status']),
-  joinedAt: json['joinedAt'] as String,
-);
+_SessionParticipantModel _$SessionParticipantModelFromJson(
+        Map<String, dynamic> json) =>
+    _SessionParticipantModel(
+      id: SessionParticipantIdModel.fromJson(
+          json['id'] as Map<String, dynamic>),
+      user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
+      status: $enumDecode(_$ParticipantStatusEnumMap, json['status']),
+      joinedAt: json['joinedAt'] as String,
+    );
 
-Map<String, dynamic> _$$SessionParticipantModelImplToJson(
-  _$SessionParticipantModelImpl instance,
-) => <String, dynamic>{
-  'id': instance.id.toJson(),
-  'user': instance.user.toJson(),
-  'status': _$ParticipantStatusEnumMap[instance.status]!,
-  'joinedAt': instance.joinedAt,
-};
+Map<String, dynamic> _$SessionParticipantModelToJson(
+        _SessionParticipantModel instance) =>
+    <String, dynamic>{
+      'id': instance.id.toJson(),
+      'user': instance.user.toJson(),
+      'status': _$ParticipantStatusEnumMap[instance.status]!,
+      'joinedAt': instance.joinedAt,
+    };
 
 const _$ParticipantStatusEnumMap = {
   ParticipantStatus.joined: 'joined',
@@ -2167,7 +2930,6 @@ class JoinSessionParams extends Equatable {
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\domain\usecases\mark_attendance.dart
 ==================================================
 import 'package:equatable/equatable.dart';
-import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sahbifit/core/usecases/usecase.dart';
 import 'package:sahbifit/features/session/domain/enums/participant_status.dart';
@@ -2207,10 +2969,502 @@ class MarkAttendanceParams extends Equatable {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\cubit\session_feed_cubit.dart
 ==================================================
+import 'package:bloc/bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/features/session/domain/entities/session.dart';
+import 'package:sahbifit/features/session/domain/usecases/get_active_sessions.dart';
+import 'package:sahbifit/features/verification/domain/enums/verified_gender_enum.dart';
+
+part 'session_feed_cubit.freezed.dart';
+part 'session_feed_state.dart';
+
+@injectable
+class SessionFeedCubit extends Cubit<SessionFeedState> {
+  final GetActiveSessions _getActiveSessions;
+
+  SessionFeedCubit(this._getActiveSessions)
+      : super(const SessionFeedState.initial());
+
+  /// Fetches the list of active sessions, optionally applying a gender filter.
+  Future<void> fetchSessions({VerifiedGender? genderFilter}) async {
+    emit(const SessionFeedState.loading());
+    try {
+      final params = GetActiveSessionsParams(genderFilter: genderFilter);
+      final sessions = await _getActiveSessions(params);
+
+      emit(SessionFeedState.loaded(
+        sessions: sessions,
+        genderFilter: genderFilter,
+      ));
+    } on ServerFailure catch (e) {
+      emit(SessionFeedState.error(e.message));
+    } catch (e) {
+      emit(SessionFeedState.error(e.toString()));
+    }
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\cubit\session_feed_cubit.freezed.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'session_feed_cubit.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$SessionFeedState {
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is SessionFeedState);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() {
+    return 'SessionFeedState()';
+  }
+}
+
+/// @nodoc
+class $SessionFeedStateCopyWith<$Res> {
+  $SessionFeedStateCopyWith(
+      SessionFeedState _, $Res Function(SessionFeedState) __);
+}
+
+/// Adds pattern-matching-related methods to [SessionFeedState].
+extension SessionFeedStatePatterns on SessionFeedState {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Initial value)? initial,
+    TResult Function(_Loading value)? loading,
+    TResult Function(_Loaded value)? loaded,
+    TResult Function(_Error value)? error,
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial() when initial != null:
+        return initial(_that);
+      case _Loading() when loading != null:
+        return loading(_that);
+      case _Loaded() when loaded != null:
+        return loaded(_that);
+      case _Error() when error != null:
+        return error(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Initial value) initial,
+    required TResult Function(_Loading value) loading,
+    required TResult Function(_Loaded value) loaded,
+    required TResult Function(_Error value) error,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial():
+        return initial(_that);
+      case _Loading():
+        return loading(_that);
+      case _Loaded():
+        return loaded(_that);
+      case _Error():
+        return error(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Initial value)? initial,
+    TResult? Function(_Loading value)? loading,
+    TResult? Function(_Loaded value)? loaded,
+    TResult? Function(_Error value)? error,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial() when initial != null:
+        return initial(_that);
+      case _Loading() when loading != null:
+        return loading(_that);
+      case _Loaded() when loaded != null:
+        return loaded(_that);
+      case _Error() when error != null:
+        return error(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(List<Session> sessions, VerifiedGender? genderFilter)?
+        loaded,
+    TResult Function(String message)? error,
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial() when initial != null:
+        return initial();
+      case _Loading() when loading != null:
+        return loading();
+      case _Loaded() when loaded != null:
+        return loaded(_that.sessions, _that.genderFilter);
+      case _Error() when error != null:
+        return error(_that.message);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(
+            List<Session> sessions, VerifiedGender? genderFilter)
+        loaded,
+    required TResult Function(String message) error,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial():
+        return initial();
+      case _Loading():
+        return loading();
+      case _Loaded():
+        return loaded(_that.sessions, _that.genderFilter);
+      case _Error():
+        return error(_that.message);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(List<Session> sessions, VerifiedGender? genderFilter)?
+        loaded,
+    TResult? Function(String message)? error,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial() when initial != null:
+        return initial();
+      case _Loading() when loading != null:
+        return loading();
+      case _Loaded() when loaded != null:
+        return loaded(_that.sessions, _that.genderFilter);
+      case _Error() when error != null:
+        return error(_that.message);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+class _Initial implements SessionFeedState {
+  const _Initial();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _Initial);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() {
+    return 'SessionFeedState.initial()';
+  }
+}
+
+/// @nodoc
+
+class _Loading implements SessionFeedState {
+  const _Loading();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _Loading);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() {
+    return 'SessionFeedState.loading()';
+  }
+}
+
+/// @nodoc
+
+class _Loaded implements SessionFeedState {
+  const _Loaded({required final List<Session> sessions, this.genderFilter})
+      : _sessions = sessions;
+
+  final List<Session> _sessions;
+  List<Session> get sessions {
+    if (_sessions is EqualUnmodifiableListView) return _sessions;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_sessions);
+  }
+
+  final VerifiedGender? genderFilter;
+
+  /// Create a copy of SessionFeedState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$LoadedCopyWith<_Loaded> get copyWith =>
+      __$LoadedCopyWithImpl<_Loaded>(this, _$identity);
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _Loaded &&
+            const DeepCollectionEquality().equals(other._sessions, _sessions) &&
+            (identical(other.genderFilter, genderFilter) ||
+                other.genderFilter == genderFilter));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType,
+      const DeepCollectionEquality().hash(_sessions), genderFilter);
+
+  @override
+  String toString() {
+    return 'SessionFeedState.loaded(sessions: $sessions, genderFilter: $genderFilter)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$LoadedCopyWith<$Res>
+    implements $SessionFeedStateCopyWith<$Res> {
+  factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) =
+      __$LoadedCopyWithImpl;
+  @useResult
+  $Res call({List<Session> sessions, VerifiedGender? genderFilter});
+}
+
+/// @nodoc
+class __$LoadedCopyWithImpl<$Res> implements _$LoadedCopyWith<$Res> {
+  __$LoadedCopyWithImpl(this._self, this._then);
+
+  final _Loaded _self;
+  final $Res Function(_Loaded) _then;
+
+  /// Create a copy of SessionFeedState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? sessions = null,
+    Object? genderFilter = freezed,
+  }) {
+    return _then(_Loaded(
+      sessions: null == sessions
+          ? _self._sessions
+          : sessions // ignore: cast_nullable_to_non_nullable
+              as List<Session>,
+      genderFilter: freezed == genderFilter
+          ? _self.genderFilter
+          : genderFilter // ignore: cast_nullable_to_non_nullable
+              as VerifiedGender?,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _Error implements SessionFeedState {
+  const _Error(this.message);
+
+  final String message;
+
+  /// Create a copy of SessionFeedState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$ErrorCopyWith<_Error> get copyWith =>
+      __$ErrorCopyWithImpl<_Error>(this, _$identity);
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _Error &&
+            (identical(other.message, message) || other.message == message));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, message);
+
+  @override
+  String toString() {
+    return 'SessionFeedState.error(message: $message)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$ErrorCopyWith<$Res>
+    implements $SessionFeedStateCopyWith<$Res> {
+  factory _$ErrorCopyWith(_Error value, $Res Function(_Error) _then) =
+      __$ErrorCopyWithImpl;
+  @useResult
+  $Res call({String message});
+}
+
+/// @nodoc
+class __$ErrorCopyWithImpl<$Res> implements _$ErrorCopyWith<$Res> {
+  __$ErrorCopyWithImpl(this._self, this._then);
+
+  final _Error _self;
+  final $Res Function(_Error) _then;
+
+  /// Create a copy of SessionFeedState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? message = null,
+  }) {
+    return _then(_Error(
+      null == message
+          ? _self.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+// dart format on
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\cubit\session_feed_state.dart
 ==================================================
+part of 'session_feed_cubit.dart';
+
+@freezed
+class SessionFeedState with _$SessionFeedState {
+  /// The initial state, before any sessions are fetched.
+  const factory SessionFeedState.initial() = _Initial;
+
+  /// The state while sessions are being fetched from the API.
+  const factory SessionFeedState.loading() = _Loading;
+
+  /// The state when sessions have been successfully loaded.
+  const factory SessionFeedState.loaded({
+    required List<Session> sessions,
+    VerifiedGender? genderFilter, // Store the filter that was used
+  }) = _Loaded;
+
+  /// The state when an error occurs during fetching.
+  const factory SessionFeedState.error(String message) = _Error;
+}
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\pages\create_session_page.dart

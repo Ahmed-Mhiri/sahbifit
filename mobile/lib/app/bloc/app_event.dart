@@ -1,7 +1,7 @@
 part of 'app_bloc.dart';
 
 @freezed
-class AppEvent with _$AppEvent {
+sealed class AppEvent with _$AppEvent {
   /// Dispatched on app startup to check if a valid token exists in storage.
   const factory AppEvent.checkAuthStatus() = _CheckAuthStatus;
 

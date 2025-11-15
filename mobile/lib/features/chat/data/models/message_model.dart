@@ -5,16 +5,14 @@ import 'package:sahbifit/features/chat/domain/entities/message.dart'; // Ensure 
 part 'message_model.freezed.dart';
 part 'message_model.g.dart';
 
-@freezed
-class MessageModel with _$MessageModel {
-  const MessageModel._();
+// [DELETED] @JsonSerializable annotation removed from here
 
-  @JsonSerializable(
-    fieldRename: FieldRename.snake, // Firestore often uses snake_case
-    converters: [TimestampConverter()], // Use our custom converter
-  )
+@freezed
+abstract class MessageModel with _$MessageModel {
+  const MessageModel._();
+  
   const factory MessageModel({
-    @JsonKey(ignore: true) String? id, // We'll get the ID from the doc snapshot
+    String? id, // [FIXED]
     required String senderId,
     required String text,
     // When reading, 'timestamp' will be a Timestamp.
@@ -42,7 +40,11 @@ class MessageModel with _$MessageModel {
   }
 
   /// Factory for creating a model from a JSON map (required by freezed)
-  /// This is the line that fixes the error.
+  @JsonSerializable( // [MOVED] Annotation is now here
+    fieldRename: FieldRename.snake,
+    converters: [TimestampConverter()],
+    explicitToJson: true,
+  )
   factory MessageModel.fromJson(Map<String, dynamic> json) =>
       _$MessageModelFromJson(json);
 
@@ -54,10 +56,10 @@ class MessageModel with _$MessageModel {
 
     // Replace our null timestamp with the server's command
     json['timestamp'] = FieldValue.serverTimestamp();
-    
+
     // Don't write the 'id' field back into the document data
-    json.remove('id'); 
-    
+    json.remove('id');
+
     return json;
   }
 
@@ -73,11 +75,12 @@ class MessageModel with _$MessageModel {
 }
 
 // This is the custom converter for handling Firestore Timestamps
-class TimestampConverter implements JsonConverter<DateTime?, Object> {
+// [FIXED] Changed Object to Object? to handle null values correctly.
+class TimestampConverter implements JsonConverter<DateTime?, Object?> {
   const TimestampConverter();
 
   @override
-  DateTime? fromJson(Object json) {
+  DateTime? fromJson(Object? json) { // [FIXED] Changed Object to Object?
     if (json is Timestamp) {
       return json.toDate();
     }

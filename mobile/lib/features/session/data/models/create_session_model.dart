@@ -4,9 +4,10 @@ import 'package:sahbifit/features/session/domain/enums/session_type.dart';
 part 'create_session_model.freezed.dart';
 part 'create_session_model.g.dart';
 
+
 @freezed
-class CreateSessionModel with _$CreateSessionModel {
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+abstract class CreateSessionModel with _$CreateSessionModel {
+  
   const factory CreateSessionModel({
     required String gymId,
     required SessionType sessionType,

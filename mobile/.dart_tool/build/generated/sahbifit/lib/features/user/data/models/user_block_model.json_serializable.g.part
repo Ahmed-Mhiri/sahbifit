@@ -2,33 +2,30 @@
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$UserBlockIdModelImpl _$$UserBlockIdModelImplFromJson(
-  Map<String, dynamic> json,
-) => _$UserBlockIdModelImpl(
-  blockerUserId: json['blockerUserId'] as String,
-  blockedUserId: json['blockedUserId'] as String,
-);
+_UserBlockIdModel _$UserBlockIdModelFromJson(Map<String, dynamic> json) =>
+    _UserBlockIdModel(
+      blockerUserId: json['blockerUserId'] as String,
+      blockedUserId: json['blockedUserId'] as String,
+    );
 
-Map<String, dynamic> _$$UserBlockIdModelImplToJson(
-  _$UserBlockIdModelImpl instance,
-) => <String, dynamic>{
-  'blockerUserId': instance.blockerUserId,
-  'blockedUserId': instance.blockedUserId,
-};
+Map<String, dynamic> _$UserBlockIdModelToJson(_UserBlockIdModel instance) =>
+    <String, dynamic>{
+      'blockerUserId': instance.blockerUserId,
+      'blockedUserId': instance.blockedUserId,
+    };
 
-_$UserBlockModelImpl _$$UserBlockModelImplFromJson(Map<String, dynamic> json) =>
-    _$UserBlockModelImpl(
+_UserBlockModel _$UserBlockModelFromJson(Map<String, dynamic> json) =>
+    _UserBlockModel(
       id: UserBlockIdModel.fromJson(json['id'] as Map<String, dynamic>),
       blocker: UserModel.fromJson(json['blocker'] as Map<String, dynamic>),
       blocked: UserModel.fromJson(json['blocked'] as Map<String, dynamic>),
       createdAt: json['createdAt'] as String,
     );
 
-Map<String, dynamic> _$$UserBlockModelImplToJson(
-  _$UserBlockModelImpl instance,
-) => <String, dynamic>{
-  'id': instance.id.toJson(),
-  'blocker': instance.blocker.toJson(),
-  'blocked': instance.blocked.toJson(),
-  'createdAt': instance.createdAt,
-};
+Map<String, dynamic> _$UserBlockModelToJson(_UserBlockModel instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'blocker': instance.blocker,
+      'blocked': instance.blocked,
+      'createdAt': instance.createdAt,
+    };

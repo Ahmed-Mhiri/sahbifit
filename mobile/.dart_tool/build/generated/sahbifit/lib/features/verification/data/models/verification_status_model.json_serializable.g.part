@@ -2,15 +2,15 @@
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$VerificationStatusModelImpl _$$VerificationStatusModelImplFromJson(
+_VerificationStatusModel _$VerificationStatusModelFromJson(
   Map<String, dynamic> json,
-) => _$VerificationStatusModelImpl(
+) => _VerificationStatusModel(
   status: $enumDecode(_$VerificationStatusEnumMap, json['status']),
   gender: $enumDecode(_$VerifiedGenderEnumMap, json['gender']),
 );
 
-Map<String, dynamic> _$$VerificationStatusModelImplToJson(
-  _$VerificationStatusModelImpl instance,
+Map<String, dynamic> _$VerificationStatusModelToJson(
+  _VerificationStatusModel instance,
 ) => <String, dynamic>{
   'status': _$VerificationStatusEnumMap[instance.status]!,
   'gender': _$VerifiedGenderEnumMap[instance.gender]!,

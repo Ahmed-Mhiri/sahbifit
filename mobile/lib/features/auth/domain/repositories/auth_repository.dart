@@ -1,4 +1,3 @@
-import 'package:sahbifit/core/errors/failure.dart';
 import 'package:sahbifit/features/auth/data/models/register_request_model.dart';
 import 'package:sahbifit/features/auth/domain/entities/auth_token.dart';
 

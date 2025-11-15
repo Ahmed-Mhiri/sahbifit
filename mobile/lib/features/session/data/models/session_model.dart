@@ -8,11 +8,12 @@ import 'package:sahbifit/features/user/data/models/user_model.dart'; // We'll re
 part 'session_model.freezed.dart';
 part 'session_model.g.dart';
 
+
 @freezed
-class SessionModel with _$SessionModel {
+abstract class SessionModel with _$SessionModel {
   const SessionModel._(); // Private constructor for methods
 
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory SessionModel({
     required String sessionId,
     required String title,

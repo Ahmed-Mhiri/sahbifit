@@ -5,9 +5,10 @@ part 'update_visibility_model.freezed.dart';
 part 'update_visibility_model.g.dart';
 
 // Matches UpdateVisibilityDto.java
+
 @freezed
-class UpdateVisibilityModel with _$UpdateVisibilityModel {
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+abstract class UpdateVisibilityModel with _$UpdateVisibilityModel {
+  
   const factory UpdateVisibilityModel({
     required ProfileVisibility visibility,
   }) = _UpdateVisibilityModel;

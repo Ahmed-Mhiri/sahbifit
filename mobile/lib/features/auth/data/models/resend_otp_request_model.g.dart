@@ -6,15 +6,15 @@ part of 'resend_otp_request_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$ResendOtpRequestModelImpl _$$ResendOtpRequestModelImplFromJson(
+_ResendOtpRequestModel _$ResendOtpRequestModelFromJson(
   Map<String, dynamic> json,
-) => _$ResendOtpRequestModelImpl(
+) => _ResendOtpRequestModel(
   phoneNumber: json['phoneNumber'] as String,
   recaptchaToken: json['recaptchaToken'] as String,
 );
 
-Map<String, dynamic> _$$ResendOtpRequestModelImplToJson(
-  _$ResendOtpRequestModelImpl instance,
+Map<String, dynamic> _$ResendOtpRequestModelToJson(
+  _ResendOtpRequestModel instance,
 ) => <String, dynamic>{
   'phoneNumber': instance.phoneNumber,
   'recaptchaToken': instance.recaptchaToken,

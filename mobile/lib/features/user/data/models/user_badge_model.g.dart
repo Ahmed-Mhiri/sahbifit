@@ -6,28 +6,25 @@ part of 'user_badge_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$UserBadgeIdModelImpl _$$UserBadgeIdModelImplFromJson(
-  Map<String, dynamic> json,
-) => _$UserBadgeIdModelImpl(
-  userId: json['userId'] as String,
-  badgeId: (json['badgeId'] as num).toInt(),
-);
+_UserBadgeIdModel _$UserBadgeIdModelFromJson(Map<String, dynamic> json) =>
+    _UserBadgeIdModel(
+      userId: json['userId'] as String,
+      badgeId: (json['badgeId'] as num).toInt(),
+    );
 
-Map<String, dynamic> _$$UserBadgeIdModelImplToJson(
-  _$UserBadgeIdModelImpl instance,
-) => <String, dynamic>{'userId': instance.userId, 'badgeId': instance.badgeId};
+Map<String, dynamic> _$UserBadgeIdModelToJson(_UserBadgeIdModel instance) =>
+    <String, dynamic>{'userId': instance.userId, 'badgeId': instance.badgeId};
 
-_$UserBadgeModelImpl _$$UserBadgeModelImplFromJson(Map<String, dynamic> json) =>
-    _$UserBadgeModelImpl(
+_UserBadgeModel _$UserBadgeModelFromJson(Map<String, dynamic> json) =>
+    _UserBadgeModel(
       id: UserBadgeIdModel.fromJson(json['id'] as Map<String, dynamic>),
       badge: BadgeModel.fromJson(json['badge'] as Map<String, dynamic>),
       earnedAt: json['earnedAt'] as String,
     );
 
-Map<String, dynamic> _$$UserBadgeModelImplToJson(
-  _$UserBadgeModelImpl instance,
-) => <String, dynamic>{
-  'id': instance.id.toJson(),
-  'badge': instance.badge.toJson(),
-  'earnedAt': instance.earnedAt,
-};
+Map<String, dynamic> _$UserBadgeModelToJson(_UserBadgeModel instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'badge': instance.badge,
+      'earnedAt': instance.earnedAt,
+    };

@@ -2,24 +2,20 @@
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$MessageModelImpl _$$MessageModelImplFromJson(Map<String, dynamic> json) =>
-    _$MessageModelImpl(
-      senderId: json['sender_id'] as String,
+_MessageModel _$MessageModelFromJson(Map<String, dynamic> json) =>
+    _MessageModel(
+      id: json['id'] as String?,
+      senderId: json['senderId'] as String,
       text: json['text'] as String,
-      timestamp: _$JsonConverterFromJson<Object, DateTime?>(
-        json['timestamp'],
-        const TimestampConverter().fromJson,
-      ),
+      timestamp: json['timestamp'] == null
+          ? null
+          : DateTime.parse(json['timestamp'] as String),
     );
 
-Map<String, dynamic> _$$MessageModelImplToJson(_$MessageModelImpl instance) =>
+Map<String, dynamic> _$MessageModelToJson(_MessageModel instance) =>
     <String, dynamic>{
-      'sender_id': instance.senderId,
+      'id': instance.id,
+      'senderId': instance.senderId,
       'text': instance.text,
-      'timestamp': const TimestampConverter().toJson(instance.timestamp),
+      'timestamp': instance.timestamp?.toIso8601String(),
     };
-
-Value? _$JsonConverterFromJson<Json, Value>(
-  Object? json,
-  Value? Function(Json json) fromJson,
-) => json == null ? null : fromJson(json as Json);

@@ -72,8 +72,9 @@ part 'create_rating_model.freezed.dart';
 part 'create_rating_model.g.dart';
 
 @freezed
+abstract
 class CreateRatingModel with _$CreateRatingModel {
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory CreateRatingModel({
     required String sessionId,
     required String ratedUserId,
@@ -88,8 +89,8 @@ class CreateRatingModel with _$CreateRatingModel {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\create_rating_model.freezed.dart
 ==================================================
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -99,186 +100,32 @@ part of 'create_rating_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
-CreateRatingModel _$CreateRatingModelFromJson(Map<String, dynamic> json) {
-  return _CreateRatingModel.fromJson(json);
-}
 
 /// @nodoc
 mixin _$CreateRatingModel {
-  String get sessionId => throw _privateConstructorUsedError;
-  String get ratedUserId => throw _privateConstructorUsedError;
-  int get ratingValue =>
-      throw _privateConstructorUsedError; // 'Short' maps to 'int'
-  String? get comment => throw _privateConstructorUsedError;
-
-  /// Serializes this CreateRatingModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String get sessionId;
+  String get ratedUserId;
+  int get ratingValue; // 'Short' maps to 'int'
+  String? get comment;
 
   /// Create a copy of CreateRatingModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $CreateRatingModelCopyWith<CreateRatingModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$CreateRatingModelCopyWithImpl<CreateRatingModel>(
+          this as CreateRatingModel, _$identity);
 
-/// @nodoc
-abstract class $CreateRatingModelCopyWith<$Res> {
-  factory $CreateRatingModelCopyWith(
-    CreateRatingModel value,
-    $Res Function(CreateRatingModel) then,
-  ) = _$CreateRatingModelCopyWithImpl<$Res, CreateRatingModel>;
-  @useResult
-  $Res call({
-    String sessionId,
-    String ratedUserId,
-    int ratingValue,
-    String? comment,
-  });
-}
-
-/// @nodoc
-class _$CreateRatingModelCopyWithImpl<$Res, $Val extends CreateRatingModel>
-    implements $CreateRatingModelCopyWith<$Res> {
-  _$CreateRatingModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of CreateRatingModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? sessionId = null,
-    Object? ratedUserId = null,
-    Object? ratingValue = null,
-    Object? comment = freezed,
-  }) {
-    return _then(
-      _value.copyWith(
-            sessionId: null == sessionId
-                ? _value.sessionId
-                : sessionId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            ratedUserId: null == ratedUserId
-                ? _value.ratedUserId
-                : ratedUserId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            ratingValue: null == ratingValue
-                ? _value.ratingValue
-                : ratingValue // ignore: cast_nullable_to_non_nullable
-                      as int,
-            comment: freezed == comment
-                ? _value.comment
-                : comment // ignore: cast_nullable_to_non_nullable
-                      as String?,
-          )
-          as $Val,
-    );
-  }
-}
-
-/// @nodoc
-abstract class _$$CreateRatingModelImplCopyWith<$Res>
-    implements $CreateRatingModelCopyWith<$Res> {
-  factory _$$CreateRatingModelImplCopyWith(
-    _$CreateRatingModelImpl value,
-    $Res Function(_$CreateRatingModelImpl) then,
-  ) = __$$CreateRatingModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    String sessionId,
-    String ratedUserId,
-    int ratingValue,
-    String? comment,
-  });
-}
-
-/// @nodoc
-class __$$CreateRatingModelImplCopyWithImpl<$Res>
-    extends _$CreateRatingModelCopyWithImpl<$Res, _$CreateRatingModelImpl>
-    implements _$$CreateRatingModelImplCopyWith<$Res> {
-  __$$CreateRatingModelImplCopyWithImpl(
-    _$CreateRatingModelImpl _value,
-    $Res Function(_$CreateRatingModelImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of CreateRatingModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? sessionId = null,
-    Object? ratedUserId = null,
-    Object? ratingValue = null,
-    Object? comment = freezed,
-  }) {
-    return _then(
-      _$CreateRatingModelImpl(
-        sessionId: null == sessionId
-            ? _value.sessionId
-            : sessionId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        ratedUserId: null == ratedUserId
-            ? _value.ratedUserId
-            : ratedUserId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        ratingValue: null == ratingValue
-            ? _value.ratingValue
-            : ratingValue // ignore: cast_nullable_to_non_nullable
-                  as int,
-        comment: freezed == comment
-            ? _value.comment
-            : comment // ignore: cast_nullable_to_non_nullable
-                  as String?,
-      ),
-    );
-  }
-}
-
-/// @nodoc
-
-@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
-class _$CreateRatingModelImpl implements _CreateRatingModel {
-  const _$CreateRatingModelImpl({
-    required this.sessionId,
-    required this.ratedUserId,
-    required this.ratingValue,
-    this.comment,
-  });
-
-  factory _$CreateRatingModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$CreateRatingModelImplFromJson(json);
-
-  @override
-  final String sessionId;
-  @override
-  final String ratedUserId;
-  @override
-  final int ratingValue;
-  // 'Short' maps to 'int'
-  @override
-  final String? comment;
-
-  @override
-  String toString() {
-    return 'CreateRatingModel(sessionId: $sessionId, ratedUserId: $ratedUserId, ratingValue: $ratingValue, comment: $comment)';
-  }
+  /// Serializes this CreateRatingModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$CreateRatingModelImpl &&
+            other is CreateRatingModel &&
             (identical(other.sessionId, sessionId) ||
                 other.sessionId == sessionId) &&
             (identical(other.ratedUserId, ratedUserId) ||
@@ -293,50 +140,340 @@ class _$CreateRatingModelImpl implements _CreateRatingModel {
   int get hashCode =>
       Object.hash(runtimeType, sessionId, ratedUserId, ratingValue, comment);
 
-  /// Create a copy of CreateRatingModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$CreateRatingModelImplCopyWith<_$CreateRatingModelImpl> get copyWith =>
-      __$$CreateRatingModelImplCopyWithImpl<_$CreateRatingModelImpl>(
-        this,
-        _$identity,
-      );
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$CreateRatingModelImplToJson(this);
+  String toString() {
+    return 'CreateRatingModel(sessionId: $sessionId, ratedUserId: $ratedUserId, ratingValue: $ratingValue, comment: $comment)';
   }
 }
 
-abstract class _CreateRatingModel implements CreateRatingModel {
-  const factory _CreateRatingModel({
-    required final String sessionId,
-    required final String ratedUserId,
-    required final int ratingValue,
-    final String? comment,
-  }) = _$CreateRatingModelImpl;
+/// @nodoc
+abstract mixin class $CreateRatingModelCopyWith<$Res> {
+  factory $CreateRatingModelCopyWith(
+          CreateRatingModel value, $Res Function(CreateRatingModel) _then) =
+      _$CreateRatingModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String sessionId, String ratedUserId, int ratingValue, String? comment});
+}
 
-  factory _CreateRatingModel.fromJson(Map<String, dynamic> json) =
-      _$CreateRatingModelImpl.fromJson;
+/// @nodoc
+class _$CreateRatingModelCopyWithImpl<$Res>
+    implements $CreateRatingModelCopyWith<$Res> {
+  _$CreateRatingModelCopyWithImpl(this._self, this._then);
+
+  final CreateRatingModel _self;
+  final $Res Function(CreateRatingModel) _then;
+
+  /// Create a copy of CreateRatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sessionId = null,
+    Object? ratedUserId = null,
+    Object? ratingValue = null,
+    Object? comment = freezed,
+  }) {
+    return _then(_self.copyWith(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      ratedUserId: null == ratedUserId
+          ? _self.ratedUserId
+          : ratedUserId // ignore: cast_nullable_to_non_nullable
+              as String,
+      ratingValue: null == ratingValue
+          ? _self.ratingValue
+          : ratingValue // ignore: cast_nullable_to_non_nullable
+              as int,
+      comment: freezed == comment
+          ? _self.comment
+          : comment // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [CreateRatingModel].
+extension CreateRatingModelPatterns on CreateRatingModel {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_CreateRatingModel value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _CreateRatingModel() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_CreateRatingModel value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CreateRatingModel():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_CreateRatingModel value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CreateRatingModel() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(String sessionId, String ratedUserId, int ratingValue,
+            String? comment)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _CreateRatingModel() when $default != null:
+        return $default(_that.sessionId, _that.ratedUserId, _that.ratingValue,
+            _that.comment);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(String sessionId, String ratedUserId, int ratingValue,
+            String? comment)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CreateRatingModel():
+        return $default(_that.sessionId, _that.ratedUserId, _that.ratingValue,
+            _that.comment);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(String sessionId, String ratedUserId, int ratingValue,
+            String? comment)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CreateRatingModel() when $default != null:
+        return $default(_that.sessionId, _that.ratedUserId, _that.ratingValue,
+            _that.comment);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+class _CreateRatingModel implements CreateRatingModel {
+  const _CreateRatingModel(
+      {required this.sessionId,
+      required this.ratedUserId,
+      required this.ratingValue,
+      this.comment});
+  factory _CreateRatingModel.fromJson(Map<String, dynamic> json) =>
+      _$CreateRatingModelFromJson(json);
 
   @override
-  String get sessionId;
+  final String sessionId;
   @override
-  String get ratedUserId;
+  final String ratedUserId;
   @override
-  int get ratingValue; // 'Short' maps to 'int'
+  final int ratingValue;
+// 'Short' maps to 'int'
   @override
-  String? get comment;
+  final String? comment;
 
   /// Create a copy of CreateRatingModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$CreateRatingModelImplCopyWith<_$CreateRatingModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$CreateRatingModelCopyWith<_CreateRatingModel> get copyWith =>
+      __$CreateRatingModelCopyWithImpl<_CreateRatingModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$CreateRatingModelToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _CreateRatingModel &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.ratedUserId, ratedUserId) ||
+                other.ratedUserId == ratedUserId) &&
+            (identical(other.ratingValue, ratingValue) ||
+                other.ratingValue == ratingValue) &&
+            (identical(other.comment, comment) || other.comment == comment));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, sessionId, ratedUserId, ratingValue, comment);
+
+  @override
+  String toString() {
+    return 'CreateRatingModel(sessionId: $sessionId, ratedUserId: $ratedUserId, ratingValue: $ratingValue, comment: $comment)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$CreateRatingModelCopyWith<$Res>
+    implements $CreateRatingModelCopyWith<$Res> {
+  factory _$CreateRatingModelCopyWith(
+          _CreateRatingModel value, $Res Function(_CreateRatingModel) _then) =
+      __$CreateRatingModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String sessionId, String ratedUserId, int ratingValue, String? comment});
+}
+
+/// @nodoc
+class __$CreateRatingModelCopyWithImpl<$Res>
+    implements _$CreateRatingModelCopyWith<$Res> {
+  __$CreateRatingModelCopyWithImpl(this._self, this._then);
+
+  final _CreateRatingModel _self;
+  final $Res Function(_CreateRatingModel) _then;
+
+  /// Create a copy of CreateRatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? sessionId = null,
+    Object? ratedUserId = null,
+    Object? ratingValue = null,
+    Object? comment = freezed,
+  }) {
+    return _then(_CreateRatingModel(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      ratedUserId: null == ratedUserId
+          ? _self.ratedUserId
+          : ratedUserId // ignore: cast_nullable_to_non_nullable
+              as String,
+      ratingValue: null == ratingValue
+          ? _self.ratingValue
+          : ratingValue // ignore: cast_nullable_to_non_nullable
+              as int,
+      comment: freezed == comment
+          ? _self.comment
+          : comment // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+// dart format on
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\create_rating_model.g.dart
@@ -349,23 +486,21 @@ part of 'create_rating_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$CreateRatingModelImpl _$$CreateRatingModelImplFromJson(
-  Map<String, dynamic> json,
-) => _$CreateRatingModelImpl(
-  sessionId: json['sessionId'] as String,
-  ratedUserId: json['ratedUserId'] as String,
-  ratingValue: (json['ratingValue'] as num).toInt(),
-  comment: json['comment'] as String?,
-);
+_CreateRatingModel _$CreateRatingModelFromJson(Map<String, dynamic> json) =>
+    _CreateRatingModel(
+      sessionId: json['sessionId'] as String,
+      ratedUserId: json['ratedUserId'] as String,
+      ratingValue: (json['ratingValue'] as num).toInt(),
+      comment: json['comment'] as String?,
+    );
 
-Map<String, dynamic> _$$CreateRatingModelImplToJson(
-  _$CreateRatingModelImpl instance,
-) => <String, dynamic>{
-  'sessionId': instance.sessionId,
-  'ratedUserId': instance.ratedUserId,
-  'ratingValue': instance.ratingValue,
-  'comment': instance.comment,
-};
+Map<String, dynamic> _$CreateRatingModelToJson(_CreateRatingModel instance) =>
+    <String, dynamic>{
+      'sessionId': instance.sessionId,
+      'ratedUserId': instance.ratedUserId,
+      'ratingValue': instance.ratingValue,
+      'comment': instance.comment,
+    };
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\pending_rating_model.dart
@@ -377,10 +512,11 @@ part 'pending_rating_model.freezed.dart';
 part 'pending_rating_model.g.dart';
 
 @freezed
+abstract
 class PendingRatingModel with _$PendingRatingModel {
   const PendingRatingModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory PendingRatingModel({
     required String sessionId,
     required String sessionTitle,
@@ -404,8 +540,8 @@ class PendingRatingModel with _$PendingRatingModel {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\pending_rating_model.freezed.dart
 ==================================================
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -415,184 +551,32 @@ part of 'pending_rating_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
-PendingRatingModel _$PendingRatingModelFromJson(Map<String, dynamic> json) {
-  return _PendingRatingModel.fromJson(json);
-}
 
 /// @nodoc
 mixin _$PendingRatingModel {
-  String get sessionId => throw _privateConstructorUsedError;
-  String get sessionTitle => throw _privateConstructorUsedError;
-  String get userIdToRate => throw _privateConstructorUsedError;
-  String get userNameToRate => throw _privateConstructorUsedError;
-
-  /// Serializes this PendingRatingModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String get sessionId;
+  String get sessionTitle;
+  String get userIdToRate;
+  String get userNameToRate;
 
   /// Create a copy of PendingRatingModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $PendingRatingModelCopyWith<PendingRatingModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$PendingRatingModelCopyWithImpl<PendingRatingModel>(
+          this as PendingRatingModel, _$identity);
 
-/// @nodoc
-abstract class $PendingRatingModelCopyWith<$Res> {
-  factory $PendingRatingModelCopyWith(
-    PendingRatingModel value,
-    $Res Function(PendingRatingModel) then,
-  ) = _$PendingRatingModelCopyWithImpl<$Res, PendingRatingModel>;
-  @useResult
-  $Res call({
-    String sessionId,
-    String sessionTitle,
-    String userIdToRate,
-    String userNameToRate,
-  });
-}
-
-/// @nodoc
-class _$PendingRatingModelCopyWithImpl<$Res, $Val extends PendingRatingModel>
-    implements $PendingRatingModelCopyWith<$Res> {
-  _$PendingRatingModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of PendingRatingModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? sessionId = null,
-    Object? sessionTitle = null,
-    Object? userIdToRate = null,
-    Object? userNameToRate = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            sessionId: null == sessionId
-                ? _value.sessionId
-                : sessionId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            sessionTitle: null == sessionTitle
-                ? _value.sessionTitle
-                : sessionTitle // ignore: cast_nullable_to_non_nullable
-                      as String,
-            userIdToRate: null == userIdToRate
-                ? _value.userIdToRate
-                : userIdToRate // ignore: cast_nullable_to_non_nullable
-                      as String,
-            userNameToRate: null == userNameToRate
-                ? _value.userNameToRate
-                : userNameToRate // ignore: cast_nullable_to_non_nullable
-                      as String,
-          )
-          as $Val,
-    );
-  }
-}
-
-/// @nodoc
-abstract class _$$PendingRatingModelImplCopyWith<$Res>
-    implements $PendingRatingModelCopyWith<$Res> {
-  factory _$$PendingRatingModelImplCopyWith(
-    _$PendingRatingModelImpl value,
-    $Res Function(_$PendingRatingModelImpl) then,
-  ) = __$$PendingRatingModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    String sessionId,
-    String sessionTitle,
-    String userIdToRate,
-    String userNameToRate,
-  });
-}
-
-/// @nodoc
-class __$$PendingRatingModelImplCopyWithImpl<$Res>
-    extends _$PendingRatingModelCopyWithImpl<$Res, _$PendingRatingModelImpl>
-    implements _$$PendingRatingModelImplCopyWith<$Res> {
-  __$$PendingRatingModelImplCopyWithImpl(
-    _$PendingRatingModelImpl _value,
-    $Res Function(_$PendingRatingModelImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of PendingRatingModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? sessionId = null,
-    Object? sessionTitle = null,
-    Object? userIdToRate = null,
-    Object? userNameToRate = null,
-  }) {
-    return _then(
-      _$PendingRatingModelImpl(
-        sessionId: null == sessionId
-            ? _value.sessionId
-            : sessionId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        sessionTitle: null == sessionTitle
-            ? _value.sessionTitle
-            : sessionTitle // ignore: cast_nullable_to_non_nullable
-                  as String,
-        userIdToRate: null == userIdToRate
-            ? _value.userIdToRate
-            : userIdToRate // ignore: cast_nullable_to_non_nullable
-                  as String,
-        userNameToRate: null == userNameToRate
-            ? _value.userNameToRate
-            : userNameToRate // ignore: cast_nullable_to_non_nullable
-                  as String,
-      ),
-    );
-  }
-}
-
-/// @nodoc
-
-@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
-class _$PendingRatingModelImpl extends _PendingRatingModel {
-  const _$PendingRatingModelImpl({
-    required this.sessionId,
-    required this.sessionTitle,
-    required this.userIdToRate,
-    required this.userNameToRate,
-  }) : super._();
-
-  factory _$PendingRatingModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PendingRatingModelImplFromJson(json);
-
-  @override
-  final String sessionId;
-  @override
-  final String sessionTitle;
-  @override
-  final String userIdToRate;
-  @override
-  final String userNameToRate;
-
-  @override
-  String toString() {
-    return 'PendingRatingModel(sessionId: $sessionId, sessionTitle: $sessionTitle, userIdToRate: $userIdToRate, userNameToRate: $userNameToRate)';
-  }
+  /// Serializes this PendingRatingModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$PendingRatingModelImpl &&
+            other is PendingRatingModel &&
             (identical(other.sessionId, sessionId) ||
                 other.sessionId == sessionId) &&
             (identical(other.sessionTitle, sessionTitle) ||
@@ -606,58 +590,349 @@ class _$PendingRatingModelImpl extends _PendingRatingModel {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    sessionId,
-    sessionTitle,
-    userIdToRate,
-    userNameToRate,
-  );
-
-  /// Create a copy of PendingRatingModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$PendingRatingModelImplCopyWith<_$PendingRatingModelImpl> get copyWith =>
-      __$$PendingRatingModelImplCopyWithImpl<_$PendingRatingModelImpl>(
-        this,
-        _$identity,
-      );
+      runtimeType, sessionId, sessionTitle, userIdToRate, userNameToRate);
 
   @override
-  Map<String, dynamic> toJson() {
-    return _$$PendingRatingModelImplToJson(this);
+  String toString() {
+    return 'PendingRatingModel(sessionId: $sessionId, sessionTitle: $sessionTitle, userIdToRate: $userIdToRate, userNameToRate: $userNameToRate)';
   }
 }
 
-abstract class _PendingRatingModel extends PendingRatingModel {
-  const factory _PendingRatingModel({
-    required final String sessionId,
-    required final String sessionTitle,
-    required final String userIdToRate,
-    required final String userNameToRate,
-  }) = _$PendingRatingModelImpl;
-  const _PendingRatingModel._() : super._();
+/// @nodoc
+abstract mixin class $PendingRatingModelCopyWith<$Res> {
+  factory $PendingRatingModelCopyWith(
+          PendingRatingModel value, $Res Function(PendingRatingModel) _then) =
+      _$PendingRatingModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String sessionId,
+      String sessionTitle,
+      String userIdToRate,
+      String userNameToRate});
+}
 
-  factory _PendingRatingModel.fromJson(Map<String, dynamic> json) =
-      _$PendingRatingModelImpl.fromJson;
+/// @nodoc
+class _$PendingRatingModelCopyWithImpl<$Res>
+    implements $PendingRatingModelCopyWith<$Res> {
+  _$PendingRatingModelCopyWithImpl(this._self, this._then);
+
+  final PendingRatingModel _self;
+  final $Res Function(PendingRatingModel) _then;
+
+  /// Create a copy of PendingRatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sessionId = null,
+    Object? sessionTitle = null,
+    Object? userIdToRate = null,
+    Object? userNameToRate = null,
+  }) {
+    return _then(_self.copyWith(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      sessionTitle: null == sessionTitle
+          ? _self.sessionTitle
+          : sessionTitle // ignore: cast_nullable_to_non_nullable
+              as String,
+      userIdToRate: null == userIdToRate
+          ? _self.userIdToRate
+          : userIdToRate // ignore: cast_nullable_to_non_nullable
+              as String,
+      userNameToRate: null == userNameToRate
+          ? _self.userNameToRate
+          : userNameToRate // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [PendingRatingModel].
+extension PendingRatingModelPatterns on PendingRatingModel {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_PendingRatingModel value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _PendingRatingModel() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_PendingRatingModel value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _PendingRatingModel():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_PendingRatingModel value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _PendingRatingModel() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(String sessionId, String sessionTitle, String userIdToRate,
+            String userNameToRate)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _PendingRatingModel() when $default != null:
+        return $default(_that.sessionId, _that.sessionTitle, _that.userIdToRate,
+            _that.userNameToRate);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(String sessionId, String sessionTitle, String userIdToRate,
+            String userNameToRate)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _PendingRatingModel():
+        return $default(_that.sessionId, _that.sessionTitle, _that.userIdToRate,
+            _that.userNameToRate);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(String sessionId, String sessionTitle,
+            String userIdToRate, String userNameToRate)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _PendingRatingModel() when $default != null:
+        return $default(_that.sessionId, _that.sessionTitle, _that.userIdToRate,
+            _that.userNameToRate);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+class _PendingRatingModel extends PendingRatingModel {
+  const _PendingRatingModel(
+      {required this.sessionId,
+      required this.sessionTitle,
+      required this.userIdToRate,
+      required this.userNameToRate})
+      : super._();
+  factory _PendingRatingModel.fromJson(Map<String, dynamic> json) =>
+      _$PendingRatingModelFromJson(json);
 
   @override
-  String get sessionId;
+  final String sessionId;
   @override
-  String get sessionTitle;
+  final String sessionTitle;
   @override
-  String get userIdToRate;
+  final String userIdToRate;
   @override
-  String get userNameToRate;
+  final String userNameToRate;
 
   /// Create a copy of PendingRatingModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$PendingRatingModelImplCopyWith<_$PendingRatingModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$PendingRatingModelCopyWith<_PendingRatingModel> get copyWith =>
+      __$PendingRatingModelCopyWithImpl<_PendingRatingModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$PendingRatingModelToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _PendingRatingModel &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.sessionTitle, sessionTitle) ||
+                other.sessionTitle == sessionTitle) &&
+            (identical(other.userIdToRate, userIdToRate) ||
+                other.userIdToRate == userIdToRate) &&
+            (identical(other.userNameToRate, userNameToRate) ||
+                other.userNameToRate == userNameToRate));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, sessionId, sessionTitle, userIdToRate, userNameToRate);
+
+  @override
+  String toString() {
+    return 'PendingRatingModel(sessionId: $sessionId, sessionTitle: $sessionTitle, userIdToRate: $userIdToRate, userNameToRate: $userNameToRate)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$PendingRatingModelCopyWith<$Res>
+    implements $PendingRatingModelCopyWith<$Res> {
+  factory _$PendingRatingModelCopyWith(
+          _PendingRatingModel value, $Res Function(_PendingRatingModel) _then) =
+      __$PendingRatingModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String sessionId,
+      String sessionTitle,
+      String userIdToRate,
+      String userNameToRate});
+}
+
+/// @nodoc
+class __$PendingRatingModelCopyWithImpl<$Res>
+    implements _$PendingRatingModelCopyWith<$Res> {
+  __$PendingRatingModelCopyWithImpl(this._self, this._then);
+
+  final _PendingRatingModel _self;
+  final $Res Function(_PendingRatingModel) _then;
+
+  /// Create a copy of PendingRatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? sessionId = null,
+    Object? sessionTitle = null,
+    Object? userIdToRate = null,
+    Object? userNameToRate = null,
+  }) {
+    return _then(_PendingRatingModel(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      sessionTitle: null == sessionTitle
+          ? _self.sessionTitle
+          : sessionTitle // ignore: cast_nullable_to_non_nullable
+              as String,
+      userIdToRate: null == userIdToRate
+          ? _self.userIdToRate
+          : userIdToRate // ignore: cast_nullable_to_non_nullable
+              as String,
+      userNameToRate: null == userNameToRate
+          ? _self.userNameToRate
+          : userNameToRate // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+// dart format on
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\pending_rating_model.g.dart
@@ -670,23 +945,21 @@ part of 'pending_rating_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$PendingRatingModelImpl _$$PendingRatingModelImplFromJson(
-  Map<String, dynamic> json,
-) => _$PendingRatingModelImpl(
-  sessionId: json['sessionId'] as String,
-  sessionTitle: json['sessionTitle'] as String,
-  userIdToRate: json['userIdToRate'] as String,
-  userNameToRate: json['userNameToRate'] as String,
-);
+_PendingRatingModel _$PendingRatingModelFromJson(Map<String, dynamic> json) =>
+    _PendingRatingModel(
+      sessionId: json['sessionId'] as String,
+      sessionTitle: json['sessionTitle'] as String,
+      userIdToRate: json['userIdToRate'] as String,
+      userNameToRate: json['userNameToRate'] as String,
+    );
 
-Map<String, dynamic> _$$PendingRatingModelImplToJson(
-  _$PendingRatingModelImpl instance,
-) => <String, dynamic>{
-  'sessionId': instance.sessionId,
-  'sessionTitle': instance.sessionTitle,
-  'userIdToRate': instance.userIdToRate,
-  'userNameToRate': instance.userNameToRate,
-};
+Map<String, dynamic> _$PendingRatingModelToJson(_PendingRatingModel instance) =>
+    <String, dynamic>{
+      'sessionId': instance.sessionId,
+      'sessionTitle': instance.sessionTitle,
+      'userIdToRate': instance.userIdToRate,
+      'userNameToRate': instance.userNameToRate,
+    };
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\rating_model.dart
@@ -701,8 +974,9 @@ part 'rating_model.g.dart';
 // Helper model to represent the nested 'session' object
 // We only extract the ID, as seen in the Rating entity
 @freezed
+abstract
 class RatingSessionModel with _$RatingSessionModel {
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory RatingSessionModel({
     required String sessionId,
   }) = _RatingSessionModel;
@@ -713,10 +987,11 @@ class RatingSessionModel with _$RatingSessionModel {
 
 
 @freezed
+abstract
 class RatingModel with _$RatingModel {
   const RatingModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory RatingModel({
     required String ratingId,
     required RatingSessionModel session, // Nested session object
@@ -746,8 +1021,8 @@ class RatingModel with _$RatingModel {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\rating_model.freezed.dart
 ==================================================
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -757,126 +1032,29 @@ part of 'rating_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
-RatingSessionModel _$RatingSessionModelFromJson(Map<String, dynamic> json) {
-  return _RatingSessionModel.fromJson(json);
-}
 
 /// @nodoc
 mixin _$RatingSessionModel {
-  String get sessionId => throw _privateConstructorUsedError;
-
-  /// Serializes this RatingSessionModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String get sessionId;
 
   /// Create a copy of RatingSessionModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $RatingSessionModelCopyWith<RatingSessionModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$RatingSessionModelCopyWithImpl<RatingSessionModel>(
+          this as RatingSessionModel, _$identity);
 
-/// @nodoc
-abstract class $RatingSessionModelCopyWith<$Res> {
-  factory $RatingSessionModelCopyWith(
-    RatingSessionModel value,
-    $Res Function(RatingSessionModel) then,
-  ) = _$RatingSessionModelCopyWithImpl<$Res, RatingSessionModel>;
-  @useResult
-  $Res call({String sessionId});
-}
-
-/// @nodoc
-class _$RatingSessionModelCopyWithImpl<$Res, $Val extends RatingSessionModel>
-    implements $RatingSessionModelCopyWith<$Res> {
-  _$RatingSessionModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of RatingSessionModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? sessionId = null}) {
-    return _then(
-      _value.copyWith(
-            sessionId: null == sessionId
-                ? _value.sessionId
-                : sessionId // ignore: cast_nullable_to_non_nullable
-                      as String,
-          )
-          as $Val,
-    );
-  }
-}
-
-/// @nodoc
-abstract class _$$RatingSessionModelImplCopyWith<$Res>
-    implements $RatingSessionModelCopyWith<$Res> {
-  factory _$$RatingSessionModelImplCopyWith(
-    _$RatingSessionModelImpl value,
-    $Res Function(_$RatingSessionModelImpl) then,
-  ) = __$$RatingSessionModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({String sessionId});
-}
-
-/// @nodoc
-class __$$RatingSessionModelImplCopyWithImpl<$Res>
-    extends _$RatingSessionModelCopyWithImpl<$Res, _$RatingSessionModelImpl>
-    implements _$$RatingSessionModelImplCopyWith<$Res> {
-  __$$RatingSessionModelImplCopyWithImpl(
-    _$RatingSessionModelImpl _value,
-    $Res Function(_$RatingSessionModelImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of RatingSessionModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? sessionId = null}) {
-    return _then(
-      _$RatingSessionModelImpl(
-        sessionId: null == sessionId
-            ? _value.sessionId
-            : sessionId // ignore: cast_nullable_to_non_nullable
-                  as String,
-      ),
-    );
-  }
-}
-
-/// @nodoc
-
-@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
-class _$RatingSessionModelImpl implements _RatingSessionModel {
-  const _$RatingSessionModelImpl({required this.sessionId});
-
-  factory _$RatingSessionModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$RatingSessionModelImplFromJson(json);
-
-  @override
-  final String sessionId;
-
-  @override
-  String toString() {
-    return 'RatingSessionModel(sessionId: $sessionId)';
-  }
+  /// Serializes this RatingSessionModel to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$RatingSessionModelImpl &&
+            other is RatingSessionModel &&
             (identical(other.sessionId, sessionId) ||
                 other.sessionId == sessionId));
   }
@@ -885,304 +1063,306 @@ class _$RatingSessionModelImpl implements _RatingSessionModel {
   @override
   int get hashCode => Object.hash(runtimeType, sessionId);
 
+  @override
+  String toString() {
+    return 'RatingSessionModel(sessionId: $sessionId)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $RatingSessionModelCopyWith<$Res> {
+  factory $RatingSessionModelCopyWith(
+          RatingSessionModel value, $Res Function(RatingSessionModel) _then) =
+      _$RatingSessionModelCopyWithImpl;
+  @useResult
+  $Res call({String sessionId});
+}
+
+/// @nodoc
+class _$RatingSessionModelCopyWithImpl<$Res>
+    implements $RatingSessionModelCopyWith<$Res> {
+  _$RatingSessionModelCopyWithImpl(this._self, this._then);
+
+  final RatingSessionModel _self;
+  final $Res Function(RatingSessionModel) _then;
+
   /// Create a copy of RatingSessionModel
   /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
   @pragma('vm:prefer-inline')
-  _$$RatingSessionModelImplCopyWith<_$RatingSessionModelImpl> get copyWith =>
-      __$$RatingSessionModelImplCopyWithImpl<_$RatingSessionModelImpl>(
-        this,
-        _$identity,
-      );
+  @override
+  $Res call({
+    Object? sessionId = null,
+  }) {
+    return _then(_self.copyWith(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [RatingSessionModel].
+extension RatingSessionModelPatterns on RatingSessionModel {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_RatingSessionModel value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _RatingSessionModel() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_RatingSessionModel value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _RatingSessionModel():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_RatingSessionModel value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _RatingSessionModel() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(String sessionId)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _RatingSessionModel() when $default != null:
+        return $default(_that.sessionId);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(String sessionId) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _RatingSessionModel():
+        return $default(_that.sessionId);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(String sessionId)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _RatingSessionModel() when $default != null:
+        return $default(_that.sessionId);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+class _RatingSessionModel implements RatingSessionModel {
+  const _RatingSessionModel({required this.sessionId});
+  factory _RatingSessionModel.fromJson(Map<String, dynamic> json) =>
+      _$RatingSessionModelFromJson(json);
+
+  @override
+  final String sessionId;
+
+  /// Create a copy of RatingSessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$RatingSessionModelCopyWith<_RatingSessionModel> get copyWith =>
+      __$RatingSessionModelCopyWithImpl<_RatingSessionModel>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$RatingSessionModelImplToJson(this);
-  }
-}
-
-abstract class _RatingSessionModel implements RatingSessionModel {
-  const factory _RatingSessionModel({required final String sessionId}) =
-      _$RatingSessionModelImpl;
-
-  factory _RatingSessionModel.fromJson(Map<String, dynamic> json) =
-      _$RatingSessionModelImpl.fromJson;
-
-  @override
-  String get sessionId;
-
-  /// Create a copy of RatingSessionModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$RatingSessionModelImplCopyWith<_$RatingSessionModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-RatingModel _$RatingModelFromJson(Map<String, dynamic> json) {
-  return _RatingModel.fromJson(json);
-}
-
-/// @nodoc
-mixin _$RatingModel {
-  String get ratingId => throw _privateConstructorUsedError;
-  RatingSessionModel get session =>
-      throw _privateConstructorUsedError; // Nested session object
-  UserModel get ratingBy => throw _privateConstructorUsedError;
-  UserModel get ratingFor => throw _privateConstructorUsedError;
-  int get ratingValue => throw _privateConstructorUsedError;
-  String? get comment => throw _privateConstructorUsedError;
-  String get createdAt => throw _privateConstructorUsedError;
-
-  /// Serializes this RatingModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of RatingModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $RatingModelCopyWith<RatingModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $RatingModelCopyWith<$Res> {
-  factory $RatingModelCopyWith(
-    RatingModel value,
-    $Res Function(RatingModel) then,
-  ) = _$RatingModelCopyWithImpl<$Res, RatingModel>;
-  @useResult
-  $Res call({
-    String ratingId,
-    RatingSessionModel session,
-    UserModel ratingBy,
-    UserModel ratingFor,
-    int ratingValue,
-    String? comment,
-    String createdAt,
-  });
-
-  $RatingSessionModelCopyWith<$Res> get session;
-  $UserModelCopyWith<$Res> get ratingBy;
-  $UserModelCopyWith<$Res> get ratingFor;
-}
-
-/// @nodoc
-class _$RatingModelCopyWithImpl<$Res, $Val extends RatingModel>
-    implements $RatingModelCopyWith<$Res> {
-  _$RatingModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of RatingModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? ratingId = null,
-    Object? session = null,
-    Object? ratingBy = null,
-    Object? ratingFor = null,
-    Object? ratingValue = null,
-    Object? comment = freezed,
-    Object? createdAt = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            ratingId: null == ratingId
-                ? _value.ratingId
-                : ratingId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            session: null == session
-                ? _value.session
-                : session // ignore: cast_nullable_to_non_nullable
-                      as RatingSessionModel,
-            ratingBy: null == ratingBy
-                ? _value.ratingBy
-                : ratingBy // ignore: cast_nullable_to_non_nullable
-                      as UserModel,
-            ratingFor: null == ratingFor
-                ? _value.ratingFor
-                : ratingFor // ignore: cast_nullable_to_non_nullable
-                      as UserModel,
-            ratingValue: null == ratingValue
-                ? _value.ratingValue
-                : ratingValue // ignore: cast_nullable_to_non_nullable
-                      as int,
-            comment: freezed == comment
-                ? _value.comment
-                : comment // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            createdAt: null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                      as String,
-          )
-          as $Val,
+    return _$RatingSessionModelToJson(
+      this,
     );
-  }
-
-  /// Create a copy of RatingModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $RatingSessionModelCopyWith<$Res> get session {
-    return $RatingSessionModelCopyWith<$Res>(_value.session, (value) {
-      return _then(_value.copyWith(session: value) as $Val);
-    });
-  }
-
-  /// Create a copy of RatingModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $UserModelCopyWith<$Res> get ratingBy {
-    return $UserModelCopyWith<$Res>(_value.ratingBy, (value) {
-      return _then(_value.copyWith(ratingBy: value) as $Val);
-    });
-  }
-
-  /// Create a copy of RatingModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $UserModelCopyWith<$Res> get ratingFor {
-    return $UserModelCopyWith<$Res>(_value.ratingFor, (value) {
-      return _then(_value.copyWith(ratingFor: value) as $Val);
-    });
-  }
-}
-
-/// @nodoc
-abstract class _$$RatingModelImplCopyWith<$Res>
-    implements $RatingModelCopyWith<$Res> {
-  factory _$$RatingModelImplCopyWith(
-    _$RatingModelImpl value,
-    $Res Function(_$RatingModelImpl) then,
-  ) = __$$RatingModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    String ratingId,
-    RatingSessionModel session,
-    UserModel ratingBy,
-    UserModel ratingFor,
-    int ratingValue,
-    String? comment,
-    String createdAt,
-  });
-
-  @override
-  $RatingSessionModelCopyWith<$Res> get session;
-  @override
-  $UserModelCopyWith<$Res> get ratingBy;
-  @override
-  $UserModelCopyWith<$Res> get ratingFor;
-}
-
-/// @nodoc
-class __$$RatingModelImplCopyWithImpl<$Res>
-    extends _$RatingModelCopyWithImpl<$Res, _$RatingModelImpl>
-    implements _$$RatingModelImplCopyWith<$Res> {
-  __$$RatingModelImplCopyWithImpl(
-    _$RatingModelImpl _value,
-    $Res Function(_$RatingModelImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of RatingModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? ratingId = null,
-    Object? session = null,
-    Object? ratingBy = null,
-    Object? ratingFor = null,
-    Object? ratingValue = null,
-    Object? comment = freezed,
-    Object? createdAt = null,
-  }) {
-    return _then(
-      _$RatingModelImpl(
-        ratingId: null == ratingId
-            ? _value.ratingId
-            : ratingId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        session: null == session
-            ? _value.session
-            : session // ignore: cast_nullable_to_non_nullable
-                  as RatingSessionModel,
-        ratingBy: null == ratingBy
-            ? _value.ratingBy
-            : ratingBy // ignore: cast_nullable_to_non_nullable
-                  as UserModel,
-        ratingFor: null == ratingFor
-            ? _value.ratingFor
-            : ratingFor // ignore: cast_nullable_to_non_nullable
-                  as UserModel,
-        ratingValue: null == ratingValue
-            ? _value.ratingValue
-            : ratingValue // ignore: cast_nullable_to_non_nullable
-                  as int,
-        comment: freezed == comment
-            ? _value.comment
-            : comment // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        createdAt: null == createdAt
-            ? _value.createdAt
-            : createdAt // ignore: cast_nullable_to_non_nullable
-                  as String,
-      ),
-    );
-  }
-}
-
-/// @nodoc
-
-@JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true)
-class _$RatingModelImpl extends _RatingModel {
-  const _$RatingModelImpl({
-    required this.ratingId,
-    required this.session,
-    required this.ratingBy,
-    required this.ratingFor,
-    required this.ratingValue,
-    this.comment,
-    required this.createdAt,
-  }) : super._();
-
-  factory _$RatingModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$RatingModelImplFromJson(json);
-
-  @override
-  final String ratingId;
-  @override
-  final RatingSessionModel session;
-  // Nested session object
-  @override
-  final UserModel ratingBy;
-  @override
-  final UserModel ratingFor;
-  @override
-  final int ratingValue;
-  @override
-  final String? comment;
-  @override
-  final String createdAt;
-
-  @override
-  String toString() {
-    return 'RatingModel(ratingId: $ratingId, session: $session, ratingBy: $ratingBy, ratingFor: $ratingFor, ratingValue: $ratingValue, comment: $comment, createdAt: $createdAt)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$RatingModelImpl &&
+            other is _RatingSessionModel &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, sessionId);
+
+  @override
+  String toString() {
+    return 'RatingSessionModel(sessionId: $sessionId)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$RatingSessionModelCopyWith<$Res>
+    implements $RatingSessionModelCopyWith<$Res> {
+  factory _$RatingSessionModelCopyWith(
+          _RatingSessionModel value, $Res Function(_RatingSessionModel) _then) =
+      __$RatingSessionModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call({String sessionId});
+}
+
+/// @nodoc
+class __$RatingSessionModelCopyWithImpl<$Res>
+    implements _$RatingSessionModelCopyWith<$Res> {
+  __$RatingSessionModelCopyWithImpl(this._self, this._then);
+
+  final _RatingSessionModel _self;
+  final $Res Function(_RatingSessionModel) _then;
+
+  /// Create a copy of RatingSessionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? sessionId = null,
+  }) {
+    return _then(_RatingSessionModel(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$RatingModel {
+  String get ratingId;
+  RatingSessionModel get session; // Nested session object
+  UserModel get ratingBy;
+  UserModel get ratingFor;
+  int get ratingValue;
+  String? get comment;
+  String get createdAt;
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $RatingModelCopyWith<RatingModel> get copyWith =>
+      _$RatingModelCopyWithImpl<RatingModel>(this as RatingModel, _$identity);
+
+  /// Serializes this RatingModel to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is RatingModel &&
             (identical(other.ratingId, ratingId) ||
                 other.ratingId == ratingId) &&
             (identical(other.session, session) || other.session == session) &&
@@ -1199,68 +1379,487 @@ class _$RatingModelImpl extends _RatingModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    ratingId,
-    session,
-    ratingBy,
-    ratingFor,
-    ratingValue,
-    comment,
-    createdAt,
-  );
-
-  /// Create a copy of RatingModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$RatingModelImplCopyWith<_$RatingModelImpl> get copyWith =>
-      __$$RatingModelImplCopyWithImpl<_$RatingModelImpl>(this, _$identity);
+  int get hashCode => Object.hash(runtimeType, ratingId, session, ratingBy,
+      ratingFor, ratingValue, comment, createdAt);
 
   @override
-  Map<String, dynamic> toJson() {
-    return _$$RatingModelImplToJson(this);
+  String toString() {
+    return 'RatingModel(ratingId: $ratingId, session: $session, ratingBy: $ratingBy, ratingFor: $ratingFor, ratingValue: $ratingValue, comment: $comment, createdAt: $createdAt)';
   }
 }
 
-abstract class _RatingModel extends RatingModel {
-  const factory _RatingModel({
-    required final String ratingId,
-    required final RatingSessionModel session,
-    required final UserModel ratingBy,
-    required final UserModel ratingFor,
-    required final int ratingValue,
-    final String? comment,
-    required final String createdAt,
-  }) = _$RatingModelImpl;
-  const _RatingModel._() : super._();
+/// @nodoc
+abstract mixin class $RatingModelCopyWith<$Res> {
+  factory $RatingModelCopyWith(
+          RatingModel value, $Res Function(RatingModel) _then) =
+      _$RatingModelCopyWithImpl;
+  @useResult
+  $Res call(
+      {String ratingId,
+      RatingSessionModel session,
+      UserModel ratingBy,
+      UserModel ratingFor,
+      int ratingValue,
+      String? comment,
+      String createdAt});
 
-  factory _RatingModel.fromJson(Map<String, dynamic> json) =
-      _$RatingModelImpl.fromJson;
+  $RatingSessionModelCopyWith<$Res> get session;
+  $UserModelCopyWith<$Res> get ratingBy;
+  $UserModelCopyWith<$Res> get ratingFor;
+}
+
+/// @nodoc
+class _$RatingModelCopyWithImpl<$Res> implements $RatingModelCopyWith<$Res> {
+  _$RatingModelCopyWithImpl(this._self, this._then);
+
+  final RatingModel _self;
+  final $Res Function(RatingModel) _then;
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? ratingId = null,
+    Object? session = null,
+    Object? ratingBy = null,
+    Object? ratingFor = null,
+    Object? ratingValue = null,
+    Object? comment = freezed,
+    Object? createdAt = null,
+  }) {
+    return _then(_self.copyWith(
+      ratingId: null == ratingId
+          ? _self.ratingId
+          : ratingId // ignore: cast_nullable_to_non_nullable
+              as String,
+      session: null == session
+          ? _self.session
+          : session // ignore: cast_nullable_to_non_nullable
+              as RatingSessionModel,
+      ratingBy: null == ratingBy
+          ? _self.ratingBy
+          : ratingBy // ignore: cast_nullable_to_non_nullable
+              as UserModel,
+      ratingFor: null == ratingFor
+          ? _self.ratingFor
+          : ratingFor // ignore: cast_nullable_to_non_nullable
+              as UserModel,
+      ratingValue: null == ratingValue
+          ? _self.ratingValue
+          : ratingValue // ignore: cast_nullable_to_non_nullable
+              as int,
+      comment: freezed == comment
+          ? _self.comment
+          : comment // ignore: cast_nullable_to_non_nullable
+              as String?,
+      createdAt: null == createdAt
+          ? _self.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $RatingSessionModelCopyWith<$Res> get session {
+    return $RatingSessionModelCopyWith<$Res>(_self.session, (value) {
+      return _then(_self.copyWith(session: value));
+    });
+  }
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $UserModelCopyWith<$Res> get ratingBy {
+    return $UserModelCopyWith<$Res>(_self.ratingBy, (value) {
+      return _then(_self.copyWith(ratingBy: value));
+    });
+  }
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $UserModelCopyWith<$Res> get ratingFor {
+    return $UserModelCopyWith<$Res>(_self.ratingFor, (value) {
+      return _then(_self.copyWith(ratingFor: value));
+    });
+  }
+}
+
+/// Adds pattern-matching-related methods to [RatingModel].
+extension RatingModelPatterns on RatingModel {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_RatingModel value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _RatingModel() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_RatingModel value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _RatingModel():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_RatingModel value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _RatingModel() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(
+            String ratingId,
+            RatingSessionModel session,
+            UserModel ratingBy,
+            UserModel ratingFor,
+            int ratingValue,
+            String? comment,
+            String createdAt)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _RatingModel() when $default != null:
+        return $default(_that.ratingId, _that.session, _that.ratingBy,
+            _that.ratingFor, _that.ratingValue, _that.comment, _that.createdAt);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(
+            String ratingId,
+            RatingSessionModel session,
+            UserModel ratingBy,
+            UserModel ratingFor,
+            int ratingValue,
+            String? comment,
+            String createdAt)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _RatingModel():
+        return $default(_that.ratingId, _that.session, _that.ratingBy,
+            _that.ratingFor, _that.ratingValue, _that.comment, _that.createdAt);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(
+            String ratingId,
+            RatingSessionModel session,
+            UserModel ratingBy,
+            UserModel ratingFor,
+            int ratingValue,
+            String? comment,
+            String createdAt)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _RatingModel() when $default != null:
+        return $default(_that.ratingId, _that.session, _that.ratingBy,
+            _that.ratingFor, _that.ratingValue, _that.comment, _that.createdAt);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+class _RatingModel extends RatingModel {
+  const _RatingModel(
+      {required this.ratingId,
+      required this.session,
+      required this.ratingBy,
+      required this.ratingFor,
+      required this.ratingValue,
+      this.comment,
+      required this.createdAt})
+      : super._();
+  factory _RatingModel.fromJson(Map<String, dynamic> json) =>
+      _$RatingModelFromJson(json);
 
   @override
-  String get ratingId;
+  final String ratingId;
   @override
-  RatingSessionModel get session; // Nested session object
+  final RatingSessionModel session;
+// Nested session object
   @override
-  UserModel get ratingBy;
+  final UserModel ratingBy;
   @override
-  UserModel get ratingFor;
+  final UserModel ratingFor;
   @override
-  int get ratingValue;
+  final int ratingValue;
   @override
-  String? get comment;
+  final String? comment;
   @override
-  String get createdAt;
+  final String createdAt;
 
   /// Create a copy of RatingModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$RatingModelImplCopyWith<_$RatingModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$RatingModelCopyWith<_RatingModel> get copyWith =>
+      __$RatingModelCopyWithImpl<_RatingModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$RatingModelToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _RatingModel &&
+            (identical(other.ratingId, ratingId) ||
+                other.ratingId == ratingId) &&
+            (identical(other.session, session) || other.session == session) &&
+            (identical(other.ratingBy, ratingBy) ||
+                other.ratingBy == ratingBy) &&
+            (identical(other.ratingFor, ratingFor) ||
+                other.ratingFor == ratingFor) &&
+            (identical(other.ratingValue, ratingValue) ||
+                other.ratingValue == ratingValue) &&
+            (identical(other.comment, comment) || other.comment == comment) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, ratingId, session, ratingBy,
+      ratingFor, ratingValue, comment, createdAt);
+
+  @override
+  String toString() {
+    return 'RatingModel(ratingId: $ratingId, session: $session, ratingBy: $ratingBy, ratingFor: $ratingFor, ratingValue: $ratingValue, comment: $comment, createdAt: $createdAt)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$RatingModelCopyWith<$Res>
+    implements $RatingModelCopyWith<$Res> {
+  factory _$RatingModelCopyWith(
+          _RatingModel value, $Res Function(_RatingModel) _then) =
+      __$RatingModelCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String ratingId,
+      RatingSessionModel session,
+      UserModel ratingBy,
+      UserModel ratingFor,
+      int ratingValue,
+      String? comment,
+      String createdAt});
+
+  @override
+  $RatingSessionModelCopyWith<$Res> get session;
+  @override
+  $UserModelCopyWith<$Res> get ratingBy;
+  @override
+  $UserModelCopyWith<$Res> get ratingFor;
+}
+
+/// @nodoc
+class __$RatingModelCopyWithImpl<$Res> implements _$RatingModelCopyWith<$Res> {
+  __$RatingModelCopyWithImpl(this._self, this._then);
+
+  final _RatingModel _self;
+  final $Res Function(_RatingModel) _then;
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? ratingId = null,
+    Object? session = null,
+    Object? ratingBy = null,
+    Object? ratingFor = null,
+    Object? ratingValue = null,
+    Object? comment = freezed,
+    Object? createdAt = null,
+  }) {
+    return _then(_RatingModel(
+      ratingId: null == ratingId
+          ? _self.ratingId
+          : ratingId // ignore: cast_nullable_to_non_nullable
+              as String,
+      session: null == session
+          ? _self.session
+          : session // ignore: cast_nullable_to_non_nullable
+              as RatingSessionModel,
+      ratingBy: null == ratingBy
+          ? _self.ratingBy
+          : ratingBy // ignore: cast_nullable_to_non_nullable
+              as UserModel,
+      ratingFor: null == ratingFor
+          ? _self.ratingFor
+          : ratingFor // ignore: cast_nullable_to_non_nullable
+              as UserModel,
+      ratingValue: null == ratingValue
+          ? _self.ratingValue
+          : ratingValue // ignore: cast_nullable_to_non_nullable
+              as int,
+      comment: freezed == comment
+          ? _self.comment
+          : comment // ignore: cast_nullable_to_non_nullable
+              as String?,
+      createdAt: null == createdAt
+          ? _self.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $RatingSessionModelCopyWith<$Res> get session {
+    return $RatingSessionModelCopyWith<$Res>(_self.session, (value) {
+      return _then(_self.copyWith(session: value));
+    });
+  }
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $UserModelCopyWith<$Res> get ratingBy {
+    return $UserModelCopyWith<$Res>(_self.ratingBy, (value) {
+      return _then(_self.copyWith(ratingBy: value));
+    });
+  }
+
+  /// Create a copy of RatingModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $UserModelCopyWith<$Res> get ratingFor {
+    return $UserModelCopyWith<$Res>(_self.ratingFor, (value) {
+      return _then(_self.copyWith(ratingFor: value));
+    });
+  }
+}
+
+// dart format on
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\data\models\rating_model.g.dart
@@ -1273,20 +1872,20 @@ part of 'rating_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$RatingSessionModelImpl _$$RatingSessionModelImplFromJson(
-  Map<String, dynamic> json,
-) => _$RatingSessionModelImpl(sessionId: json['sessionId'] as String);
+_RatingSessionModel _$RatingSessionModelFromJson(Map<String, dynamic> json) =>
+    _RatingSessionModel(
+      sessionId: json['sessionId'] as String,
+    );
 
-Map<String, dynamic> _$$RatingSessionModelImplToJson(
-  _$RatingSessionModelImpl instance,
-) => <String, dynamic>{'sessionId': instance.sessionId};
+Map<String, dynamic> _$RatingSessionModelToJson(_RatingSessionModel instance) =>
+    <String, dynamic>{
+      'sessionId': instance.sessionId,
+    };
 
-_$RatingModelImpl _$$RatingModelImplFromJson(Map<String, dynamic> json) =>
-    _$RatingModelImpl(
+_RatingModel _$RatingModelFromJson(Map<String, dynamic> json) => _RatingModel(
       ratingId: json['ratingId'] as String,
-      session: RatingSessionModel.fromJson(
-        json['session'] as Map<String, dynamic>,
-      ),
+      session:
+          RatingSessionModel.fromJson(json['session'] as Map<String, dynamic>),
       ratingBy: UserModel.fromJson(json['ratingBy'] as Map<String, dynamic>),
       ratingFor: UserModel.fromJson(json['ratingFor'] as Map<String, dynamic>),
       ratingValue: (json['ratingValue'] as num).toInt(),
@@ -1294,7 +1893,7 @@ _$RatingModelImpl _$$RatingModelImplFromJson(Map<String, dynamic> json) =>
       createdAt: json['createdAt'] as String,
     );
 
-Map<String, dynamic> _$$RatingModelImplToJson(_$RatingModelImpl instance) =>
+Map<String, dynamic> _$RatingModelToJson(_RatingModel instance) =>
     <String, dynamic>{
       'ratingId': instance.ratingId,
       'session': instance.session.toJson(),
@@ -1515,12 +2114,907 @@ class GetRatingsForUserParams extends Equatable {
 }
 
 ==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\presentation\bloc\pending_rating_bloc.dart
+==================================================
+import 'package:bloc/bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/rating/domain/entities/pending_rating.dart';
+import 'package:sahbifit/features/rating/domain/usecases/create_rating.dart';
+import 'package:sahbifit/features/rating/domain/usecases/get_pending_ratings.dart';
+
+part 'pending_rating_bloc.freezed.dart';
+part 'pending_rating_event.dart';
+part 'pending_rating_state.dart';
+
+@injectable
+class PendingRatingBloc extends Bloc<PendingRatingEvent, PendingRatingState> {
+  final GetPendingRatings _getPendingRatings;
+  final CreateRating _createRating;
+
+  PendingRatingBloc(
+    this._getPendingRatings,
+    this._createRating,
+  ) : super(const PendingRatingState.initial()) {
+    on<_FetchList>(_onFetchList);
+    on<_SubmitRating>(_onSubmitRating);
+  }
+
+  Future<void> _onFetchList(
+    _FetchList event,
+    Emitter<PendingRatingState> emit,
+  ) async {
+    emit(const PendingRatingState.loading());
+    try {
+      final ratings = await _getPendingRatings(NoParams());
+      emit(PendingRatingState.loaded(pendingRatings: ratings));
+    } on ServerFailure catch (e) {
+      emit(PendingRatingState.error(e.message));
+    } catch (e) {
+      emit(PendingRatingState.error(e.toString()));
+    }
+  }
+
+  Future<void> _onSubmitRating(
+    _SubmitRating event,
+    Emitter<PendingRatingState> emit,
+  ) async {
+    // Keep the old state's list while loading
+    // Or just emit a generic loading state
+    emit(const PendingRatingState.loading());
+
+    try {
+      final params = CreateRatingParams(
+        sessionId: event.sessionId,
+        ratedUserId: event.ratedUserId,
+        ratingValue: event.ratingValue,
+        comment: event.comment,
+      );
+      await _createRating(params);
+
+      // Emit success and then immediately refresh the list
+      emit(const PendingRatingState.submissionSuccess());
+      add(const PendingRatingEvent.fetchList());
+    } on ServerFailure catch (e) {
+      emit(PendingRatingState.error(e.message));
+    } catch (e) {
+      emit(PendingRatingState.error(e.toString()));
+    }
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\presentation\bloc\pending_rating_bloc.freezed.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'pending_rating_bloc.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$PendingRatingEvent {
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is PendingRatingEvent);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() {
+    return 'PendingRatingEvent()';
+  }
+}
+
+/// @nodoc
+class $PendingRatingEventCopyWith<$Res> {
+  $PendingRatingEventCopyWith(
+      PendingRatingEvent _, $Res Function(PendingRatingEvent) __);
+}
+
+/// Adds pattern-matching-related methods to [PendingRatingEvent].
+extension PendingRatingEventPatterns on PendingRatingEvent {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_FetchList value)? fetchList,
+    TResult Function(_SubmitRating value)? submitRating,
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _FetchList() when fetchList != null:
+        return fetchList(_that);
+      case _SubmitRating() when submitRating != null:
+        return submitRating(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_FetchList value) fetchList,
+    required TResult Function(_SubmitRating value) submitRating,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _FetchList():
+        return fetchList(_that);
+      case _SubmitRating():
+        return submitRating(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_FetchList value)? fetchList,
+    TResult? Function(_SubmitRating value)? submitRating,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _FetchList() when fetchList != null:
+        return fetchList(_that);
+      case _SubmitRating() when submitRating != null:
+        return submitRating(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? fetchList,
+    TResult Function(String sessionId, String ratedUserId, int ratingValue,
+            String? comment)?
+        submitRating,
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _FetchList() when fetchList != null:
+        return fetchList();
+      case _SubmitRating() when submitRating != null:
+        return submitRating(_that.sessionId, _that.ratedUserId,
+            _that.ratingValue, _that.comment);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() fetchList,
+    required TResult Function(String sessionId, String ratedUserId,
+            int ratingValue, String? comment)
+        submitRating,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _FetchList():
+        return fetchList();
+      case _SubmitRating():
+        return submitRating(_that.sessionId, _that.ratedUserId,
+            _that.ratingValue, _that.comment);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? fetchList,
+    TResult? Function(String sessionId, String ratedUserId, int ratingValue,
+            String? comment)?
+        submitRating,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _FetchList() when fetchList != null:
+        return fetchList();
+      case _SubmitRating() when submitRating != null:
+        return submitRating(_that.sessionId, _that.ratedUserId,
+            _that.ratingValue, _that.comment);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+class _FetchList implements PendingRatingEvent {
+  const _FetchList();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _FetchList);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() {
+    return 'PendingRatingEvent.fetchList()';
+  }
+}
+
+/// @nodoc
+
+class _SubmitRating implements PendingRatingEvent {
+  const _SubmitRating(
+      {required this.sessionId,
+      required this.ratedUserId,
+      required this.ratingValue,
+      this.comment});
+
+  final String sessionId;
+  final String ratedUserId;
+  final int ratingValue;
+  final String? comment;
+
+  /// Create a copy of PendingRatingEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$SubmitRatingCopyWith<_SubmitRating> get copyWith =>
+      __$SubmitRatingCopyWithImpl<_SubmitRating>(this, _$identity);
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _SubmitRating &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.ratedUserId, ratedUserId) ||
+                other.ratedUserId == ratedUserId) &&
+            (identical(other.ratingValue, ratingValue) ||
+                other.ratingValue == ratingValue) &&
+            (identical(other.comment, comment) || other.comment == comment));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, sessionId, ratedUserId, ratingValue, comment);
+
+  @override
+  String toString() {
+    return 'PendingRatingEvent.submitRating(sessionId: $sessionId, ratedUserId: $ratedUserId, ratingValue: $ratingValue, comment: $comment)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$SubmitRatingCopyWith<$Res>
+    implements $PendingRatingEventCopyWith<$Res> {
+  factory _$SubmitRatingCopyWith(
+          _SubmitRating value, $Res Function(_SubmitRating) _then) =
+      __$SubmitRatingCopyWithImpl;
+  @useResult
+  $Res call(
+      {String sessionId, String ratedUserId, int ratingValue, String? comment});
+}
+
+/// @nodoc
+class __$SubmitRatingCopyWithImpl<$Res>
+    implements _$SubmitRatingCopyWith<$Res> {
+  __$SubmitRatingCopyWithImpl(this._self, this._then);
+
+  final _SubmitRating _self;
+  final $Res Function(_SubmitRating) _then;
+
+  /// Create a copy of PendingRatingEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? sessionId = null,
+    Object? ratedUserId = null,
+    Object? ratingValue = null,
+    Object? comment = freezed,
+  }) {
+    return _then(_SubmitRating(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      ratedUserId: null == ratedUserId
+          ? _self.ratedUserId
+          : ratedUserId // ignore: cast_nullable_to_non_nullable
+              as String,
+      ratingValue: null == ratingValue
+          ? _self.ratingValue
+          : ratingValue // ignore: cast_nullable_to_non_nullable
+              as int,
+      comment: freezed == comment
+          ? _self.comment
+          : comment // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$PendingRatingState {
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is PendingRatingState);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() {
+    return 'PendingRatingState()';
+  }
+}
+
+/// @nodoc
+class $PendingRatingStateCopyWith<$Res> {
+  $PendingRatingStateCopyWith(
+      PendingRatingState _, $Res Function(PendingRatingState) __);
+}
+
+/// Adds pattern-matching-related methods to [PendingRatingState].
+extension PendingRatingStatePatterns on PendingRatingState {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Initial value)? initial,
+    TResult Function(_Loading value)? loading,
+    TResult Function(_Loaded value)? loaded,
+    TResult Function(_SubmissionSuccess value)? submissionSuccess,
+    TResult Function(_Error value)? error,
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial() when initial != null:
+        return initial(_that);
+      case _Loading() when loading != null:
+        return loading(_that);
+      case _Loaded() when loaded != null:
+        return loaded(_that);
+      case _SubmissionSuccess() when submissionSuccess != null:
+        return submissionSuccess(_that);
+      case _Error() when error != null:
+        return error(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Initial value) initial,
+    required TResult Function(_Loading value) loading,
+    required TResult Function(_Loaded value) loaded,
+    required TResult Function(_SubmissionSuccess value) submissionSuccess,
+    required TResult Function(_Error value) error,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial():
+        return initial(_that);
+      case _Loading():
+        return loading(_that);
+      case _Loaded():
+        return loaded(_that);
+      case _SubmissionSuccess():
+        return submissionSuccess(_that);
+      case _Error():
+        return error(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Initial value)? initial,
+    TResult? Function(_Loading value)? loading,
+    TResult? Function(_Loaded value)? loaded,
+    TResult? Function(_SubmissionSuccess value)? submissionSuccess,
+    TResult? Function(_Error value)? error,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial() when initial != null:
+        return initial(_that);
+      case _Loading() when loading != null:
+        return loading(_that);
+      case _Loaded() when loaded != null:
+        return loaded(_that);
+      case _SubmissionSuccess() when submissionSuccess != null:
+        return submissionSuccess(_that);
+      case _Error() when error != null:
+        return error(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(List<PendingRating> pendingRatings)? loaded,
+    TResult Function()? submissionSuccess,
+    TResult Function(String message)? error,
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial() when initial != null:
+        return initial();
+      case _Loading() when loading != null:
+        return loading();
+      case _Loaded() when loaded != null:
+        return loaded(_that.pendingRatings);
+      case _SubmissionSuccess() when submissionSuccess != null:
+        return submissionSuccess();
+      case _Error() when error != null:
+        return error(_that.message);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(List<PendingRating> pendingRatings) loaded,
+    required TResult Function() submissionSuccess,
+    required TResult Function(String message) error,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial():
+        return initial();
+      case _Loading():
+        return loading();
+      case _Loaded():
+        return loaded(_that.pendingRatings);
+      case _SubmissionSuccess():
+        return submissionSuccess();
+      case _Error():
+        return error(_that.message);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(List<PendingRating> pendingRatings)? loaded,
+    TResult? Function()? submissionSuccess,
+    TResult? Function(String message)? error,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Initial() when initial != null:
+        return initial();
+      case _Loading() when loading != null:
+        return loading();
+      case _Loaded() when loaded != null:
+        return loaded(_that.pendingRatings);
+      case _SubmissionSuccess() when submissionSuccess != null:
+        return submissionSuccess();
+      case _Error() when error != null:
+        return error(_that.message);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+
+class _Initial implements PendingRatingState {
+  const _Initial();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _Initial);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() {
+    return 'PendingRatingState.initial()';
+  }
+}
+
+/// @nodoc
+
+class _Loading implements PendingRatingState {
+  const _Loading();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _Loading);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() {
+    return 'PendingRatingState.loading()';
+  }
+}
+
+/// @nodoc
+
+class _Loaded implements PendingRatingState {
+  const _Loaded({required final List<PendingRating> pendingRatings})
+      : _pendingRatings = pendingRatings;
+
+  final List<PendingRating> _pendingRatings;
+  List<PendingRating> get pendingRatings {
+    if (_pendingRatings is EqualUnmodifiableListView) return _pendingRatings;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_pendingRatings);
+  }
+
+  /// Create a copy of PendingRatingState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$LoadedCopyWith<_Loaded> get copyWith =>
+      __$LoadedCopyWithImpl<_Loaded>(this, _$identity);
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _Loaded &&
+            const DeepCollectionEquality()
+                .equals(other._pendingRatings, _pendingRatings));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, const DeepCollectionEquality().hash(_pendingRatings));
+
+  @override
+  String toString() {
+    return 'PendingRatingState.loaded(pendingRatings: $pendingRatings)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$LoadedCopyWith<$Res>
+    implements $PendingRatingStateCopyWith<$Res> {
+  factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) =
+      __$LoadedCopyWithImpl;
+  @useResult
+  $Res call({List<PendingRating> pendingRatings});
+}
+
+/// @nodoc
+class __$LoadedCopyWithImpl<$Res> implements _$LoadedCopyWith<$Res> {
+  __$LoadedCopyWithImpl(this._self, this._then);
+
+  final _Loaded _self;
+  final $Res Function(_Loaded) _then;
+
+  /// Create a copy of PendingRatingState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? pendingRatings = null,
+  }) {
+    return _then(_Loaded(
+      pendingRatings: null == pendingRatings
+          ? _self._pendingRatings
+          : pendingRatings // ignore: cast_nullable_to_non_nullable
+              as List<PendingRating>,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _SubmissionSuccess implements PendingRatingState {
+  const _SubmissionSuccess();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _SubmissionSuccess);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  String toString() {
+    return 'PendingRatingState.submissionSuccess()';
+  }
+}
+
+/// @nodoc
+
+class _Error implements PendingRatingState {
+  const _Error(this.message);
+
+  final String message;
+
+  /// Create a copy of PendingRatingState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$ErrorCopyWith<_Error> get copyWith =>
+      __$ErrorCopyWithImpl<_Error>(this, _$identity);
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _Error &&
+            (identical(other.message, message) || other.message == message));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, message);
+
+  @override
+  String toString() {
+    return 'PendingRatingState.error(message: $message)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$ErrorCopyWith<$Res>
+    implements $PendingRatingStateCopyWith<$Res> {
+  factory _$ErrorCopyWith(_Error value, $Res Function(_Error) _then) =
+      __$ErrorCopyWithImpl;
+  @useResult
+  $Res call({String message});
+}
+
+/// @nodoc
+class __$ErrorCopyWithImpl<$Res> implements _$ErrorCopyWith<$Res> {
+  __$ErrorCopyWithImpl(this._self, this._then);
+
+  final _Error _self;
+  final $Res Function(_Error) _then;
+
+  /// Create a copy of PendingRatingState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? message = null,
+  }) {
+    return _then(_Error(
+      null == message
+          ? _self.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+// dart format on
+
+==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\presentation\bloc\pending_rating_event.dart
 ==================================================
+part of 'pending_rating_bloc.dart';
+
+@freezed
+abstract
+class PendingRatingEvent with _$PendingRatingEvent {
+  /// Dispatched to load the initial list of pending ratings.
+  const factory PendingRatingEvent.fetchList() = _FetchList;
+
+  /// Dispatched when the user submits a rating for a specific user/session.
+  const factory PendingRatingEvent.submitRating({
+    required String sessionId,
+    required String ratedUserId,
+    required int ratingValue,
+    String? comment,
+  }) = _SubmitRating;
+}
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\presentation\bloc\pending_rating_state.dart
 ==================================================
+part of 'pending_rating_bloc.dart';
+
+@freezed
+abstract
+class PendingRatingState with _$PendingRatingState {
+  /// The initial state, before anything is loaded.
+  const factory PendingRatingState.initial() = _Initial;
+
+  /// The state while fetching the list or submitting a rating.
+  const factory PendingRatingState.loading() = _Loading;
+
+  /// The state when the list of pending ratings is successfully loaded.
+  const factory PendingRatingState.loaded({
+    required List<PendingRating> pendingRatings,
+  }) = _Loaded;
+
+  /// A temporary state to indicate one rating was submitted successfully.
+  /// The BLoC will likely transition from this back to 'loaded' with an updated list.
+  const factory PendingRatingState.submissionSuccess() = _SubmissionSuccess;
+
+  /// The state when an error occurs.
+  const factory PendingRatingState.error(String message) = _Error;
+}
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\rating\presentation\pages\pending_ratings_page.dart

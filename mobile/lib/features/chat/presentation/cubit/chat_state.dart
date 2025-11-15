@@ -1,7 +1,7 @@
 part of 'chat_cubit.dart';
 
 @freezed
-class ChatState with _$ChatState {
+sealed class ChatState with _$ChatState {
   /// Chat has not been initialized or connected.
   const factory ChatState.initial() = _Initial;
 

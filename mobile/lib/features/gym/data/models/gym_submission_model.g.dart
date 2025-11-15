@@ -6,13 +6,11 @@ part of 'gym_submission_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$GymSubmissionModelImpl _$$GymSubmissionModelImplFromJson(
-  Map<String, dynamic> json,
-) => _$GymSubmissionModelImpl(
-  name: json['name'] as String,
-  address: json['address'] as String,
-);
+_GymSubmissionModel _$GymSubmissionModelFromJson(Map<String, dynamic> json) =>
+    _GymSubmissionModel(
+      name: json['name'] as String,
+      address: json['address'] as String,
+    );
 
-Map<String, dynamic> _$$GymSubmissionModelImplToJson(
-  _$GymSubmissionModelImpl instance,
-) => <String, dynamic>{'name': instance.name, 'address': instance.address};
+Map<String, dynamic> _$GymSubmissionModelToJson(_GymSubmissionModel instance) =>
+    <String, dynamic>{'name': instance.name, 'address': instance.address};

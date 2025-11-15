@@ -3,9 +3,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'create_report_model.freezed.dart';
 part 'create_report_model.g.dart';
 
+
 @freezed
-class CreateReportModel with _$CreateReportModel {
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+abstract class CreateReportModel with _$CreateReportModel {
+  
   const factory CreateReportModel({
     required String reportedUserId,
     required String reason,

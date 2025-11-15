@@ -1,7 +1,7 @@
 part of 'pending_rating_bloc.dart';
 
 @freezed
-class PendingRatingState with _$PendingRatingState {
+sealed class PendingRatingState with _$PendingRatingState {
   /// The initial state, before anything is loaded.
   const factory PendingRatingState.initial() = _Initial;
 

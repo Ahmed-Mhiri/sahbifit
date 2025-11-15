@@ -5,11 +5,12 @@ import 'package:sahbifit/features/tag/domain/entities/tag_type.dart';
 part 'tag_model.freezed.dart';
 part 'tag_model.g.dart';
 
+
 @freezed
-class TagModel with _$TagModel {
+abstract class TagModel with _$TagModel {
   const TagModel._(); // Private constructor for methods
 
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory TagModel({
     required int tagId,
     required String tagName,

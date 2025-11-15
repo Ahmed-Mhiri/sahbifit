@@ -1,7 +1,7 @@
 part of 'session_feed_cubit.dart';
 
 @freezed
-class SessionFeedState with _$SessionFeedState {
+sealed class SessionFeedState with _$SessionFeedState {
   /// The initial state, before any sessions are fetched.
   const factory SessionFeedState.initial() = _Initial;
 

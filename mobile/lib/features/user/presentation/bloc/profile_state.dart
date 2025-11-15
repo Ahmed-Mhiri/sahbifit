@@ -1,7 +1,7 @@
 part of 'profile_bloc.dart';
 
 @freezed
-class ProfileState with _$ProfileState {
+sealed class ProfileState with _$ProfileState {
   /// The initial state, before the profile has been loaded.
   const factory ProfileState.initial() = _Initial;
 

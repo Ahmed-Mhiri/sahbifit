@@ -1,7 +1,7 @@
 part of 'report_cubit.dart';
 
 @freezed
-class ReportState with _$ReportState {
+sealed class ReportState with _$ReportState {
   /// The initial, idle state of the report form.
   const factory ReportState.initial() = _Initial;
 

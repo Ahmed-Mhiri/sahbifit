@@ -1,7 +1,7 @@
 part of 'auth_bloc.dart';
 
 @freezed
-class AuthState with _$AuthState {
+sealed class AuthState with _$AuthState {
   /// The default, idle state of the auth forms.
   const factory AuthState.initial() = _Initial;
 

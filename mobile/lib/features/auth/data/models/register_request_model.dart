@@ -3,9 +3,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'register_request_model.freezed.dart';
 part 'register_request_model.g.dart';
 
+
 @freezed
-class RegisterRequestModel with _$RegisterRequestModel {
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+abstract class RegisterRequestModel with _$RegisterRequestModel {
+  
   const factory RegisterRequestModel({
     required String phoneNumber,
     required String password,

@@ -6,9 +6,9 @@ part of 'register_request_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$RegisterRequestModelImpl _$$RegisterRequestModelImplFromJson(
+_RegisterRequestModel _$RegisterRequestModelFromJson(
   Map<String, dynamic> json,
-) => _$RegisterRequestModelImpl(
+) => _RegisterRequestModel(
   phoneNumber: json['phoneNumber'] as String,
   password: json['password'] as String,
   recaptchaToken: json['recaptchaToken'] as String,
@@ -24,8 +24,8 @@ _$RegisterRequestModelImpl _$$RegisterRequestModelImplFromJson(
       .toList(),
 );
 
-Map<String, dynamic> _$$RegisterRequestModelImplToJson(
-  _$RegisterRequestModelImpl instance,
+Map<String, dynamic> _$RegisterRequestModelToJson(
+  _RegisterRequestModel instance,
 ) => <String, dynamic>{
   'phoneNumber': instance.phoneNumber,
   'password': instance.password,

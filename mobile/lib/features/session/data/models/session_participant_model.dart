@@ -7,9 +7,10 @@ part 'session_participant_model.freezed.dart';
 part 'session_participant_model.g.dart';
 
 // This model maps to the backend's SessionParticipantId.java
+
 @freezed
-class SessionParticipantIdModel with _$SessionParticipantIdModel {
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+abstract class SessionParticipantIdModel with _$SessionParticipantIdModel {
+  
   const factory SessionParticipantIdModel({
     required String sessionId,
     required String userId,
@@ -20,11 +21,12 @@ class SessionParticipantIdModel with _$SessionParticipantIdModel {
 }
 
 // This model maps to the backend's SessionParticipant.java
+
 @freezed
-class SessionParticipantModel with _$SessionParticipantModel {
+abstract class SessionParticipantModel with _$SessionParticipantModel {
   const SessionParticipantModel._();
 
-  @JsonSerializable(fieldRename: FieldRename.none, explicitToJson: true) // <-- ADD THIS
+  
   const factory SessionParticipantModel({
     required SessionParticipantIdModel id,
     required UserModel user, // The user who joined
