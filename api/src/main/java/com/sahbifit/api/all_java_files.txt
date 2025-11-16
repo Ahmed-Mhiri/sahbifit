@@ -1,5 +1,5 @@
 ﻿==================================================
-Path: ApiApplication.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\ApiApplication.java
 ==================================================
 package com.sahbifit.api;
 
@@ -36,9 +36,8 @@ public class ApiApplication {
 	}
 }
 
-
 ==================================================
-Path: AdminController.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\admin\AdminController.java
 ==================================================
 package com.sahbifit.api.admin;
 
@@ -118,9 +117,8 @@ public class AdminController {
     }
 }
 
-
 ==================================================
-Path: AdminService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\admin\AdminService.java
 ==================================================
 package com.sahbifit.api.admin;
 
@@ -304,9 +302,8 @@ public class AdminService {
     }
 }
 
-
 ==================================================
-Path: ApproveVerificationRequest.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\admin\dto\ApproveVerificationRequest.java
 ==================================================
 package com.sahbifit.api.admin.dto;
 
@@ -322,9 +319,8 @@ public record ApproveVerificationRequest(
     VerifiedGender verifiedGender
 ) {}
 
-
 ==================================================
-Path: RejectionReason.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\admin\dto\RejectionReason.java
 ==================================================
 package com.sahbifit.api.admin.dto;
 
@@ -343,9 +339,8 @@ public enum RejectionReason {
     MISMATCH
 }
 
-
 ==================================================
-Path: RejectVerificationRequest.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\admin\dto\RejectVerificationRequest.java
 ==================================================
 package com.sahbifit.api.admin.dto;
 
@@ -360,9 +355,8 @@ public record RejectVerificationRequest(
     RejectionReason reason
 ) {}
 
-
 ==================================================
-Path: VerificationQueueDto.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\admin\dto\VerificationQueueDto.java
 ==================================================
 package com.sahbifit.api.admin.dto;
 
@@ -377,9 +371,8 @@ public record VerificationQueueDto(
     OffsetDateTime submittedAt
 ) {}
 
-
 ==================================================
-Path: AuthController.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\auth\AuthController.java
 ==================================================
 package com.sahbifit.api.auth;
 
@@ -440,9 +433,8 @@ public class AuthController {
     }
 }
 
-
 ==================================================
-Path: AuthEventListener.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\auth\AuthEventListener.java
 ==================================================
 package com.sahbifit.api.auth;
 
@@ -515,9 +507,8 @@ public class AuthEventListener {
     }
 }
 
-
 ==================================================
-Path: AuthService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\auth\AuthService.java
 ==================================================
 package com.sahbifit.api.auth;
 
@@ -817,9 +808,8 @@ public void register(RegisterRequest request) {
     }
 }
 
-
 ==================================================
-Path: UserRegisteredEvent.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\auth\UserRegisteredEvent.java
 ==================================================
 package com.sahbifit.api.auth;
 
@@ -839,17 +829,15 @@ public class UserRegisteredEvent extends ApplicationEvent {
     }
 }
 
-
 ==================================================
-Path: AuthResponse.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\auth\dto\AuthResponse.java
 ==================================================
 package com.sahbifit.api.auth.dto;
 
 public record AuthResponse(String jwtToken) {}
 
-
 ==================================================
-Path: LoginRequest.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\auth\dto\LoginRequest.java
 ==================================================
 package com.sahbifit.api.auth.dto;
 
@@ -863,9 +851,8 @@ public record LoginRequest(
     String password
 ) {}
 
-
 ==================================================
-Path: RegisterRequest.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\auth\dto\RegisterRequest.java
 ==================================================
 package com.sahbifit.api.auth.dto;
 
@@ -912,9 +899,8 @@ public record RegisterRequest(
     List<Integer> scheduleTagIds
 ) {}
 
-
 ==================================================
-Path: ResendOtpRequest.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\auth\dto\ResendOtpRequest.java
 ==================================================
 package com.sahbifit.api.auth.dto;
 
@@ -930,9 +916,8 @@ public record ResendOtpRequest(
     String recaptchaToken
 ) {}
 
-
 ==================================================
-Path: VerifySmsRequest.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\auth\dto\VerifySmsRequest.java
 ==================================================
 package com.sahbifit.api.auth.dto;
 
@@ -950,9 +935,8 @@ public record VerifySmsRequest(
     String otp
 ) {}
 
-
 ==================================================
-Path: Badge.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\badge\model\Badge.java
 ==================================================
 package com.sahbifit.api.badge.model;
 
@@ -985,9 +969,8 @@ public class Badge {
     private Set<UserBadge> userBadges;
 }
 
-
 ==================================================
-Path: UserBadge.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\badge\model\UserBadge.java
 ==================================================
 package com.sahbifit.api.badge.model;
 
@@ -1022,9 +1005,8 @@ public class UserBadge {
     private OffsetDateTime earnedAt;
 }
 
-
 ==================================================
-Path: UserBadgeId.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\badge\model\UserBadgeId.java
 ==================================================
 package com.sahbifit.api.badge.model;
 
@@ -1045,9 +1027,8 @@ public class UserBadgeId implements Serializable {
     private Integer badgeId;
 }
 
-
 ==================================================
-Path: BadgeRepository.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\badge\repository\BadgeRepository.java
 ==================================================
 package com.sahbifit.api.badge.repository;
 
@@ -1061,9 +1042,8 @@ public interface BadgeRepository extends JpaRepository<Badge, Integer> {
     Optional<Badge> findByBadgeName(String badgeName);
 }
 
-
 ==================================================
-Path: UserBadgeRepository.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\badge\repository\UserBadgeRepository.java
 ==================================================
 package com.sahbifit.api.badge.repository;
 
@@ -1076,9 +1056,8 @@ import org.springframework.stereotype.Repository;
 public interface UserBadgeRepository extends JpaRepository<UserBadge, UserBadgeId> {
 }
 
-
 ==================================================
-Path: CloudflareConfig.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\config\CloudflareConfig.java
 ==================================================
 package com.sahbifit.api.config;
 
@@ -1109,19 +1088,16 @@ public class CloudflareConfig {
     }
 }
 
-
 ==================================================
-Path: CorsConfig.java
-==================================================
-
-
-==================================================
-Path: FirebaseConfig.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\config\CorsConfig.java
 ==================================================
 
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\config\FirebaseConfig.java
+==================================================
 
 ==================================================
-Path: GlobalExceptionHandler.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\config\GlobalExceptionHandler.java
 ==================================================
 package com.sahbifit.api.config;
 
@@ -1156,14 +1132,12 @@ public class GlobalExceptionHandler {
     }
 }
 
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\config\PostGisConfig.java
+==================================================
 
 ==================================================
-Path: PostGisConfig.java
-==================================================
-
-
-==================================================
-Path: ReCaptchaConfig.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\config\ReCaptchaConfig.java
 ==================================================
 package com.sahbifit.api.config;
 
@@ -1184,9 +1158,8 @@ public class ReCaptchaConfig {
     private double scoreThreshold; 
 }
 
-
 ==================================================
-Path: S3ClientConfig.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\config\S3ClientConfig.java
 ==================================================
 package com.sahbifit.api.config;
 
@@ -1230,9 +1203,8 @@ public class S3ClientConfig {
     }
 }
 
-
 ==================================================
-Path: WinSmsConfig.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\config\WinSmsConfig.java
 ==================================================
 package com.sahbifit.api.config;
 
@@ -1270,19 +1242,16 @@ public class WinSmsConfig {
     }
 }
 
-
 ==================================================
-Path: AccessDeniedException.java
-==================================================
-
-
-==================================================
-Path: GlobalExceptionHandler.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\exception\AccessDeniedException.java
 ==================================================
 
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\exception\GlobalExceptionHandler.java
+==================================================
 
 ==================================================
-Path: InvalidOtpException.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\exception\InvalidOtpException.java
 ==================================================
 package com.sahbifit.api.exception;
 
@@ -1306,9 +1275,8 @@ public class InvalidOtpException extends RuntimeException {
     }
 }
 
-
 ==================================================
-Path: OtpExpiredException.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\exception\OtpExpiredException.java
 ==================================================
 package com.sahbifit.api.exception;
 
@@ -1332,9 +1300,8 @@ public class OtpExpiredException extends RuntimeException {
     }
 }
 
-
 ==================================================
-Path: PhoneNumberAlreadyExistsException.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\exception\PhoneNumberAlreadyExistsException.java
 ==================================================
 package com.sahbifit.api.exception;
 
@@ -1358,9 +1325,8 @@ public class PhoneNumberAlreadyExistsException extends RuntimeException {
     }
 }
 
-
 ==================================================
-Path: ResourceNotFoundException.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\exception\ResourceNotFoundException.java
 ==================================================
 package com.sahbifit.api.exception;
 
@@ -1399,9 +1365,8 @@ public class ResourceNotFoundException extends RuntimeException {
     // +++ END OF NEW CODE +++
 }
 
-
 ==================================================
-Path: ChatService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\external\chat\ChatService.java
 ==================================================
 // Pfad: src/main/java/com/sahbifit/api/external/chat/ChatService.java
 package com.sahbifit.api.external.chat;
@@ -1419,9 +1384,8 @@ public interface ChatService {
     String createChatForSession(UUID sessionId);
 }
 
-
 ==================================================
-Path: FirebaseChatService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\external\chat\FirebaseChatService.java
 ==================================================
 // Pfad: src/main/java/com/sahbifit/api/external/chat/FirebaseChatService.java
 package com.sahbifit.api.external.chat;
@@ -1473,9 +1437,8 @@ public class FirebaseChatService implements ChatService {
     }
 }
 
-
 ==================================================
-Path: FirebasePushNotificationService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\external\push\FirebasePushNotificationService.java
 ==================================================
 package com.sahbifit.api.external.push;
 
@@ -1587,9 +1550,8 @@ public class FirebasePushNotificationService implements PushNotificationService 
     }
 }
 
-
 ==================================================
-Path: PushNotificationService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\external\push\PushNotificationService.java
 ==================================================
 // This file was empty, now add content:
 package com.sahbifit.api.external.push;
@@ -1613,9 +1575,8 @@ public interface PushNotificationService {
     void sendRatingReminder(User user, com.sahbifit.api.session.model.Session session);
 }
 
-
 ==================================================
-Path: GoogleReCaptchaService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\external\recaptcha\GoogleReCaptchaService.java
 ==================================================
 package com.sahbifit.api.external.recaptcha;
 
@@ -1687,9 +1648,8 @@ public class GoogleReCaptchaService implements ReCaptchaService {
     }
 }
 
-
 ==================================================
-Path: ReCaptchaResponse.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\external\recaptcha\ReCaptchaResponse.java
 ==================================================
 package com.sahbifit.api.external.recaptcha;
 
@@ -1717,9 +1677,8 @@ public class ReCaptchaResponse {
     private List<String> errorCodes;
 }
 
-
 ==================================================
-Path: ReCaptchaService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\external\recaptcha\ReCaptchaService.java
 ==================================================
 package com.sahbifit.api.external.recaptcha;
 
@@ -1734,9 +1693,8 @@ public interface ReCaptchaService {
     void validate(String token);
 }
 
-
 ==================================================
-Path: SmsService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\external\sms\SmsService.java
 ==================================================
 package com.sahbifit.api.external.sms;
 
@@ -1744,9 +1702,8 @@ public interface SmsService {
     void sendVerificationSms(String phoneNumber, String otp);
 }
 
-
 ==================================================
-Path: WinSmsService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\external\sms\WinSmsService.java
 ==================================================
 package com.sahbifit.api.external.sms;
 
@@ -1813,9 +1770,8 @@ public class WinSmsService implements SmsService {
     }
 }
 
-
 ==================================================
-Path: CloudflareR2Service.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\external\storage\CloudflareR2Service.java
 ==================================================
 package com.sahbifit.api.external.storage;
 
@@ -1942,9 +1898,8 @@ public class CloudflareR2Service implements StorageService {
     }
 }
 
-
 ==================================================
-Path: StorageService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\external\storage\StorageService.java
 ==================================================
 package com.sahbifit.api.external.storage;
 
@@ -1976,9 +1931,96 @@ public interface StorageService {
     String generatePublicUrl(String key);
 }
 
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\file\FileController.java
+==================================================
+package com.sahbifit.api.file;
+
+import com.sahbifit.api.external.storage.StorageService;
+import com.sahbifit.api.file.dto.FileUploadResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/files")
+@RequiredArgsConstructor
+public class FileController {
+
+    private final StorageService storageService;
+    
+    // Define allowed content types and max size
+    private static final List<String> ALLOWED_IMAGE_TYPES = List.of("image/jpeg", "image/png", "image/webp");
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+    /**
+     * Endpoint for uploading a profile photo.
+     * Must be authenticated.
+     */
+    @PostMapping("/upload-image")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
+        
+        // 1. Validation
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("{\"message\": \"File cannot be empty.\"}");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType)) {
+            log.warn("Invalid file type uploaded: {}", contentType);
+            return ResponseEntity.badRequest().body("{\"message\": \"Invalid file type. Only JPG, PNG, and WebP are allowed.\"}");
+        }
+
+        if (file.getSize() > MAX_FILE_SIZE) {
+            log.warn("File size exceeded: {} bytes", file.getSize());
+            return ResponseEntity.badRequest().body("{\"message\": \"File size must not exceed 5MB.\"}");
+        }
+
+        try {
+            // 2. Generate unique filename (e.g., using UUID)
+            String extension = ".jpg"; // Default or derive from content type
+            if ("image/png".equals(contentType)) extension = ".png";
+            if ("image/webp".equals(contentType)) extension = ".webp";
+            
+            String fileName = UUID.randomUUID().toString() + extension;
+            String folder = "profile-photos";
+
+            // 3. Upload file using existing service
+            // This returns the KEY, not the full URL [cite: 280]
+            String fileKey = storageService.uploadFile(file, folder, fileName);
+
+            // 4. Generate the public URL from the key
+            // We use the existing public method from StorageService [cite: 297, 287]
+            String publicUrl = storageService.generatePublicUrl(fileKey);
+
+            // 5. Return the URL in the specified JSON format
+            return ResponseEntity.ok(new FileUploadResponse(publicUrl));
+
+        } catch (IOException e) {
+            log.error("Error uploading profile photo: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body("{\"message\": \"Could not upload file: " + e.getMessage() + "\"}");
+        }
+    }
+}
 
 ==================================================
-Path: GymController.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\file\dto\FileUploadResponse.java
+==================================================
+package com.sahbifit.api.file.dto;
+
+public record FileUploadResponse(String url) {}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\gym\GymController.java
 ==================================================
 package com.sahbifit.api.gym;
 
@@ -2099,9 +2141,8 @@ public class GymController {
     }
 }
 
-
 ==================================================
-Path: GymService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\gym\GymService.java
 ==================================================
 // Pfad: src/main/java/com/sahbifit/api/gym/GymService.java
 package com.sahbifit.api.gym;
@@ -2224,9 +2265,8 @@ public class GymService {
     }
 }
 
-
 ==================================================
-Path: AdminGymDto.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\gym\dto\AdminGymDto.java
 ==================================================
 package com.sahbifit.api.gym.dto;
 
@@ -2236,9 +2276,8 @@ public record AdminGymDto(
     // Add any other fields admins can set directly
 ) {}
 
-
 ==================================================
-Path: GymSubmissionDto.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\gym\dto\GymSubmissionDto.java
 ==================================================
 package com.sahbifit.api.gym.dto;
 
@@ -2248,9 +2287,8 @@ public record GymSubmissionDto(
     // We can add lat/lon here later if needed for Point mapping
 ) {}
 
-
 ==================================================
-Path: Gym.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\gym\model\Gym.java
 ==================================================
 package com.sahbifit.api.gym.model;
 
@@ -2343,9 +2381,8 @@ public class Gym {
     private Set<Session> sessions;
 }
 
-
 ==================================================
-Path: GymStatus.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\gym\model\GymStatus.java
 ==================================================
 // Pfad: src/main/java/com/sahbifit/api/model/enums/GymStatus.java
 package com.sahbifit.api.gym.model;
@@ -2356,9 +2393,8 @@ public enum GymStatus {
     rejected
 }
 
-
 ==================================================
-Path: GymRepository.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\gym\repository\GymRepository.java
 ==================================================
 // Pfad: src/main/java/com/sahbifit/api/gym/repository/GymRepository.java
 package com.sahbifit.api.gym.repository;
@@ -2379,9 +2415,8 @@ public interface GymRepository extends JpaRepository<Gym, UUID> {
     List<Gym> findByStatus(GymStatus status);
 }
 
-
 ==================================================
-Path: RatingController.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\rating\RatingController.java
 ==================================================
 // Path: src/main/java/com/sahbifit/api/rating/RatingController.java
 package com.sahbifit.api.rating;
@@ -2442,9 +2477,8 @@ public class RatingController {
     }
 }
 
-
 ==================================================
-Path: RatingNotifierService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\rating\RatingNotifierService.java
 ==================================================
 // Path: RatingNotifierService.java (NEW FILE)
 package com.sahbifit.api.rating;
@@ -2531,9 +2565,8 @@ public class RatingNotifierService {
     }
 }
 
-
 ==================================================
-Path: RatingService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\rating\RatingService.java
 ==================================================
 // Path: src/main/java/com/sahbifit/api/rating/RatingService.java
 package com.sahbifit.api.rating;
@@ -2651,9 +2684,8 @@ public class RatingService {
     }
 }
 
-
 ==================================================
-Path: CreateRatingDto.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\rating\dto\CreateRatingDto.java
 ==================================================
 // Path: src/main/java/com/sahbifit/api/rating/dto/CreateRatingDto.java
 package com.sahbifit.api.rating.dto;
@@ -2678,9 +2710,8 @@ public record CreateRatingDto(
     String comment
 ) {}
 
-
 ==================================================
-Path: PendingRatingDto.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\rating\dto\PendingRatingDto.java
 ==================================================
 package com.sahbifit.api.rating.dto;
 
@@ -2693,9 +2724,8 @@ public record PendingRatingDto(
     String userNameToRate
 ) {}
 
-
 ==================================================
-Path: Rating.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\rating\model\Rating.java
 ==================================================
 // Path: src/main/java/com/sahbifit/api/rating/model/Rating.java
 package com.sahbifit.api.rating.model;
@@ -2764,9 +2794,8 @@ public class Rating {
     private OffsetDateTime createdAt;
 }
 
-
 ==================================================
-Path: RatingRepository.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\rating\repository\RatingRepository.java
 ==================================================
 // Path: src/main/java/com/sahbifit/api/rating/repository/RatingRepository.java
 package com.sahbifit.api.rating.repository;
@@ -2825,9 +2854,8 @@ public interface RatingRepository extends JpaRepository<Rating, UUID> {
     List<PendingRatingDto> findPendingRatings(@Param("userPhoneNumber") String userPhoneNumber);
 }
 
-
 ==================================================
-Path: ReportController.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\report\ReportController.java
 ==================================================
 package com.sahbifit.api.report;
 
@@ -2863,9 +2891,8 @@ public class ReportController {
     }
 }
 
-
 ==================================================
-Path: ReportService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\report\ReportService.java
 ==================================================
 package com.sahbifit.api.report;
 
@@ -2973,9 +3000,8 @@ public class ReportService {
     }
 }
 
-
 ==================================================
-Path: CreateReportDto.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\report\dto\CreateReportDto.java
 ==================================================
 package com.sahbifit.api.report.dto;
 
@@ -2994,9 +3020,8 @@ public record CreateReportDto(
     UUID sessionId
 ) {}
 
-
 ==================================================
-Path: Report.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\report\model\Report.java
 ==================================================
 // Pfad: src/main/java/com/sahbifit/api/report/model/Report.java
 package com.sahbifit.api.report.model;
@@ -3084,9 +3109,8 @@ public class Report {
     private OffsetDateTime updatedAt;
 }
 
-
 ==================================================
-Path: ReportPriority.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\report\model\ReportPriority.java
 ==================================================
 package com.sahbifit.api.report.model;
 
@@ -3096,9 +3120,8 @@ public enum ReportPriority {
     critical
 }
 
-
 ==================================================
-Path: ReportStatus.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\report\model\ReportStatus.java
 ==================================================
 package com.sahbifit.api.report.model;
 
@@ -3108,9 +3131,8 @@ public enum ReportStatus {
     dismissed
 }
 
-
 ==================================================
-Path: ReportRepository.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\report\repository\ReportRepository.java
 ==================================================
 package com.sahbifit.api.report.repository;
 
@@ -3128,9 +3150,8 @@ public interface ReportRepository extends JpaRepository<Report, UUID> {
     List<Report> findByStatusOrderByPriorityDesc(ReportStatus status);
 }
 
-
 ==================================================
-Path: JwtAuthenticationFilter.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\security\JwtAuthenticationFilter.java
 ==================================================
 package com.sahbifit.api.security;
 
@@ -3209,9 +3230,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 }
 
-
 ==================================================
-Path: JwtTokenProvider.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\security\JwtTokenProvider.java
 ==================================================
 package com.sahbifit.api.security;
 
@@ -3319,9 +3339,8 @@ public class JwtTokenProvider {
     }
 }
 
-
 ==================================================
-Path: SecurityConfig.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\security\SecurityConfig.java
 ==================================================
 package com.sahbifit.api.security;
 
@@ -3399,9 +3418,8 @@ public class SecurityConfig {
     }
 }
 
-
 ==================================================
-Path: UserDetailsServiceImpl.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\security\UserDetailsServiceImpl.java
 ==================================================
 package com.sahbifit.api.security;
 
@@ -3448,9 +3466,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 }
 
-
 ==================================================
-Path: ChatActivationService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\ChatActivationService.java
 ==================================================
 package com.sahbifit.api.session;
 
@@ -3538,9 +3555,8 @@ public class ChatActivationService {
     }
 }
 
-
 ==================================================
-Path: SessionController.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\SessionController.java
 ==================================================
 // Pfad: src/main/java/com/sahbifit/api/session/SessionController.java
 package com.sahbifit.api.session;
@@ -3583,6 +3599,19 @@ public class SessionController {
     }
 
     /**
+     * (NEW ENDPOINT) (Mobile App) Get a single session by its ID.
+     */
+    @GetMapping("/{sessionId}")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<Session> getSessionById(
+            @PathVariable UUID sessionId, 
+            Principal principal) {
+        
+        Session session = sessionService.getSessionById(sessionId, principal.getName());
+        return ResponseEntity.ok(session);
+    }
+
+    /**
      * (Mobile App) Create a new session.
      */
     @PostMapping
@@ -3612,9 +3641,8 @@ public class SessionController {
     }
 }
 
-
 ==================================================
-Path: SessionCreatedEvent.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\SessionCreatedEvent.java
 ==================================================
 package com.sahbifit.api.session;
 
@@ -3635,9 +3663,8 @@ public class SessionCreatedEvent extends ApplicationEvent {
     }
 }
 
-
 ==================================================
-Path: SessionEventListener.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\SessionEventListener.java
 ==================================================
 package com.sahbifit.api.session;
 
@@ -3697,10 +3724,10 @@ public class SessionEventListener {
     }
 }
 
-
 ==================================================
-Path: SessionService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\SessionService.java
 ==================================================
+// Path: src/main/java/com/sahbifit/api/session/SessionService.java
 package com.sahbifit.api.session;
 
 import java.util.List;
@@ -3888,6 +3915,38 @@ public class SessionService {
     }
 
     /**
+     * (NEW METHOD) Get a single session by its ID.
+     * Applies all "View" gates (privacy, visibility, probation).
+     */
+    @Transactional(readOnly = true)
+    public Session getSessionById(UUID sessionId, String userPhoneNumber) {
+        
+        // 1. Get the session with creator and gym (optimized)
+        Session session = sessionRepository.findByIdWithCreatorAndGym(sessionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", sessionId));
+
+        // 2. Get the user who is VIEWING the session
+        User viewer = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
+
+        // 3. Apply PRIVACY FILTER (re-using existing helper)
+        if (!isVisible(session.getCreator(), viewer)) {
+            // Hide its existence
+            throw new ResourceNotFoundException("Session", "sessionId", sessionId);
+        }
+
+        // 4. Apply PROBATIONARY MODE FILTER (Gate 1 from joinSession)
+        if (viewer.getVerificationStatus() == VerificationStatus.pending_review) {
+            if (session.getCreator().getRole() != UserRole.ambassador) {
+                throw new AccessDeniedException("Verification pending. You can only view Ambassador sessions.");
+            }
+        }
+
+        return session;
+    }
+
+
+    /**
      * Helper method to check if a creator's profile is visible to a viewer.
      */
     private boolean isVisible(User creator, User viewer) {
@@ -3951,9 +4010,8 @@ public class SessionService {
     }
 }
 
-
 ==================================================
-Path: CreateSessionDto.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\dto\CreateSessionDto.java
 ==================================================
 package com.sahbifit.api.session.dto;
 
@@ -3971,9 +4029,8 @@ public record CreateSessionDto(
     Integer maxParticipants
 ) {}
 
-
 ==================================================
-Path: MarkAttendanceDto.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\dto\MarkAttendanceDto.java
 ==================================================
 package com.sahbifit.api.session.dto;
 
@@ -3994,9 +4051,8 @@ public record MarkAttendanceDto(
     ParticipantStatus newStatus
 ) {}
 
-
 ==================================================
-Path: ParticipantStatus.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\model\ParticipantStatus.java
 ==================================================
 package com.sahbifit.api.session.model;
 
@@ -4007,9 +4063,8 @@ public enum ParticipantStatus {
     left
 }
 
-
 ==================================================
-Path: Session.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\model\Session.java
 ==================================================
 package com.sahbifit.api.session.model;
 
@@ -4154,9 +4209,8 @@ public class Session {
     private Set<Report> reports;
 }
 
-
 ==================================================
-Path: SessionParticipant.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\model\SessionParticipant.java
 ==================================================
 package com.sahbifit.api.session.model;
 
@@ -4216,9 +4270,8 @@ public class SessionParticipant {
     private OffsetDateTime joinedAt;
 }
 
-
 ==================================================
-Path: SessionParticipantId.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\model\SessionParticipantId.java
 ==================================================
 package com.sahbifit.api.session.model;
 
@@ -4240,9 +4293,8 @@ public class SessionParticipantId implements Serializable {
     private UUID userId;
 }
 
-
 ==================================================
-Path: SessionStatus.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\model\SessionStatus.java
 ==================================================
 package com.sahbifit.api.session.model;
 
@@ -4252,9 +4304,8 @@ public enum SessionStatus {
     completed
 }
 
-
 ==================================================
-Path: SessionType.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\model\SessionType.java
 ==================================================
 package com.sahbifit.api.session.model;
 
@@ -4263,9 +4314,8 @@ public enum SessionType {
     one_on_one
 }
 
-
 ==================================================
-Path: SessionParticipantRepository.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\repository\SessionParticipantRepository.java
 ==================================================
 // Pfad: src/main/java/com/sahbifit/api/session/repository/SessionParticipantRepository.java
 package com.sahbifit.api.session.repository;
@@ -4314,15 +4364,15 @@ public interface SessionParticipantRepository extends JpaRepository<SessionParti
     List<SessionParticipant> findBySessionAndStatus(Session session, ParticipantStatus status);
 }
 
-
 ==================================================
-Path: SessionRepository.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\repository\SessionRepository.java
 ==================================================
 // Path: src/main/java/com/sahbifit/api/session/repository/SessionRepository.java
 package com.sahbifit.api.session.repository;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional; // <-- ADDED
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -4368,6 +4418,13 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
     @Query("SELECT s FROM Session s WHERE s.endTime < :now AND s.isRatingNotified = false AND s.status = 'active'")
     List<Session> findCompletedSessionsPendingNotification(@Param("now") OffsetDateTime now);
 
+    /**
+     * Finds a single session by its ID, fetching creator and gym data in one query.
+     * This prevents N+1 queries.
+     */
+    @Query("SELECT s FROM Session s JOIN FETCH s.creator JOIN FETCH s.gym WHERE s.sessionId = :sessionId")
+    Optional<Session> findByIdWithCreatorAndGym(@Param("sessionId") UUID sessionId);
+
     // --- NEW METHODS FOR EPHEMERAL CHAT ---
 
     /**
@@ -4392,19 +4449,16 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
     // --- END OF NEW METHODS ---
 }
 
-
 ==================================================
-Path: TagController.java
-==================================================
-
-
-==================================================
-Path: TagService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\tag\TagController.java
 ==================================================
 
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\tag\TagService.java
+==================================================
 
 ==================================================
-Path: Tag.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\tag\model\Tag.java
 ==================================================
 package com.sahbifit.api.tag.model;
 
@@ -4448,9 +4502,8 @@ public class Tag {
     private Set<UserTag> userTags;
 }
 
-
 ==================================================
-Path: TagType.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\tag\model\TagType.java
 ==================================================
 package com.sahbifit.api.tag.model;
 public enum TagType {
@@ -4458,9 +4511,8 @@ public enum TagType {
     schedule
 }
 
-
 ==================================================
-Path: UserTag.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\tag\model\UserTag.java
 ==================================================
 package com.sahbifit.api.tag.model;
 
@@ -4500,9 +4552,8 @@ public class UserTag {
     private Tag tag;
 }
 
-
 ==================================================
-Path: UserTagId.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\tag\model\UserTagId.java
 ==================================================
 package com.sahbifit.api.tag.model;
 
@@ -4524,9 +4575,8 @@ public class UserTagId implements Serializable {
     private Integer tagId;
 }
 
-
 ==================================================
-Path: TagRepository.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\tag\repository\TagRepository.java
 ==================================================
 // Pfad: src/main/java/com/sahbifit/api/tag/repository/TagRepository.java
 package com.sahbifit.api.tag.repository;
@@ -4542,21 +4592,23 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
     // which is used in your AuthService.
 }
 
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\tag\repository\UserTagRepository.java
+==================================================
 
 ==================================================
-Path: UserTagRepository.java
-==================================================
-
-
-==================================================
-Path: UserController.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\user\UserController.java
 ==================================================
 package com.sahbifit.api.user;
 
 import java.security.Principal;
+import java.util.List; // <-- Added import
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize; // <-- Added import for @PreAuthorize
+import org.springframework.web.bind.annotation.DeleteMapping; // <-- Added import
+import org.springframework.web.bind.annotation.GetMapping; // <-- Added import
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -4564,6 +4616,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sahbifit.api.user.dto.PublicUserProfileDto; // <-- Added import
 import com.sahbifit.api.user.dto.UpdateFcmTokenDto;
 import com.sahbifit.api.user.dto.UpdateVisibilityDto;
 
@@ -4617,16 +4670,43 @@ public class UserController {
         userService.updateProfileVisibility(principal.getName(), dto);
         return ResponseEntity.ok().build();
     }
+
+    // --- ADDED ENDPOINTS ---
+
+    /**
+     * Gets the list of users the authenticated user has blocked.
+     */
+    @GetMapping("/me/blocked")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<List<PublicUserProfileDto>> getMyBlockedUsers(Principal principal) {
+        List<PublicUserProfileDto> blockedUsers = userService.getBlockedUsers(principal.getName());
+        return ResponseEntity.ok(blockedUsers);
+    }
+
+    /**
+     * Unblocks a user.
+     * We use the DELETE verb on the resource that is being deleted (the block record).
+     */
+    @DeleteMapping("/me/blocked/{userId}")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<Void> unblockUser(
+            @PathVariable UUID userId,
+            Principal principal) {
+        
+        userService.unblockUser(principal.getName(), userId);
+        return ResponseEntity.noContent().build(); // 204 No Content is standard for success
+    }
 }
 
-
 ==================================================
-Path: UserService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\user\UserService.java
 ==================================================
 package com.sahbifit.api.user;
 
 import java.time.OffsetDateTime;
+import java.util.List; // <-- ADDED
 import java.util.UUID;
+import java.util.stream.Collectors; // <-- ADDED
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -4639,6 +4719,7 @@ import com.sahbifit.api.badge.model.UserBadgeId;
 import com.sahbifit.api.badge.repository.BadgeRepository;
 import com.sahbifit.api.badge.repository.UserBadgeRepository;
 import com.sahbifit.api.exception.ResourceNotFoundException;
+import com.sahbifit.api.user.dto.PublicUserProfileDto; // <-- ADDED
 import com.sahbifit.api.user.dto.UpdateFcmTokenDto;
 import com.sahbifit.api.user.dto.UpdateVisibilityDto;
 import com.sahbifit.api.user.model.ProfileVisibility;
@@ -4820,11 +4901,88 @@ public class UserService {
         userRepository.save(user);
         log.info("Updated profile visibility for user {} to {}", user.getUserId(), dto.visibility());
     }
+
+    // --- ADDED METHOD (for GET /me/blocked) ---
+    /**
+     * Retrieves a list of all users blocked by the specified user.
+     * @param userPhoneNumber The phone number of the user who is viewing their block list.
+     * @return A list of safe PublicUserProfileDto objects.
+     */
+    @Transactional(readOnly = true)
+    public List<PublicUserProfileDto> getBlockedUsers(String userPhoneNumber) {
+        // 1. Find the user who is asking
+        User blockerUser = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
+
+        // 2. Find all UserBlock records where this user is the blocker
+        List<UserBlock> blocks = userBlockRepository.findAllByBlockerUserId(blockerUser.getUserId());
+
+        // 3. Map the results to the safe DTO
+        // We get the "blocked" user from each UserBlock entity and convert it
+        return blocks.stream()
+                .map(UserBlock::getBlocked)
+                .map(PublicUserProfileDto::fromUser)
+                .collect(Collectors.toList());
+    }
+
+    // --- ADDED METHOD (for DELETE /me/blocked/{userId}) ---
+    /**
+     * Allows a user to unblock another user.
+     * @param blockerPhoneNumber The phone number of the user initiating the unblock.
+     * @param blockedUserIdToUnblock The UUID of the user to be unblocked.
+     */
+    @Transactional
+    public void unblockUser(String blockerPhoneNumber, UUID blockedUserIdToUnblock) {
+        // 1. Find the user who is initiating
+        User blockerUser = userRepository.findByPhoneNumber(blockerPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", blockerPhoneNumber));
+
+        // 2. Delete the block record
+        // This is safe because it will only delete a record where the
+        // authenticated user is the *blocker*.
+        userBlockRepository.deleteByBlockerUserIdAndBlockedUserId(
+            blockerUser.getUserId(),
+            blockedUserIdToUnblock
+        );
+        
+        log.info("User {} unblocked user {}", blockerUser.getUserId(), blockedUserIdToUnblock);
+    }
 }
 
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\user\dto\PublicUserProfileDto.java
+==================================================
+package com.sahbifit.api.user.dto;
+
+import com.sahbifit.api.user.model.User;
+import com.sahbifit.api.verification.model.VerificationStatus;
+import java.util.UUID;
+
+/**
+ * A safe DTO for representing a user's public profile.
+ */
+public record PublicUserProfileDto(
+    UUID userId,
+    String firstName,
+    String profilePhotoUrl,
+    VerificationStatus verificationStatus
+) {
+    /**
+     * Helper method to convert a User entity to this safe DTO.
+     */
+    public static PublicUserProfileDto fromUser(User user) {
+        if (user == null) return null;
+        return new PublicUserProfileDto(
+            user.getUserId(),
+            user.getFirstName(),
+            user.getProfilePhotoUrl(),
+            user.getVerificationStatus()
+        );
+    }
+}
 
 ==================================================
-Path: UpdateFcmTokenDto.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\user\dto\UpdateFcmTokenDto.java
 ==================================================
 package com.sahbifit.api.user.dto;
 
@@ -4835,9 +4993,8 @@ public record UpdateFcmTokenDto(
     String fcmToken
 ) {}
 
-
 ==================================================
-Path: UpdateVisibilityDto.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\user\dto\UpdateVisibilityDto.java
 ==================================================
 package com.sahbifit.api.user.dto;
 
@@ -4850,9 +5007,8 @@ public record UpdateVisibilityDto(
     ProfileVisibility visibility
 ) {}
 
-
 ==================================================
-Path: ProfileVisibility.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\user\model\ProfileVisibility.java
 ==================================================
 package com.sahbifit.api.user.model;
 
@@ -4864,9 +5020,8 @@ public enum ProfileVisibility {
     same_gender
 }
 
-
 ==================================================
-Path: User.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\user\model\User.java
 ==================================================
 package com.sahbifit.api.user.model;
 
@@ -5046,9 +5201,8 @@ public class User {
     private Set<UserBadge> userBadges;
 }
 
-
 ==================================================
-Path: UserBlock.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\user\model\UserBlock.java
 ==================================================
 package com.sahbifit.api.user.model;
 
@@ -5095,9 +5249,8 @@ public class UserBlock {
     private OffsetDateTime createdAt;
 }
 
-
 ==================================================
-Path: UserBlockId.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\user\model\UserBlockId.java
 ==================================================
 package com.sahbifit.api.user.model;
 
@@ -5119,9 +5272,8 @@ public class UserBlockId implements Serializable {
     private UUID blockedUserId;
 }
 
-
 ==================================================
-Path: UserRole.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\user\model\UserRole.java
 ==================================================
 // Pfad: src/main/java/com/sahbifit/api/model/enums/UserRole.java
 package com.sahbifit.api.user.model;
@@ -5132,9 +5284,8 @@ public enum UserRole {
     admin
 }
 
-
 ==================================================
-Path: UserStatus.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\user\model\UserStatus.java
 ==================================================
 package com.sahbifit.api.user.model;
 
@@ -5144,13 +5295,14 @@ public enum UserStatus {
     banned
 }
 
-
 ==================================================
-Path: UserBlockRepository.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\user\repository\UserBlockRepository.java
 ==================================================
 package com.sahbifit.api.user.repository;
 
+import java.util.List;
 import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -5162,11 +5314,21 @@ public interface UserBlockRepository extends JpaRepository<UserBlock, UserBlockI
 
     // Hilfsmethode, um zu prÃ¼fen, ob eine Blockierung bereits existiert
     boolean existsByBlockerUserIdAndBlockedUserId(UUID blockerUserId, UUID blockedUserId);
+
+    /**
+     * Finds all blocks initiated by a specific user.
+     */
+    List<UserBlock> findAllByBlockerUserId(UUID blockerUserId);
+
+    // --- ADD THIS METHOD (for DELETE /me/blocked/{userId}) ---
+    /**
+     * Deletes a block record by its composite key parts.
+     */
+    void deleteByBlockerUserIdAndBlockedUserId(UUID blockerUserId, UUID blockedUserId);
 }
 
-
 ==================================================
-Path: UserRepository.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\user\repository\UserRepository.java
 ==================================================
 package com.sahbifit.api.user.repository;
 
@@ -5191,9 +5353,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByPhoneNumber(String phoneNumber);
 }
 
-
 ==================================================
-Path: VerificationController.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\verification\VerificationController.java
 ==================================================
 package com.sahbifit.api.verification;
 
@@ -5296,9 +5457,8 @@ public class VerificationController {
     }
 }
 
-
 ==================================================
-Path: VerificationService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\verification\VerificationService.java
 ==================================================
 package com.sahbifit.api.verification;
 
@@ -5393,9 +5553,8 @@ public class VerificationService {
     }
 }
 
-
 ==================================================
-Path: VerificationStatusDto.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\verification\dto\VerificationStatusDto.java
 ==================================================
 package com.sahbifit.api.verification.dto;
 
@@ -5407,9 +5566,8 @@ public record VerificationStatusDto(
     VerifiedGender gender
 ) {}
 
-
 ==================================================
-Path: VerificationStatus.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\verification\model\VerificationStatus.java
 ==================================================
 package com.sahbifit.api.verification.model;
 
@@ -5421,9 +5579,8 @@ public enum VerificationStatus {
     rejected_mismatch
 }
 
-
 ==================================================
-Path: VerifiedGender.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\verification\model\VerifiedGender.java
 ==================================================
 package com.sahbifit.api.verification.model;
 
@@ -5433,5 +5590,4 @@ public enum VerifiedGender {
     female,
     other
 }
-
 

@@ -1,7 +1,9 @@
 package com.sahbifit.api.user;
 
 import java.time.OffsetDateTime;
+import java.util.List; // <-- ADDED
 import java.util.UUID;
+import java.util.stream.Collectors; // <-- ADDED
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +16,7 @@ import com.sahbifit.api.badge.model.UserBadgeId;
 import com.sahbifit.api.badge.repository.BadgeRepository;
 import com.sahbifit.api.badge.repository.UserBadgeRepository;
 import com.sahbifit.api.exception.ResourceNotFoundException;
+import com.sahbifit.api.user.dto.PublicUserProfileDto; // <-- ADDED
 import com.sahbifit.api.user.dto.UpdateFcmTokenDto;
 import com.sahbifit.api.user.dto.UpdateVisibilityDto;
 import com.sahbifit.api.user.model.ProfileVisibility;
@@ -194,5 +197,51 @@ public class UserService {
         user.setProfileVisibility(dto.visibility());
         userRepository.save(user);
         log.info("Updated profile visibility for user {} to {}", user.getUserId(), dto.visibility());
+    }
+
+    // --- ADDED METHOD (for GET /me/blocked) ---
+    /**
+     * Retrieves a list of all users blocked by the specified user.
+     * @param userPhoneNumber The phone number of the user who is viewing their block list.
+     * @return A list of safe PublicUserProfileDto objects.
+     */
+    @Transactional(readOnly = true)
+    public List<PublicUserProfileDto> getBlockedUsers(String userPhoneNumber) {
+        // 1. Find the user who is asking
+        User blockerUser = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
+
+        // 2. Find all UserBlock records where this user is the blocker
+        List<UserBlock> blocks = userBlockRepository.findAllByBlockerUserId(blockerUser.getUserId());
+
+        // 3. Map the results to the safe DTO
+        // We get the "blocked" user from each UserBlock entity and convert it
+        return blocks.stream()
+                .map(UserBlock::getBlocked)
+                .map(PublicUserProfileDto::fromUser)
+                .collect(Collectors.toList());
+    }
+
+    // --- ADDED METHOD (for DELETE /me/blocked/{userId}) ---
+    /**
+     * Allows a user to unblock another user.
+     * @param blockerPhoneNumber The phone number of the user initiating the unblock.
+     * @param blockedUserIdToUnblock The UUID of the user to be unblocked.
+     */
+    @Transactional
+    public void unblockUser(String blockerPhoneNumber, UUID blockedUserIdToUnblock) {
+        // 1. Find the user who is initiating
+        User blockerUser = userRepository.findByPhoneNumber(blockerPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", blockerPhoneNumber));
+
+        // 2. Delete the block record
+        // This is safe because it will only delete a record where the
+        // authenticated user is the *blocker*.
+        userBlockRepository.deleteByBlockerUserIdAndBlockedUserId(
+            blockerUser.getUserId(),
+            blockedUserIdToUnblock
+        );
+        
+        log.info("User {} unblocked user {}", blockerUser.getUserId(), blockedUserIdToUnblock);
     }
 }

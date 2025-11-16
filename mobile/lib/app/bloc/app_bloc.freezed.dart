@@ -346,11 +346,11 @@ return unauthenticated(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function( User user)?  authenticated,TResult Function()?  unauthenticated,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  authenticated,TResult Function()?  unauthenticated,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Authenticated() when authenticated != null:
-return authenticated(_that.user);case _Unauthenticated() when unauthenticated != null:
+return authenticated();case _Unauthenticated() when unauthenticated != null:
 return unauthenticated();case _:
   return orElse();
 
@@ -369,11 +369,11 @@ return unauthenticated();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function( User user)  authenticated,required TResult Function()  unauthenticated,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  authenticated,required TResult Function()  unauthenticated,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Authenticated():
-return authenticated(_that.user);case _Unauthenticated():
+return authenticated();case _Unauthenticated():
 return unauthenticated();}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -388,11 +388,11 @@ return unauthenticated();}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function( User user)?  authenticated,TResult? Function()?  unauthenticated,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  authenticated,TResult? Function()?  unauthenticated,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Authenticated() when authenticated != null:
-return authenticated(_that.user);case _Unauthenticated() when unauthenticated != null:
+return authenticated();case _Unauthenticated() when unauthenticated != null:
 return unauthenticated();case _:
   return null;
 
@@ -437,67 +437,33 @@ String toString() {
 
 
 class _Authenticated implements AppState {
-  const _Authenticated(this.user);
+  const _Authenticated();
   
 
- final  User user;
 
-/// Create a copy of AppState
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-_$AuthenticatedCopyWith<_Authenticated> get copyWith => __$AuthenticatedCopyWithImpl<_Authenticated>(this, _$identity);
+
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Authenticated&&(identical(other.user, user) || other.user == user));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Authenticated);
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,user);
+int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'AppState.authenticated(user: $user)';
+  return 'AppState.authenticated()';
 }
 
 
 }
 
-/// @nodoc
-abstract mixin class _$AuthenticatedCopyWith<$Res> implements $AppStateCopyWith<$Res> {
-  factory _$AuthenticatedCopyWith(_Authenticated value, $Res Function(_Authenticated) _then) = __$AuthenticatedCopyWithImpl;
-@useResult
-$Res call({
- User user
-});
 
 
-
-
-}
-/// @nodoc
-class __$AuthenticatedCopyWithImpl<$Res>
-    implements _$AuthenticatedCopyWith<$Res> {
-  __$AuthenticatedCopyWithImpl(this._self, this._then);
-
-  final _Authenticated _self;
-  final $Res Function(_Authenticated) _then;
-
-/// Create a copy of AppState
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? user = null,}) {
-  return _then(_Authenticated(
-null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
-as User,
-  ));
-}
-
-
-}
 
 /// @nodoc
 

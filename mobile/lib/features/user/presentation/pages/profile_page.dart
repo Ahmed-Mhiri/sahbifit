@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sahbifit/core/config/app_theme.dart';
 import 'package:sahbifit/core/di/service_locator.dart';
 import 'package:sahbifit/features/user/domain/entities/user.dart';
-import 'package:sahbifit/features/user/domain/usecases/get_user_profile.dart';
+// import 'package:sahbifit/features/user/domain/usecases/get_user_profile.dart'; // REMOVED
 import 'package:sahbifit/features/user/presentation/bloc/profile_bloc.dart';
 import 'package:sahbifit/features/user/presentation/widgets/block_user_button.dart';
 import 'package:sahbifit/features/user/presentation/widgets/profile_header.dart';
@@ -12,6 +12,12 @@ import 'package:sahbifit/features/user/presentation/widgets/user_badge_list.dart
 import 'package:sahbifit/features/user/presentation/widgets/visibility_settings_widget.dart';
 import 'package:sahbifit/shared/widgets/app_bars/custom_app_bar.dart';
 import 'package:sahbifit/shared/widgets/states/loading_states.dart';
+
+// --- ADD THESE NEW IMPORTS ---
+import 'package:sahbifit/features/user/presentation/cubit/user_profile_cubit.dart';
+// Note: The state is included via the cubit, but adding it is fine too.
+// import 'package:sahbifit/features/user/presentation/cubit/user_profile_state.dart';
+// --- END OF NEW IMPORTS ---
 
 class ProfilePage extends StatefulWidget {
   final String? userId;
@@ -48,7 +54,7 @@ class _ProfilePageState extends State<ProfilePage> {
       body: _isMyProfile
           // If it's my profile, use the dedicated ProfileBloc
           ? _MyProfileView()
-          // If it's another user's profile, use a FutureBuilder
+          // If it's another user's profile, use the new UserProfileCubit
           : _UserProfileView(userId: widget.userId!),
     );
   }
@@ -96,6 +102,7 @@ class _MyProfileView extends StatelessWidget {
   }
 }
 
+// --- THIS IS THE MODIFIED WIDGET ---
 // View for showing another user's profile
 class _UserProfileView extends StatelessWidget {
   final String userId;
@@ -103,28 +110,30 @@ class _UserProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<User>(
-      // Fetch the user profile directly with the use case
-      future: getIt<GetUserProfile>().call(GetUserProfileParams(userId: userId)),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const LoadingIndicator();
-        }
-        if (snapshot.hasError) {
-          return ErrorStateWidget(
-            message: snapshot.error.toString(),
-            buttonText: 'Go Back',
-            onRetry: () => context.pop(),
+    // 1. Provide the new cubit and load the profile
+    return BlocProvider(
+      create: (context) => getIt<UserProfileCubit>()..loadUserProfile(userId),
+      // 2. Use BlocBuilder to listen to state changes
+      child: BlocBuilder<UserProfileCubit, UserProfileState>(
+        builder: (context, state) {
+          // 3. Map states to UI (just like _MyProfileView)
+          return state.when(
+            initial: () => const LoadingIndicator(),
+            loading: () => const LoadingIndicator(),
+            loaded: (user) => _ProfileContent(user: user, isMyProfile: false),
+            error: (message) => ErrorStateWidget(
+              message: message,
+              buttonText: 'Retry', // Made consistent with _MyProfileView
+              onRetry: () =>
+                  context.read<UserProfileCubit>().loadUserProfile(userId),
+            ),
           );
-        }
-        if (snapshot.hasData) {
-          return _ProfileContent(user: snapshot.data!, isMyProfile: false);
-        }
-        return const Center(child: Text('User not found.'));
-      },
+        },
+      ),
     );
   }
 }
+// --- END OF MODIFICATION ---
 
 // Shared content widget for both profile views
 class _ProfileContent extends StatelessWidget {
@@ -145,8 +154,11 @@ class _ProfileContent extends StatelessWidget {
               .read<ProfileBloc>()
               .add(const ProfileEvent.loadMyProfile());
         }
-        // Note: Can't easily refresh the FutureBuilder,
-        // this is a limitation of this approach.
+        // --- UPDATE: This limitation is now fixed by using a Bloc! ---
+        // We can add a refresh to the UserProfileCubit here if needed.
+        else {
+          context.read<UserProfileCubit>().loadUserProfile(user.userId);
+        }
       },
       child: ListView(
         padding: const EdgeInsets.all(AppTheme.defaultPadding),

@@ -1,0 +1,4256 @@
+﻿==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\datasources\auth_remote_datasource.dart
+==================================================
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/api/api_client.dart';
+import 'package:sahbifit/core/constants/api_endpoints.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/features/auth/data/models/auth_response_model.dart';
+import 'package:sahbifit/features/auth/data/models/login_request_model.dart';
+import 'package:sahbifit/features/auth/data/models/register_request_model.dart';
+import 'package:sahbifit/features/auth/data/models/resend_otp_request_model.dart';
+import 'package:sahbifit/features/auth/data/models/verify_sms_request_model.dart';
+
+// This is the abstract interface
+abstract class AuthRemoteDatasource {
+  Future<AuthResponseModel> login(LoginRequestModel request);
+  Future<void> register(RegisterRequestModel request);
+  Future<void> verifySms(VerifySmsRequestModel request);
+  Future<void> resendOtp(ResendOtpRequestModel request);
+}
+
+@Injectable(as: AuthRemoteDatasource)
+class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
+  final ApiClient _apiClient;
+
+  AuthRemoteDatasourceImpl(this._apiClient);
+
+  @override
+  Future<AuthResponseModel> login(LoginRequestModel request) async {
+    try {
+      final response = await _apiClient.dio.post(
+        ApiEndpoints.login, // <-- USE CONSTANT
+        data: request.toJson(),
+      );
+      return AuthResponseModel.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<void> register(RegisterRequestModel request) async {
+    try {
+      await _apiClient.dio.post(
+        ApiEndpoints.register, // <-- USE CONSTANT
+        data: request.toJson(),
+      );
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<void> verifySms(VerifySmsRequestModel request) async {
+    try {
+      await _apiClient.dio.post(
+        ApiEndpoints.verifySms, // <-- USE CONSTANT
+        data: request.toJson(),
+      );
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<void> resendOtp(ResendOtpRequestModel request) async {
+    try {
+      await _apiClient.dio.post(
+        ApiEndpoints.resendOtp, // <-- USE CONSTANT
+        data: request.toJson(),
+      );
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\models\auth_response_model.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sahbifit/features/auth/domain/entities/auth_token.dart';
+
+part 'auth_response_model.freezed.dart';
+part 'auth_response_model.g.dart';
+
+
+@freezed
+abstract class AuthResponseModel with _$AuthResponseModel {
+  const AuthResponseModel._(); // Private constructor for methods
+
+  const factory AuthResponseModel({
+    required String jwtToken,
+  }) = _AuthResponseModel;
+
+  factory AuthResponseModel.fromJson(Map<String, dynamic> json) =>
+      _$AuthResponseModelFromJson(json);
+
+  // Converts the data-layer model to a domain-layer entity
+  AuthToken toEntity() {
+    return AuthToken(token: jwtToken);
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\models\auth_response_model.freezed.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'auth_response_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$AuthResponseModel {
+
+ String get jwtToken;
+/// Create a copy of AuthResponseModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AuthResponseModelCopyWith<AuthResponseModel> get copyWith => _$AuthResponseModelCopyWithImpl<AuthResponseModel>(this as AuthResponseModel, _$identity);
+
+  /// Serializes this AuthResponseModel to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthResponseModel&&(identical(other.jwtToken, jwtToken) || other.jwtToken == jwtToken));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,jwtToken);
+
+@override
+String toString() {
+  return 'AuthResponseModel(jwtToken: $jwtToken)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $AuthResponseModelCopyWith<$Res>  {
+  factory $AuthResponseModelCopyWith(AuthResponseModel value, $Res Function(AuthResponseModel) _then) = _$AuthResponseModelCopyWithImpl;
+@useResult
+$Res call({
+ String jwtToken
+});
+
+
+
+
+}
+/// @nodoc
+class _$AuthResponseModelCopyWithImpl<$Res>
+    implements $AuthResponseModelCopyWith<$Res> {
+  _$AuthResponseModelCopyWithImpl(this._self, this._then);
+
+  final AuthResponseModel _self;
+  final $Res Function(AuthResponseModel) _then;
+
+/// Create a copy of AuthResponseModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? jwtToken = null,}) {
+  return _then(_self.copyWith(
+jwtToken: null == jwtToken ? _self.jwtToken : jwtToken // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [AuthResponseModel].
+extension AuthResponseModelPatterns on AuthResponseModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AuthResponseModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AuthResponseModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AuthResponseModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _AuthResponseModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AuthResponseModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AuthResponseModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String jwtToken)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AuthResponseModel() when $default != null:
+return $default(_that.jwtToken);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String jwtToken)  $default,) {final _that = this;
+switch (_that) {
+case _AuthResponseModel():
+return $default(_that.jwtToken);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String jwtToken)?  $default,) {final _that = this;
+switch (_that) {
+case _AuthResponseModel() when $default != null:
+return $default(_that.jwtToken);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _AuthResponseModel extends AuthResponseModel {
+  const _AuthResponseModel({required this.jwtToken}): super._();
+  factory _AuthResponseModel.fromJson(Map<String, dynamic> json) => _$AuthResponseModelFromJson(json);
+
+@override final  String jwtToken;
+
+/// Create a copy of AuthResponseModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AuthResponseModelCopyWith<_AuthResponseModel> get copyWith => __$AuthResponseModelCopyWithImpl<_AuthResponseModel>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$AuthResponseModelToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthResponseModel&&(identical(other.jwtToken, jwtToken) || other.jwtToken == jwtToken));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,jwtToken);
+
+@override
+String toString() {
+  return 'AuthResponseModel(jwtToken: $jwtToken)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AuthResponseModelCopyWith<$Res> implements $AuthResponseModelCopyWith<$Res> {
+  factory _$AuthResponseModelCopyWith(_AuthResponseModel value, $Res Function(_AuthResponseModel) _then) = __$AuthResponseModelCopyWithImpl;
+@override @useResult
+$Res call({
+ String jwtToken
+});
+
+
+
+
+}
+/// @nodoc
+class __$AuthResponseModelCopyWithImpl<$Res>
+    implements _$AuthResponseModelCopyWith<$Res> {
+  __$AuthResponseModelCopyWithImpl(this._self, this._then);
+
+  final _AuthResponseModel _self;
+  final $Res Function(_AuthResponseModel) _then;
+
+/// Create a copy of AuthResponseModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? jwtToken = null,}) {
+  return _then(_AuthResponseModel(
+jwtToken: null == jwtToken ? _self.jwtToken : jwtToken // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+// dart format on
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\models\auth_response_model.g.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'auth_response_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_AuthResponseModel _$AuthResponseModelFromJson(Map<String, dynamic> json) =>
+    _AuthResponseModel(jwtToken: json['jwtToken'] as String);
+
+Map<String, dynamic> _$AuthResponseModelToJson(_AuthResponseModel instance) =>
+    <String, dynamic>{'jwtToken': instance.jwtToken};
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\models\login_request_model.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'login_request_model.freezed.dart';
+part 'login_request_model.g.dart';
+
+
+
+
+@freezed
+abstract class LoginRequestModel with _$LoginRequestModel {
+  const factory LoginRequestModel({
+    required String phoneNumber,
+    required String password,
+  }) = _LoginRequestModel;
+
+  factory LoginRequestModel.fromJson(Map<String, dynamic> json) =>
+      _$LoginRequestModelFromJson(json);
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\models\login_request_model.freezed.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'login_request_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$LoginRequestModel {
+
+ String get phoneNumber; String get password;
+/// Create a copy of LoginRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$LoginRequestModelCopyWith<LoginRequestModel> get copyWith => _$LoginRequestModelCopyWithImpl<LoginRequestModel>(this as LoginRequestModel, _$identity);
+
+  /// Serializes this LoginRequestModel to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LoginRequestModel&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.password, password) || other.password == password));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber,password);
+
+@override
+String toString() {
+  return 'LoginRequestModel(phoneNumber: $phoneNumber, password: $password)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $LoginRequestModelCopyWith<$Res>  {
+  factory $LoginRequestModelCopyWith(LoginRequestModel value, $Res Function(LoginRequestModel) _then) = _$LoginRequestModelCopyWithImpl;
+@useResult
+$Res call({
+ String phoneNumber, String password
+});
+
+
+
+
+}
+/// @nodoc
+class _$LoginRequestModelCopyWithImpl<$Res>
+    implements $LoginRequestModelCopyWith<$Res> {
+  _$LoginRequestModelCopyWithImpl(this._self, this._then);
+
+  final LoginRequestModel _self;
+  final $Res Function(LoginRequestModel) _then;
+
+/// Create a copy of LoginRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? phoneNumber = null,Object? password = null,}) {
+  return _then(_self.copyWith(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [LoginRequestModel].
+extension LoginRequestModelPatterns on LoginRequestModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _LoginRequestModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _LoginRequestModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _LoginRequestModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _LoginRequestModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _LoginRequestModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _LoginRequestModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String phoneNumber,  String password)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _LoginRequestModel() when $default != null:
+return $default(_that.phoneNumber,_that.password);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String phoneNumber,  String password)  $default,) {final _that = this;
+switch (_that) {
+case _LoginRequestModel():
+return $default(_that.phoneNumber,_that.password);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String phoneNumber,  String password)?  $default,) {final _that = this;
+switch (_that) {
+case _LoginRequestModel() when $default != null:
+return $default(_that.phoneNumber,_that.password);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _LoginRequestModel implements LoginRequestModel {
+  const _LoginRequestModel({required this.phoneNumber, required this.password});
+  factory _LoginRequestModel.fromJson(Map<String, dynamic> json) => _$LoginRequestModelFromJson(json);
+
+@override final  String phoneNumber;
+@override final  String password;
+
+/// Create a copy of LoginRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$LoginRequestModelCopyWith<_LoginRequestModel> get copyWith => __$LoginRequestModelCopyWithImpl<_LoginRequestModel>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$LoginRequestModelToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LoginRequestModel&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.password, password) || other.password == password));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber,password);
+
+@override
+String toString() {
+  return 'LoginRequestModel(phoneNumber: $phoneNumber, password: $password)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$LoginRequestModelCopyWith<$Res> implements $LoginRequestModelCopyWith<$Res> {
+  factory _$LoginRequestModelCopyWith(_LoginRequestModel value, $Res Function(_LoginRequestModel) _then) = __$LoginRequestModelCopyWithImpl;
+@override @useResult
+$Res call({
+ String phoneNumber, String password
+});
+
+
+
+
+}
+/// @nodoc
+class __$LoginRequestModelCopyWithImpl<$Res>
+    implements _$LoginRequestModelCopyWith<$Res> {
+  __$LoginRequestModelCopyWithImpl(this._self, this._then);
+
+  final _LoginRequestModel _self;
+  final $Res Function(_LoginRequestModel) _then;
+
+/// Create a copy of LoginRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? phoneNumber = null,Object? password = null,}) {
+  return _then(_LoginRequestModel(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+// dart format on
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\models\login_request_model.g.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'login_request_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_LoginRequestModel _$LoginRequestModelFromJson(Map<String, dynamic> json) =>
+    _LoginRequestModel(
+      phoneNumber: json['phoneNumber'] as String,
+      password: json['password'] as String,
+    );
+
+Map<String, dynamic> _$LoginRequestModelToJson(_LoginRequestModel instance) =>
+    <String, dynamic>{
+      'phoneNumber': instance.phoneNumber,
+      'password': instance.password,
+    };
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\models\register_request_model.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'register_request_model.freezed.dart';
+part 'register_request_model.g.dart';
+
+
+@freezed
+abstract class RegisterRequestModel with _$RegisterRequestModel {
+  
+  const factory RegisterRequestModel({
+    required String phoneNumber,
+    required String password,
+    required String recaptchaToken,
+    required String firstName,
+    required String dateOfBirth, // Send as "YYYY-MM-DD" string
+    required String primaryGymId, // Send the UUID as a String
+    String? profilePhotoUrl, // Optional
+    required List<int> goalTagIds,
+    required List<int> scheduleTagIds,
+  }) = _RegisterRequestModel;
+
+  factory RegisterRequestModel.fromJson(Map<String, dynamic> json) =>
+      _$RegisterRequestModelFromJson(json);
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\models\register_request_model.freezed.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'register_request_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$RegisterRequestModel {
+
+ String get phoneNumber; String get password; String get recaptchaToken; String get firstName; String get dateOfBirth;// Send as "YYYY-MM-DD" string
+ String get primaryGymId;// Send the UUID as a String
+ String? get profilePhotoUrl;// Optional
+ List<int> get goalTagIds; List<int> get scheduleTagIds;
+/// Create a copy of RegisterRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RegisterRequestModelCopyWith<RegisterRequestModel> get copyWith => _$RegisterRequestModelCopyWithImpl<RegisterRequestModel>(this as RegisterRequestModel, _$identity);
+
+  /// Serializes this RegisterRequestModel to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RegisterRequestModel&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.password, password) || other.password == password)&&(identical(other.recaptchaToken, recaptchaToken) || other.recaptchaToken == recaptchaToken)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.dateOfBirth, dateOfBirth) || other.dateOfBirth == dateOfBirth)&&(identical(other.primaryGymId, primaryGymId) || other.primaryGymId == primaryGymId)&&(identical(other.profilePhotoUrl, profilePhotoUrl) || other.profilePhotoUrl == profilePhotoUrl)&&const DeepCollectionEquality().equals(other.goalTagIds, goalTagIds)&&const DeepCollectionEquality().equals(other.scheduleTagIds, scheduleTagIds));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber,password,recaptchaToken,firstName,dateOfBirth,primaryGymId,profilePhotoUrl,const DeepCollectionEquality().hash(goalTagIds),const DeepCollectionEquality().hash(scheduleTagIds));
+
+@override
+String toString() {
+  return 'RegisterRequestModel(phoneNumber: $phoneNumber, password: $password, recaptchaToken: $recaptchaToken, firstName: $firstName, dateOfBirth: $dateOfBirth, primaryGymId: $primaryGymId, profilePhotoUrl: $profilePhotoUrl, goalTagIds: $goalTagIds, scheduleTagIds: $scheduleTagIds)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $RegisterRequestModelCopyWith<$Res>  {
+  factory $RegisterRequestModelCopyWith(RegisterRequestModel value, $Res Function(RegisterRequestModel) _then) = _$RegisterRequestModelCopyWithImpl;
+@useResult
+$Res call({
+ String phoneNumber, String password, String recaptchaToken, String firstName, String dateOfBirth, String primaryGymId, String? profilePhotoUrl, List<int> goalTagIds, List<int> scheduleTagIds
+});
+
+
+
+
+}
+/// @nodoc
+class _$RegisterRequestModelCopyWithImpl<$Res>
+    implements $RegisterRequestModelCopyWith<$Res> {
+  _$RegisterRequestModelCopyWithImpl(this._self, this._then);
+
+  final RegisterRequestModel _self;
+  final $Res Function(RegisterRequestModel) _then;
+
+/// Create a copy of RegisterRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? phoneNumber = null,Object? password = null,Object? recaptchaToken = null,Object? firstName = null,Object? dateOfBirth = null,Object? primaryGymId = null,Object? profilePhotoUrl = freezed,Object? goalTagIds = null,Object? scheduleTagIds = null,}) {
+  return _then(_self.copyWith(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
+as String,recaptchaToken: null == recaptchaToken ? _self.recaptchaToken : recaptchaToken // ignore: cast_nullable_to_non_nullable
+as String,firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
+as String,dateOfBirth: null == dateOfBirth ? _self.dateOfBirth : dateOfBirth // ignore: cast_nullable_to_non_nullable
+as String,primaryGymId: null == primaryGymId ? _self.primaryGymId : primaryGymId // ignore: cast_nullable_to_non_nullable
+as String,profilePhotoUrl: freezed == profilePhotoUrl ? _self.profilePhotoUrl : profilePhotoUrl // ignore: cast_nullable_to_non_nullable
+as String?,goalTagIds: null == goalTagIds ? _self.goalTagIds : goalTagIds // ignore: cast_nullable_to_non_nullable
+as List<int>,scheduleTagIds: null == scheduleTagIds ? _self.scheduleTagIds : scheduleTagIds // ignore: cast_nullable_to_non_nullable
+as List<int>,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [RegisterRequestModel].
+extension RegisterRequestModelPatterns on RegisterRequestModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _RegisterRequestModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _RegisterRequestModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _RegisterRequestModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _RegisterRequestModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _RegisterRequestModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _RegisterRequestModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String phoneNumber,  String password,  String recaptchaToken,  String firstName,  String dateOfBirth,  String primaryGymId,  String? profilePhotoUrl,  List<int> goalTagIds,  List<int> scheduleTagIds)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _RegisterRequestModel() when $default != null:
+return $default(_that.phoneNumber,_that.password,_that.recaptchaToken,_that.firstName,_that.dateOfBirth,_that.primaryGymId,_that.profilePhotoUrl,_that.goalTagIds,_that.scheduleTagIds);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String phoneNumber,  String password,  String recaptchaToken,  String firstName,  String dateOfBirth,  String primaryGymId,  String? profilePhotoUrl,  List<int> goalTagIds,  List<int> scheduleTagIds)  $default,) {final _that = this;
+switch (_that) {
+case _RegisterRequestModel():
+return $default(_that.phoneNumber,_that.password,_that.recaptchaToken,_that.firstName,_that.dateOfBirth,_that.primaryGymId,_that.profilePhotoUrl,_that.goalTagIds,_that.scheduleTagIds);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String phoneNumber,  String password,  String recaptchaToken,  String firstName,  String dateOfBirth,  String primaryGymId,  String? profilePhotoUrl,  List<int> goalTagIds,  List<int> scheduleTagIds)?  $default,) {final _that = this;
+switch (_that) {
+case _RegisterRequestModel() when $default != null:
+return $default(_that.phoneNumber,_that.password,_that.recaptchaToken,_that.firstName,_that.dateOfBirth,_that.primaryGymId,_that.profilePhotoUrl,_that.goalTagIds,_that.scheduleTagIds);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _RegisterRequestModel implements RegisterRequestModel {
+  const _RegisterRequestModel({required this.phoneNumber, required this.password, required this.recaptchaToken, required this.firstName, required this.dateOfBirth, required this.primaryGymId, this.profilePhotoUrl, required final  List<int> goalTagIds, required final  List<int> scheduleTagIds}): _goalTagIds = goalTagIds,_scheduleTagIds = scheduleTagIds;
+  factory _RegisterRequestModel.fromJson(Map<String, dynamic> json) => _$RegisterRequestModelFromJson(json);
+
+@override final  String phoneNumber;
+@override final  String password;
+@override final  String recaptchaToken;
+@override final  String firstName;
+@override final  String dateOfBirth;
+// Send as "YYYY-MM-DD" string
+@override final  String primaryGymId;
+// Send the UUID as a String
+@override final  String? profilePhotoUrl;
+// Optional
+ final  List<int> _goalTagIds;
+// Optional
+@override List<int> get goalTagIds {
+  if (_goalTagIds is EqualUnmodifiableListView) return _goalTagIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_goalTagIds);
+}
+
+ final  List<int> _scheduleTagIds;
+@override List<int> get scheduleTagIds {
+  if (_scheduleTagIds is EqualUnmodifiableListView) return _scheduleTagIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_scheduleTagIds);
+}
+
+
+/// Create a copy of RegisterRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RegisterRequestModelCopyWith<_RegisterRequestModel> get copyWith => __$RegisterRequestModelCopyWithImpl<_RegisterRequestModel>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$RegisterRequestModelToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegisterRequestModel&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.password, password) || other.password == password)&&(identical(other.recaptchaToken, recaptchaToken) || other.recaptchaToken == recaptchaToken)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.dateOfBirth, dateOfBirth) || other.dateOfBirth == dateOfBirth)&&(identical(other.primaryGymId, primaryGymId) || other.primaryGymId == primaryGymId)&&(identical(other.profilePhotoUrl, profilePhotoUrl) || other.profilePhotoUrl == profilePhotoUrl)&&const DeepCollectionEquality().equals(other._goalTagIds, _goalTagIds)&&const DeepCollectionEquality().equals(other._scheduleTagIds, _scheduleTagIds));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber,password,recaptchaToken,firstName,dateOfBirth,primaryGymId,profilePhotoUrl,const DeepCollectionEquality().hash(_goalTagIds),const DeepCollectionEquality().hash(_scheduleTagIds));
+
+@override
+String toString() {
+  return 'RegisterRequestModel(phoneNumber: $phoneNumber, password: $password, recaptchaToken: $recaptchaToken, firstName: $firstName, dateOfBirth: $dateOfBirth, primaryGymId: $primaryGymId, profilePhotoUrl: $profilePhotoUrl, goalTagIds: $goalTagIds, scheduleTagIds: $scheduleTagIds)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RegisterRequestModelCopyWith<$Res> implements $RegisterRequestModelCopyWith<$Res> {
+  factory _$RegisterRequestModelCopyWith(_RegisterRequestModel value, $Res Function(_RegisterRequestModel) _then) = __$RegisterRequestModelCopyWithImpl;
+@override @useResult
+$Res call({
+ String phoneNumber, String password, String recaptchaToken, String firstName, String dateOfBirth, String primaryGymId, String? profilePhotoUrl, List<int> goalTagIds, List<int> scheduleTagIds
+});
+
+
+
+
+}
+/// @nodoc
+class __$RegisterRequestModelCopyWithImpl<$Res>
+    implements _$RegisterRequestModelCopyWith<$Res> {
+  __$RegisterRequestModelCopyWithImpl(this._self, this._then);
+
+  final _RegisterRequestModel _self;
+  final $Res Function(_RegisterRequestModel) _then;
+
+/// Create a copy of RegisterRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? phoneNumber = null,Object? password = null,Object? recaptchaToken = null,Object? firstName = null,Object? dateOfBirth = null,Object? primaryGymId = null,Object? profilePhotoUrl = freezed,Object? goalTagIds = null,Object? scheduleTagIds = null,}) {
+  return _then(_RegisterRequestModel(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
+as String,recaptchaToken: null == recaptchaToken ? _self.recaptchaToken : recaptchaToken // ignore: cast_nullable_to_non_nullable
+as String,firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
+as String,dateOfBirth: null == dateOfBirth ? _self.dateOfBirth : dateOfBirth // ignore: cast_nullable_to_non_nullable
+as String,primaryGymId: null == primaryGymId ? _self.primaryGymId : primaryGymId // ignore: cast_nullable_to_non_nullable
+as String,profilePhotoUrl: freezed == profilePhotoUrl ? _self.profilePhotoUrl : profilePhotoUrl // ignore: cast_nullable_to_non_nullable
+as String?,goalTagIds: null == goalTagIds ? _self._goalTagIds : goalTagIds // ignore: cast_nullable_to_non_nullable
+as List<int>,scheduleTagIds: null == scheduleTagIds ? _self._scheduleTagIds : scheduleTagIds // ignore: cast_nullable_to_non_nullable
+as List<int>,
+  ));
+}
+
+
+}
+
+// dart format on
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\models\register_request_model.g.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'register_request_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_RegisterRequestModel _$RegisterRequestModelFromJson(
+  Map<String, dynamic> json,
+) => _RegisterRequestModel(
+  phoneNumber: json['phoneNumber'] as String,
+  password: json['password'] as String,
+  recaptchaToken: json['recaptchaToken'] as String,
+  firstName: json['firstName'] as String,
+  dateOfBirth: json['dateOfBirth'] as String,
+  primaryGymId: json['primaryGymId'] as String,
+  profilePhotoUrl: json['profilePhotoUrl'] as String?,
+  goalTagIds: (json['goalTagIds'] as List<dynamic>)
+      .map((e) => (e as num).toInt())
+      .toList(),
+  scheduleTagIds: (json['scheduleTagIds'] as List<dynamic>)
+      .map((e) => (e as num).toInt())
+      .toList(),
+);
+
+Map<String, dynamic> _$RegisterRequestModelToJson(
+  _RegisterRequestModel instance,
+) => <String, dynamic>{
+  'phoneNumber': instance.phoneNumber,
+  'password': instance.password,
+  'recaptchaToken': instance.recaptchaToken,
+  'firstName': instance.firstName,
+  'dateOfBirth': instance.dateOfBirth,
+  'primaryGymId': instance.primaryGymId,
+  'profilePhotoUrl': instance.profilePhotoUrl,
+  'goalTagIds': instance.goalTagIds,
+  'scheduleTagIds': instance.scheduleTagIds,
+};
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\models\resend_otp_request_model.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'resend_otp_request_model.freezed.dart';
+part 'resend_otp_request_model.g.dart';
+
+
+@freezed
+abstract class ResendOtpRequestModel with _$ResendOtpRequestModel {
+  
+  const factory ResendOtpRequestModel({
+    required String phoneNumber,
+    required String recaptchaToken,
+  }) = _ResendOtpRequestModel;
+
+  factory ResendOtpRequestModel.fromJson(Map<String, dynamic> json) =>
+      _$ResendOtpRequestModelFromJson(json);
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\models\resend_otp_request_model.freezed.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'resend_otp_request_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$ResendOtpRequestModel {
+
+ String get phoneNumber; String get recaptchaToken;
+/// Create a copy of ResendOtpRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ResendOtpRequestModelCopyWith<ResendOtpRequestModel> get copyWith => _$ResendOtpRequestModelCopyWithImpl<ResendOtpRequestModel>(this as ResendOtpRequestModel, _$identity);
+
+  /// Serializes this ResendOtpRequestModel to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ResendOtpRequestModel&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.recaptchaToken, recaptchaToken) || other.recaptchaToken == recaptchaToken));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber,recaptchaToken);
+
+@override
+String toString() {
+  return 'ResendOtpRequestModel(phoneNumber: $phoneNumber, recaptchaToken: $recaptchaToken)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ResendOtpRequestModelCopyWith<$Res>  {
+  factory $ResendOtpRequestModelCopyWith(ResendOtpRequestModel value, $Res Function(ResendOtpRequestModel) _then) = _$ResendOtpRequestModelCopyWithImpl;
+@useResult
+$Res call({
+ String phoneNumber, String recaptchaToken
+});
+
+
+
+
+}
+/// @nodoc
+class _$ResendOtpRequestModelCopyWithImpl<$Res>
+    implements $ResendOtpRequestModelCopyWith<$Res> {
+  _$ResendOtpRequestModelCopyWithImpl(this._self, this._then);
+
+  final ResendOtpRequestModel _self;
+  final $Res Function(ResendOtpRequestModel) _then;
+
+/// Create a copy of ResendOtpRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? phoneNumber = null,Object? recaptchaToken = null,}) {
+  return _then(_self.copyWith(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,recaptchaToken: null == recaptchaToken ? _self.recaptchaToken : recaptchaToken // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [ResendOtpRequestModel].
+extension ResendOtpRequestModelPatterns on ResendOtpRequestModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ResendOtpRequestModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ResendOtpRequestModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ResendOtpRequestModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _ResendOtpRequestModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ResendOtpRequestModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ResendOtpRequestModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String phoneNumber,  String recaptchaToken)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ResendOtpRequestModel() when $default != null:
+return $default(_that.phoneNumber,_that.recaptchaToken);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String phoneNumber,  String recaptchaToken)  $default,) {final _that = this;
+switch (_that) {
+case _ResendOtpRequestModel():
+return $default(_that.phoneNumber,_that.recaptchaToken);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String phoneNumber,  String recaptchaToken)?  $default,) {final _that = this;
+switch (_that) {
+case _ResendOtpRequestModel() when $default != null:
+return $default(_that.phoneNumber,_that.recaptchaToken);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _ResendOtpRequestModel implements ResendOtpRequestModel {
+  const _ResendOtpRequestModel({required this.phoneNumber, required this.recaptchaToken});
+  factory _ResendOtpRequestModel.fromJson(Map<String, dynamic> json) => _$ResendOtpRequestModelFromJson(json);
+
+@override final  String phoneNumber;
+@override final  String recaptchaToken;
+
+/// Create a copy of ResendOtpRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ResendOtpRequestModelCopyWith<_ResendOtpRequestModel> get copyWith => __$ResendOtpRequestModelCopyWithImpl<_ResendOtpRequestModel>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$ResendOtpRequestModelToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ResendOtpRequestModel&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.recaptchaToken, recaptchaToken) || other.recaptchaToken == recaptchaToken));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber,recaptchaToken);
+
+@override
+String toString() {
+  return 'ResendOtpRequestModel(phoneNumber: $phoneNumber, recaptchaToken: $recaptchaToken)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ResendOtpRequestModelCopyWith<$Res> implements $ResendOtpRequestModelCopyWith<$Res> {
+  factory _$ResendOtpRequestModelCopyWith(_ResendOtpRequestModel value, $Res Function(_ResendOtpRequestModel) _then) = __$ResendOtpRequestModelCopyWithImpl;
+@override @useResult
+$Res call({
+ String phoneNumber, String recaptchaToken
+});
+
+
+
+
+}
+/// @nodoc
+class __$ResendOtpRequestModelCopyWithImpl<$Res>
+    implements _$ResendOtpRequestModelCopyWith<$Res> {
+  __$ResendOtpRequestModelCopyWithImpl(this._self, this._then);
+
+  final _ResendOtpRequestModel _self;
+  final $Res Function(_ResendOtpRequestModel) _then;
+
+/// Create a copy of ResendOtpRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? phoneNumber = null,Object? recaptchaToken = null,}) {
+  return _then(_ResendOtpRequestModel(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,recaptchaToken: null == recaptchaToken ? _self.recaptchaToken : recaptchaToken // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+// dart format on
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\models\resend_otp_request_model.g.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'resend_otp_request_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_ResendOtpRequestModel _$ResendOtpRequestModelFromJson(
+  Map<String, dynamic> json,
+) => _ResendOtpRequestModel(
+  phoneNumber: json['phoneNumber'] as String,
+  recaptchaToken: json['recaptchaToken'] as String,
+);
+
+Map<String, dynamic> _$ResendOtpRequestModelToJson(
+  _ResendOtpRequestModel instance,
+) => <String, dynamic>{
+  'phoneNumber': instance.phoneNumber,
+  'recaptchaToken': instance.recaptchaToken,
+};
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\models\verify_sms_request_model.dart
+==================================================
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'verify_sms_request_model.freezed.dart';
+part 'verify_sms_request_model.g.dart';
+
+
+@freezed
+abstract class VerifySmsRequestModel with _$VerifySmsRequestModel {
+  
+  const factory VerifySmsRequestModel({
+    required String phoneNumber,
+    required String otp,
+  }) = _VerifySmsRequestModel;
+
+  factory VerifySmsRequestModel.fromJson(Map<String, dynamic> json) =>
+      _$VerifySmsRequestModelFromJson(json);
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\models\verify_sms_request_model.freezed.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'verify_sms_request_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$VerifySmsRequestModel {
+
+ String get phoneNumber; String get otp;
+/// Create a copy of VerifySmsRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$VerifySmsRequestModelCopyWith<VerifySmsRequestModel> get copyWith => _$VerifySmsRequestModelCopyWithImpl<VerifySmsRequestModel>(this as VerifySmsRequestModel, _$identity);
+
+  /// Serializes this VerifySmsRequestModel to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VerifySmsRequestModel&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.otp, otp) || other.otp == otp));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber,otp);
+
+@override
+String toString() {
+  return 'VerifySmsRequestModel(phoneNumber: $phoneNumber, otp: $otp)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $VerifySmsRequestModelCopyWith<$Res>  {
+  factory $VerifySmsRequestModelCopyWith(VerifySmsRequestModel value, $Res Function(VerifySmsRequestModel) _then) = _$VerifySmsRequestModelCopyWithImpl;
+@useResult
+$Res call({
+ String phoneNumber, String otp
+});
+
+
+
+
+}
+/// @nodoc
+class _$VerifySmsRequestModelCopyWithImpl<$Res>
+    implements $VerifySmsRequestModelCopyWith<$Res> {
+  _$VerifySmsRequestModelCopyWithImpl(this._self, this._then);
+
+  final VerifySmsRequestModel _self;
+  final $Res Function(VerifySmsRequestModel) _then;
+
+/// Create a copy of VerifySmsRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? phoneNumber = null,Object? otp = null,}) {
+  return _then(_self.copyWith(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,otp: null == otp ? _self.otp : otp // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [VerifySmsRequestModel].
+extension VerifySmsRequestModelPatterns on VerifySmsRequestModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _VerifySmsRequestModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _VerifySmsRequestModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _VerifySmsRequestModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _VerifySmsRequestModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _VerifySmsRequestModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _VerifySmsRequestModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String phoneNumber,  String otp)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _VerifySmsRequestModel() when $default != null:
+return $default(_that.phoneNumber,_that.otp);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String phoneNumber,  String otp)  $default,) {final _that = this;
+switch (_that) {
+case _VerifySmsRequestModel():
+return $default(_that.phoneNumber,_that.otp);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String phoneNumber,  String otp)?  $default,) {final _that = this;
+switch (_that) {
+case _VerifySmsRequestModel() when $default != null:
+return $default(_that.phoneNumber,_that.otp);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _VerifySmsRequestModel implements VerifySmsRequestModel {
+  const _VerifySmsRequestModel({required this.phoneNumber, required this.otp});
+  factory _VerifySmsRequestModel.fromJson(Map<String, dynamic> json) => _$VerifySmsRequestModelFromJson(json);
+
+@override final  String phoneNumber;
+@override final  String otp;
+
+/// Create a copy of VerifySmsRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$VerifySmsRequestModelCopyWith<_VerifySmsRequestModel> get copyWith => __$VerifySmsRequestModelCopyWithImpl<_VerifySmsRequestModel>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$VerifySmsRequestModelToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VerifySmsRequestModel&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.otp, otp) || other.otp == otp));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber,otp);
+
+@override
+String toString() {
+  return 'VerifySmsRequestModel(phoneNumber: $phoneNumber, otp: $otp)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$VerifySmsRequestModelCopyWith<$Res> implements $VerifySmsRequestModelCopyWith<$Res> {
+  factory _$VerifySmsRequestModelCopyWith(_VerifySmsRequestModel value, $Res Function(_VerifySmsRequestModel) _then) = __$VerifySmsRequestModelCopyWithImpl;
+@override @useResult
+$Res call({
+ String phoneNumber, String otp
+});
+
+
+
+
+}
+/// @nodoc
+class __$VerifySmsRequestModelCopyWithImpl<$Res>
+    implements _$VerifySmsRequestModelCopyWith<$Res> {
+  __$VerifySmsRequestModelCopyWithImpl(this._self, this._then);
+
+  final _VerifySmsRequestModel _self;
+  final $Res Function(_VerifySmsRequestModel) _then;
+
+/// Create a copy of VerifySmsRequestModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? phoneNumber = null,Object? otp = null,}) {
+  return _then(_VerifySmsRequestModel(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,otp: null == otp ? _self.otp : otp // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+// dart format on
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\models\verify_sms_request_model.g.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'verify_sms_request_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_VerifySmsRequestModel _$VerifySmsRequestModelFromJson(
+  Map<String, dynamic> json,
+) => _VerifySmsRequestModel(
+  phoneNumber: json['phoneNumber'] as String,
+  otp: json['otp'] as String,
+);
+
+Map<String, dynamic> _$VerifySmsRequestModelToJson(
+  _VerifySmsRequestModel instance,
+) => <String, dynamic>{
+  'phoneNumber': instance.phoneNumber,
+  'otp': instance.otp,
+};
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\data\repositories\auth_repository_impl.dart
+==================================================
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/exceptions.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/core/services/secure_storage_service.dart';
+import 'package:sahbifit/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:sahbifit/features/auth/data/models/login_request_model.dart';
+import 'package:sahbifit/features/auth/data/models/register_request_model.dart';
+import 'package:sahbifit/features/auth/data/models/resend_otp_request_model.dart';
+import 'package:sahbifit/features/auth/data/models/verify_sms_request_model.dart';
+import 'package:sahbifit/features/auth/domain/entities/auth_token.dart';
+import 'package:sahbifit/features/auth/domain/repositories/auth_repository.dart';
+
+@Injectable(as: AuthRepository)
+class AuthRepositoryImpl implements AuthRepository {
+  final AuthRemoteDatasource _remoteDatasource;
+  final SecureStorageService _storageService;
+
+  AuthRepositoryImpl(this._remoteDatasource, this._storageService);
+
+  @override
+  Future<AuthToken> login(String phoneNumber, String password) async {
+    try {
+      final requestModel = LoginRequestModel(
+        phoneNumber: phoneNumber,
+        password: password,
+      );
+      final responseModel = await _remoteDatasource.login(requestModel);
+
+      // --- 
+      // ðŸ’¡ KEY REQUIREMENT: Write the token to secure storage
+      // ---
+      await _storageService.writeToken(responseModel.jwtToken);
+      
+      return responseModel.toEntity();
+    } on ServerException catch(e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+
+  @override
+  Future<void> register(RegisterRequestModel request) async {
+    try {
+      await _remoteDatasource.register(request);
+    } on ServerException catch(e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+
+  @override
+  Future<void> verifySms(String phoneNumber, String otp) async {
+    try {
+      final requestModel = VerifySmsRequestModel(
+        phoneNumber: phoneNumber,
+        otp: otp,
+      );
+      await _remoteDatasource.verifySms(requestModel);
+    } on ServerException catch(e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+    
+  @override
+  Future<void> resendOtp(String phoneNumber, String recaptchaToken) async {
+    try {
+      final requestModel = ResendOtpRequestModel(
+        phoneNumber: phoneNumber,
+        recaptchaToken: recaptchaToken,
+      );
+      await _remoteDatasource.resendOtp(requestModel);
+    } on ServerException catch(e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\domain\entities\auth_token.dart
+==================================================
+import 'package:equatable/equatable.dart';
+
+class AuthToken extends Equatable {
+  final String token;
+
+  const AuthToken({required this.token});
+
+  @override
+  List<Object?> get props => [token];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\domain\repositories\auth_repository.dart
+==================================================
+import 'package:sahbifit/features/auth/data/models/register_request_model.dart';
+import 'package:sahbifit/features/auth/domain/entities/auth_token.dart';
+
+// Using a pattern that throws a Failure on error
+abstract class AuthRepository {
+  Future<AuthToken> login(String phoneNumber, String password);
+  Future<void> register(RegisterRequestModel request);
+  Future<void> verifySms(String phoneNumber, String otp);
+  Future<void> resendOtp(String phoneNumber, String recaptchaToken);
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\domain\usecases\login_user.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/auth/domain/entities/auth_token.dart';
+import 'package:sahbifit/features/auth/domain/repositories/auth_repository.dart';
+
+@injectable
+class LoginUser implements UseCase<AuthToken, LoginParams> {
+  final AuthRepository _repository;
+
+  LoginUser(this._repository);
+
+  @override
+  Future<AuthToken> call(LoginParams params) async {
+    return _repository.login(params.phoneNumber, params.password);
+  }
+}
+
+class LoginParams extends Equatable {
+  final String phoneNumber;
+  final String password;
+
+  const LoginParams({required this.phoneNumber, required this.password});
+
+  @override
+  List<Object?> get props => [phoneNumber, password];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\domain\usecases\register_user.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/auth/data/models/register_request_model.dart';
+import 'package:sahbifit/features/auth/domain/repositories/auth_repository.dart';
+
+@injectable
+class RegisterUser implements UseCase<void, RegisterParams> {
+  final AuthRepository _repository;
+
+  RegisterUser(this._repository);
+
+  @override
+  Future<void> call(RegisterParams params) async {
+    // The Usecase maps the simple params into the data model
+    final requestModel = RegisterRequestModel(
+      phoneNumber: params.phoneNumber,
+      password: params.password,
+      recaptchaToken: params.recaptchaToken,
+      firstName: params.firstName,
+      dateOfBirth: params.dateOfBirth,
+      primaryGymId: params.primaryGymId,
+      goalTagIds: params.goalTagIds,
+      scheduleTagIds: params.scheduleTagIds,
+      profilePhotoUrl: params.profilePhotoUrl,
+    );
+    return _repository.register(requestModel);
+  }
+}
+
+class RegisterParams extends Equatable {
+  final String phoneNumber;
+  final String password;
+  final String recaptchaToken;
+  final String firstName;
+  final String dateOfBirth;
+  final String primaryGymId;
+  final List<int> goalTagIds;
+  final List<int> scheduleTagIds;
+  final String? profilePhotoUrl;
+
+  const RegisterParams({
+    required this.phoneNumber,
+    required this.password,
+    required this.recaptchaToken,
+    required this.firstName,
+    required this.dateOfBirth,
+    required this.primaryGymId,
+    required this.goalTagIds,
+    required this.scheduleTagIds,
+    this.profilePhotoUrl,
+  });
+
+  @override
+  List<Object?> get props => [
+        phoneNumber,
+        password,
+        recaptchaToken,
+        firstName,
+        dateOfBirth,
+        primaryGymId,
+        goalTagIds,
+        scheduleTagIds,
+        profilePhotoUrl,
+      ];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\domain\usecases\resend_otp.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/auth/domain/repositories/auth_repository.dart';
+
+@injectable
+class ResendOtp implements UseCase<void, ResendOtpParams> {
+  final AuthRepository _repository;
+
+  ResendOtp(this._repository);
+
+  @override
+  Future<void> call(ResendOtpParams params) async {
+    return _repository.resendOtp(params.phoneNumber, params.recaptchaToken);
+  }
+}
+
+class ResendOtpParams extends Equatable {
+  final String phoneNumber;
+  final String recaptchaToken;
+
+  const ResendOtpParams({required this.phoneNumber, required this.recaptchaToken});
+
+  @override
+  List<Object?> get props => [phoneNumber, recaptchaToken];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\domain\usecases\verify_sms.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/auth/domain/repositories/auth_repository.dart';
+
+@injectable
+class VerifySms implements UseCase<void, VerifySmsParams> {
+  final AuthRepository _repository;
+
+  VerifySms(this._repository);
+
+  @override
+  Future<void> call(VerifySmsParams params) async {
+    return _repository.verifySms(params.phoneNumber, params.otp);
+  }
+}
+
+class VerifySmsParams extends Equatable {
+  final String phoneNumber;
+  final String otp;
+
+  const VerifySmsParams({required this.phoneNumber, required this.otp});
+
+  @override
+  List<Object?> get props => [phoneNumber, otp];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\bloc\auth_bloc.dart
+==================================================
+import 'dart:io'; // ADDED
+import 'package:bloc/bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
+
+import 'package:sahbifit/app/bloc/app_bloc.dart';
+import 'package:sahbifit/core/di/service_locator.dart'; // ADDED
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/features/auth/domain/usecases/login_user.dart';
+import 'package:sahbifit/features/auth/domain/usecases/register_user.dart';
+import 'package:sahbifit/features/auth/domain/usecases/resend_otp.dart';
+import 'package:sahbifit/features/auth/domain/usecases/verify_sms.dart';
+import 'package:sahbifit/features/file/domain/usecases/upload_profile_photo.dart'; // ADDED
+
+part 'auth_bloc.freezed.dart';
+part 'auth_event.dart';
+part 'auth_state.dart';
+
+@injectable
+class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  final LoginUser _loginUser;
+  final RegisterUser _registerUser;
+  final VerifySms _verifySms;
+  final ResendOtp _resendOtp;
+  final AppBloc _appBloc;
+
+  AuthBloc(
+    this._loginUser,
+    this._registerUser,
+    this._verifySms,
+    this._resendOtp,
+    this._appBloc,
+  ) : super(const AuthState.initial()) {
+    on<_LoginButtonPressed>(_onLoginButtonPressed);
+    on<_RegisterButtonPressed>(_onRegisterButtonPressed);
+    on<_VerifySmsButtonPressed>(_onVerifySmsButtonPressed);
+    on<_ResendOtpButtonPressed>(_onResendOtpButtonPressed);
+  }
+
+  Future<void> _onLoginButtonPressed(
+    _LoginButtonPressed event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthState.loading());
+    try {
+      final params = LoginParams(
+        phoneNumber: event.phoneNumber,
+        password: event.password,
+      );
+      await _loginUser(params);
+
+      _appBloc.add(const AppEvent.checkAuthStatus());
+      emit(const AuthState.loginSuccess());
+    } on ServerFailure catch (e) {
+      emit(AuthState.failure(e.message));
+    } catch (e) {
+      emit(AuthState.failure(e.toString()));
+    }
+  }
+
+  // --- REWRITTEN METHOD ---
+  Future<void> _onRegisterButtonPressed(
+    _RegisterButtonPressed event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthState.loading());
+    try {
+      String? profilePhotoUrl;
+
+      // 1. Upload image if one was provided
+      if (event.profileImageFile != null) {
+        // Use getIt as seen in the widget
+        final uploadUseCase = getIt<UploadProfilePhoto>();
+        profilePhotoUrl = await uploadUseCase(
+          UploadProfilePhotoParams(file: event.profileImageFile!),
+        );
+      }
+
+      // 2. Create final RegisterParams with the new URL
+      // We can't use copyWith, so we rebuild the object
+      final finalParams = RegisterParams(
+        phoneNumber: event.params.phoneNumber,
+        password: event.params.password,
+        recaptchaToken: event.params.recaptchaToken,
+        firstName: event.params.firstName,
+        dateOfBirth: event.params.dateOfBirth,
+        primaryGymId: event.params.primaryGymId,
+        goalTagIds: event.params.goalTagIds,
+        scheduleTagIds: event.params.scheduleTagIds,
+        profilePhotoUrl: profilePhotoUrl, // Pass the (potentially null) URL
+      );
+
+      // 3. Call the register use case
+      await _registerUser(finalParams);
+      
+      // 4. Emit success
+      emit(AuthState.registrationSuccess(
+        phoneNumber: event.params.phoneNumber,
+      ));
+    } on ServerFailure catch (e) {
+      emit(AuthState.failure(e.message));
+    } catch (e) {
+      // This will catch errors from both file upload and registration
+      emit(AuthState.failure(e.toString()));
+    }
+  }
+  // --- END REWRITE ---
+
+  Future<void> _onVerifySmsButtonPressed(
+    _VerifySmsButtonPressed event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthState.loading());
+    try {
+      final params = VerifySmsParams(
+        phoneNumber: event.phoneNumber,
+        otp: event.otp,
+      );
+      await _verifySms(params);
+      emit(const AuthState.verificationSuccess());
+    } on ServerFailure catch (e) {
+      emit(AuthState.failure(e.message));
+    } catch (e) {
+      emit(AuthState.failure(e.toString()));
+    }
+  }
+
+  Future<void> _onResendOtpButtonPressed(
+    _ResendOtpButtonPressed event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthState.loading());
+    try {
+      final params = ResendOtpParams(
+        phoneNumber: event.phoneNumber,
+        recaptchaToken: event.recaptchaToken,
+      );
+      await _resendOtp(params);
+      emit(const AuthState.otpResent());
+    } on ServerFailure catch (e) {
+      emit(AuthState.failure(e.message));
+    } catch (e) {
+      emit(AuthState.failure(e.toString()));
+    }
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\bloc\auth_bloc.freezed.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'auth_bloc.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+/// @nodoc
+mixin _$AuthEvent {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthEvent);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'AuthEvent()';
+}
+
+
+}
+
+/// @nodoc
+class $AuthEventCopyWith<$Res>  {
+$AuthEventCopyWith(AuthEvent _, $Res Function(AuthEvent) __);
+}
+
+
+/// Adds pattern-matching-related methods to [AuthEvent].
+extension AuthEventPatterns on AuthEvent {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _LoginButtonPressed value)?  loginButtonPressed,TResult Function( _RegisterButtonPressed value)?  registerButtonPressed,TResult Function( _VerifySmsButtonPressed value)?  verifySmsButtonPressed,TResult Function( _ResendOtpButtonPressed value)?  resendOtpButtonPressed,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _LoginButtonPressed() when loginButtonPressed != null:
+return loginButtonPressed(_that);case _RegisterButtonPressed() when registerButtonPressed != null:
+return registerButtonPressed(_that);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
+return verifySmsButtonPressed(_that);case _ResendOtpButtonPressed() when resendOtpButtonPressed != null:
+return resendOtpButtonPressed(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _LoginButtonPressed value)  loginButtonPressed,required TResult Function( _RegisterButtonPressed value)  registerButtonPressed,required TResult Function( _VerifySmsButtonPressed value)  verifySmsButtonPressed,required TResult Function( _ResendOtpButtonPressed value)  resendOtpButtonPressed,}){
+final _that = this;
+switch (_that) {
+case _LoginButtonPressed():
+return loginButtonPressed(_that);case _RegisterButtonPressed():
+return registerButtonPressed(_that);case _VerifySmsButtonPressed():
+return verifySmsButtonPressed(_that);case _ResendOtpButtonPressed():
+return resendOtpButtonPressed(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _LoginButtonPressed value)?  loginButtonPressed,TResult? Function( _RegisterButtonPressed value)?  registerButtonPressed,TResult? Function( _VerifySmsButtonPressed value)?  verifySmsButtonPressed,TResult? Function( _ResendOtpButtonPressed value)?  resendOtpButtonPressed,}){
+final _that = this;
+switch (_that) {
+case _LoginButtonPressed() when loginButtonPressed != null:
+return loginButtonPressed(_that);case _RegisterButtonPressed() when registerButtonPressed != null:
+return registerButtonPressed(_that);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
+return verifySmsButtonPressed(_that);case _ResendOtpButtonPressed() when resendOtpButtonPressed != null:
+return resendOtpButtonPressed(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String phoneNumber,  String password)?  loginButtonPressed,TResult Function( RegisterParams params,  File? profileImageFile)?  registerButtonPressed,TResult Function( String phoneNumber,  String otp)?  verifySmsButtonPressed,TResult Function( String phoneNumber,  String recaptchaToken)?  resendOtpButtonPressed,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _LoginButtonPressed() when loginButtonPressed != null:
+return loginButtonPressed(_that.phoneNumber,_that.password);case _RegisterButtonPressed() when registerButtonPressed != null:
+return registerButtonPressed(_that.params,_that.profileImageFile);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
+return verifySmsButtonPressed(_that.phoneNumber,_that.otp);case _ResendOtpButtonPressed() when resendOtpButtonPressed != null:
+return resendOtpButtonPressed(_that.phoneNumber,_that.recaptchaToken);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String phoneNumber,  String password)  loginButtonPressed,required TResult Function( RegisterParams params,  File? profileImageFile)  registerButtonPressed,required TResult Function( String phoneNumber,  String otp)  verifySmsButtonPressed,required TResult Function( String phoneNumber,  String recaptchaToken)  resendOtpButtonPressed,}) {final _that = this;
+switch (_that) {
+case _LoginButtonPressed():
+return loginButtonPressed(_that.phoneNumber,_that.password);case _RegisterButtonPressed():
+return registerButtonPressed(_that.params,_that.profileImageFile);case _VerifySmsButtonPressed():
+return verifySmsButtonPressed(_that.phoneNumber,_that.otp);case _ResendOtpButtonPressed():
+return resendOtpButtonPressed(_that.phoneNumber,_that.recaptchaToken);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String phoneNumber,  String password)?  loginButtonPressed,TResult? Function( RegisterParams params,  File? profileImageFile)?  registerButtonPressed,TResult? Function( String phoneNumber,  String otp)?  verifySmsButtonPressed,TResult? Function( String phoneNumber,  String recaptchaToken)?  resendOtpButtonPressed,}) {final _that = this;
+switch (_that) {
+case _LoginButtonPressed() when loginButtonPressed != null:
+return loginButtonPressed(_that.phoneNumber,_that.password);case _RegisterButtonPressed() when registerButtonPressed != null:
+return registerButtonPressed(_that.params,_that.profileImageFile);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
+return verifySmsButtonPressed(_that.phoneNumber,_that.otp);case _ResendOtpButtonPressed() when resendOtpButtonPressed != null:
+return resendOtpButtonPressed(_that.phoneNumber,_that.recaptchaToken);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _LoginButtonPressed implements AuthEvent {
+  const _LoginButtonPressed({required this.phoneNumber, required this.password});
+  
+
+ final  String phoneNumber;
+ final  String password;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$LoginButtonPressedCopyWith<_LoginButtonPressed> get copyWith => __$LoginButtonPressedCopyWithImpl<_LoginButtonPressed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LoginButtonPressed&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.password, password) || other.password == password));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber,password);
+
+@override
+String toString() {
+  return 'AuthEvent.loginButtonPressed(phoneNumber: $phoneNumber, password: $password)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$LoginButtonPressedCopyWith<$Res> implements $AuthEventCopyWith<$Res> {
+  factory _$LoginButtonPressedCopyWith(_LoginButtonPressed value, $Res Function(_LoginButtonPressed) _then) = __$LoginButtonPressedCopyWithImpl;
+@useResult
+$Res call({
+ String phoneNumber, String password
+});
+
+
+
+
+}
+/// @nodoc
+class __$LoginButtonPressedCopyWithImpl<$Res>
+    implements _$LoginButtonPressedCopyWith<$Res> {
+  __$LoginButtonPressedCopyWithImpl(this._self, this._then);
+
+  final _LoginButtonPressed _self;
+  final $Res Function(_LoginButtonPressed) _then;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? phoneNumber = null,Object? password = null,}) {
+  return _then(_LoginButtonPressed(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _RegisterButtonPressed implements AuthEvent {
+  const _RegisterButtonPressed({required this.params, this.profileImageFile});
+  
+
+ final  RegisterParams params;
+ final  File? profileImageFile;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RegisterButtonPressedCopyWith<_RegisterButtonPressed> get copyWith => __$RegisterButtonPressedCopyWithImpl<_RegisterButtonPressed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegisterButtonPressed&&(identical(other.params, params) || other.params == params)&&(identical(other.profileImageFile, profileImageFile) || other.profileImageFile == profileImageFile));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,params,profileImageFile);
+
+@override
+String toString() {
+  return 'AuthEvent.registerButtonPressed(params: $params, profileImageFile: $profileImageFile)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RegisterButtonPressedCopyWith<$Res> implements $AuthEventCopyWith<$Res> {
+  factory _$RegisterButtonPressedCopyWith(_RegisterButtonPressed value, $Res Function(_RegisterButtonPressed) _then) = __$RegisterButtonPressedCopyWithImpl;
+@useResult
+$Res call({
+ RegisterParams params, File? profileImageFile
+});
+
+
+
+
+}
+/// @nodoc
+class __$RegisterButtonPressedCopyWithImpl<$Res>
+    implements _$RegisterButtonPressedCopyWith<$Res> {
+  __$RegisterButtonPressedCopyWithImpl(this._self, this._then);
+
+  final _RegisterButtonPressed _self;
+  final $Res Function(_RegisterButtonPressed) _then;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? params = null,Object? profileImageFile = freezed,}) {
+  return _then(_RegisterButtonPressed(
+params: null == params ? _self.params : params // ignore: cast_nullable_to_non_nullable
+as RegisterParams,profileImageFile: freezed == profileImageFile ? _self.profileImageFile : profileImageFile // ignore: cast_nullable_to_non_nullable
+as File?,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _VerifySmsButtonPressed implements AuthEvent {
+  const _VerifySmsButtonPressed({required this.phoneNumber, required this.otp});
+  
+
+ final  String phoneNumber;
+ final  String otp;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$VerifySmsButtonPressedCopyWith<_VerifySmsButtonPressed> get copyWith => __$VerifySmsButtonPressedCopyWithImpl<_VerifySmsButtonPressed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VerifySmsButtonPressed&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.otp, otp) || other.otp == otp));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber,otp);
+
+@override
+String toString() {
+  return 'AuthEvent.verifySmsButtonPressed(phoneNumber: $phoneNumber, otp: $otp)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$VerifySmsButtonPressedCopyWith<$Res> implements $AuthEventCopyWith<$Res> {
+  factory _$VerifySmsButtonPressedCopyWith(_VerifySmsButtonPressed value, $Res Function(_VerifySmsButtonPressed) _then) = __$VerifySmsButtonPressedCopyWithImpl;
+@useResult
+$Res call({
+ String phoneNumber, String otp
+});
+
+
+
+
+}
+/// @nodoc
+class __$VerifySmsButtonPressedCopyWithImpl<$Res>
+    implements _$VerifySmsButtonPressedCopyWith<$Res> {
+  __$VerifySmsButtonPressedCopyWithImpl(this._self, this._then);
+
+  final _VerifySmsButtonPressed _self;
+  final $Res Function(_VerifySmsButtonPressed) _then;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? phoneNumber = null,Object? otp = null,}) {
+  return _then(_VerifySmsButtonPressed(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,otp: null == otp ? _self.otp : otp // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _ResendOtpButtonPressed implements AuthEvent {
+  const _ResendOtpButtonPressed({required this.phoneNumber, required this.recaptchaToken});
+  
+
+ final  String phoneNumber;
+ final  String recaptchaToken;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ResendOtpButtonPressedCopyWith<_ResendOtpButtonPressed> get copyWith => __$ResendOtpButtonPressedCopyWithImpl<_ResendOtpButtonPressed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ResendOtpButtonPressed&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.recaptchaToken, recaptchaToken) || other.recaptchaToken == recaptchaToken));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber,recaptchaToken);
+
+@override
+String toString() {
+  return 'AuthEvent.resendOtpButtonPressed(phoneNumber: $phoneNumber, recaptchaToken: $recaptchaToken)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ResendOtpButtonPressedCopyWith<$Res> implements $AuthEventCopyWith<$Res> {
+  factory _$ResendOtpButtonPressedCopyWith(_ResendOtpButtonPressed value, $Res Function(_ResendOtpButtonPressed) _then) = __$ResendOtpButtonPressedCopyWithImpl;
+@useResult
+$Res call({
+ String phoneNumber, String recaptchaToken
+});
+
+
+
+
+}
+/// @nodoc
+class __$ResendOtpButtonPressedCopyWithImpl<$Res>
+    implements _$ResendOtpButtonPressedCopyWith<$Res> {
+  __$ResendOtpButtonPressedCopyWithImpl(this._self, this._then);
+
+  final _ResendOtpButtonPressed _self;
+  final $Res Function(_ResendOtpButtonPressed) _then;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? phoneNumber = null,Object? recaptchaToken = null,}) {
+  return _then(_ResendOtpButtonPressed(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,recaptchaToken: null == recaptchaToken ? _self.recaptchaToken : recaptchaToken // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+mixin _$AuthState {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthState);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'AuthState()';
+}
+
+
+}
+
+/// @nodoc
+class $AuthStateCopyWith<$Res>  {
+$AuthStateCopyWith(AuthState _, $Res Function(AuthState) __);
+}
+
+
+/// Adds pattern-matching-related methods to [AuthState].
+extension AuthStatePatterns on AuthState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial value)?  initial,TResult Function( _Loading value)?  loading,TResult Function( _LoginSuccess value)?  loginSuccess,TResult Function( _RegistrationSuccess value)?  registrationSuccess,TResult Function( _VerificationSuccess value)?  verificationSuccess,TResult Function( _OtpResent value)?  otpResent,TResult Function( _Failure value)?  failure,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial(_that);case _Loading() when loading != null:
+return loading(_that);case _LoginSuccess() when loginSuccess != null:
+return loginSuccess(_that);case _RegistrationSuccess() when registrationSuccess != null:
+return registrationSuccess(_that);case _VerificationSuccess() when verificationSuccess != null:
+return verificationSuccess(_that);case _OtpResent() when otpResent != null:
+return otpResent(_that);case _Failure() when failure != null:
+return failure(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial value)  initial,required TResult Function( _Loading value)  loading,required TResult Function( _LoginSuccess value)  loginSuccess,required TResult Function( _RegistrationSuccess value)  registrationSuccess,required TResult Function( _VerificationSuccess value)  verificationSuccess,required TResult Function( _OtpResent value)  otpResent,required TResult Function( _Failure value)  failure,}){
+final _that = this;
+switch (_that) {
+case _Initial():
+return initial(_that);case _Loading():
+return loading(_that);case _LoginSuccess():
+return loginSuccess(_that);case _RegistrationSuccess():
+return registrationSuccess(_that);case _VerificationSuccess():
+return verificationSuccess(_that);case _OtpResent():
+return otpResent(_that);case _Failure():
+return failure(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial value)?  initial,TResult? Function( _Loading value)?  loading,TResult? Function( _LoginSuccess value)?  loginSuccess,TResult? Function( _RegistrationSuccess value)?  registrationSuccess,TResult? Function( _VerificationSuccess value)?  verificationSuccess,TResult? Function( _OtpResent value)?  otpResent,TResult? Function( _Failure value)?  failure,}){
+final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial(_that);case _Loading() when loading != null:
+return loading(_that);case _LoginSuccess() when loginSuccess != null:
+return loginSuccess(_that);case _RegistrationSuccess() when registrationSuccess != null:
+return registrationSuccess(_that);case _VerificationSuccess() when verificationSuccess != null:
+return verificationSuccess(_that);case _OtpResent() when otpResent != null:
+return otpResent(_that);case _Failure() when failure != null:
+return failure(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function()?  loginSuccess,TResult Function( String phoneNumber)?  registrationSuccess,TResult Function()?  verificationSuccess,TResult Function()?  otpResent,TResult Function( String message)?  failure,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial();case _Loading() when loading != null:
+return loading();case _LoginSuccess() when loginSuccess != null:
+return loginSuccess();case _RegistrationSuccess() when registrationSuccess != null:
+return registrationSuccess(_that.phoneNumber);case _VerificationSuccess() when verificationSuccess != null:
+return verificationSuccess();case _OtpResent() when otpResent != null:
+return otpResent();case _Failure() when failure != null:
+return failure(_that.message);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function()  loginSuccess,required TResult Function( String phoneNumber)  registrationSuccess,required TResult Function()  verificationSuccess,required TResult Function()  otpResent,required TResult Function( String message)  failure,}) {final _that = this;
+switch (_that) {
+case _Initial():
+return initial();case _Loading():
+return loading();case _LoginSuccess():
+return loginSuccess();case _RegistrationSuccess():
+return registrationSuccess(_that.phoneNumber);case _VerificationSuccess():
+return verificationSuccess();case _OtpResent():
+return otpResent();case _Failure():
+return failure(_that.message);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function()?  loginSuccess,TResult? Function( String phoneNumber)?  registrationSuccess,TResult? Function()?  verificationSuccess,TResult? Function()?  otpResent,TResult? Function( String message)?  failure,}) {final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial();case _Loading() when loading != null:
+return loading();case _LoginSuccess() when loginSuccess != null:
+return loginSuccess();case _RegistrationSuccess() when registrationSuccess != null:
+return registrationSuccess(_that.phoneNumber);case _VerificationSuccess() when verificationSuccess != null:
+return verificationSuccess();case _OtpResent() when otpResent != null:
+return otpResent();case _Failure() when failure != null:
+return failure(_that.message);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _Initial implements AuthState {
+  const _Initial();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Initial);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'AuthState.initial()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _Loading implements AuthState {
+  const _Loading();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loading);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'AuthState.loading()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _LoginSuccess implements AuthState {
+  const _LoginSuccess();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LoginSuccess);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'AuthState.loginSuccess()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _RegistrationSuccess implements AuthState {
+  const _RegistrationSuccess({required this.phoneNumber});
+  
+
+ final  String phoneNumber;
+
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RegistrationSuccessCopyWith<_RegistrationSuccess> get copyWith => __$RegistrationSuccessCopyWithImpl<_RegistrationSuccess>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegistrationSuccess&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber);
+
+@override
+String toString() {
+  return 'AuthState.registrationSuccess(phoneNumber: $phoneNumber)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RegistrationSuccessCopyWith<$Res> implements $AuthStateCopyWith<$Res> {
+  factory _$RegistrationSuccessCopyWith(_RegistrationSuccess value, $Res Function(_RegistrationSuccess) _then) = __$RegistrationSuccessCopyWithImpl;
+@useResult
+$Res call({
+ String phoneNumber
+});
+
+
+
+
+}
+/// @nodoc
+class __$RegistrationSuccessCopyWithImpl<$Res>
+    implements _$RegistrationSuccessCopyWith<$Res> {
+  __$RegistrationSuccessCopyWithImpl(this._self, this._then);
+
+  final _RegistrationSuccess _self;
+  final $Res Function(_RegistrationSuccess) _then;
+
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? phoneNumber = null,}) {
+  return _then(_RegistrationSuccess(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _VerificationSuccess implements AuthState {
+  const _VerificationSuccess();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VerificationSuccess);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'AuthState.verificationSuccess()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _OtpResent implements AuthState {
+  const _OtpResent();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OtpResent);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'AuthState.otpResent()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _Failure implements AuthState {
+  const _Failure(this.message);
+  
+
+ final  String message;
+
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$FailureCopyWith<_Failure> get copyWith => __$FailureCopyWithImpl<_Failure>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Failure&&(identical(other.message, message) || other.message == message));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,message);
+
+@override
+String toString() {
+  return 'AuthState.failure(message: $message)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$FailureCopyWith<$Res> implements $AuthStateCopyWith<$Res> {
+  factory _$FailureCopyWith(_Failure value, $Res Function(_Failure) _then) = __$FailureCopyWithImpl;
+@useResult
+$Res call({
+ String message
+});
+
+
+
+
+}
+/// @nodoc
+class __$FailureCopyWithImpl<$Res>
+    implements _$FailureCopyWith<$Res> {
+  __$FailureCopyWithImpl(this._self, this._then);
+
+  final _Failure _self;
+  final $Res Function(_Failure) _then;
+
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? message = null,}) {
+  return _then(_Failure(
+null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+// dart format on
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\bloc\auth_event.dart
+==================================================
+// lib/features/auth/presentation/bloc/auth_event.dart
+part of 'auth_bloc.dart';
+
+// NO IMPORTS ALLOWED HERE
+
+@freezed
+sealed class AuthEvent with _$AuthEvent {
+  /// Dispatched when the user presses the login button.
+  const factory AuthEvent.loginButtonPressed({
+    required String phoneNumber,
+    required String password,
+  }) = _LoginButtonPressed;
+
+  /// Dispatched when the user presses the final register button.
+  /// We pass the params and the optional image file.
+  const factory AuthEvent.registerButtonPressed({
+    required RegisterParams params,
+    File? profileImageFile, // This File type is now imported from auth_bloc.dart
+  }) = _RegisterButtonPressed;
+
+  /// Dispatched when the user submits the OTP.
+  const factory AuthEvent.verifySmsButtonPressed({
+    required String phoneNumber,
+    required String otp,
+  }) = _VerifySmsButtonPressed;
+
+  /// Dispatched when the user requests a new OTP.
+  const factory AuthEvent.resendOtpButtonPressed({
+    required String phoneNumber,
+    required String recaptchaToken,
+  }) = _ResendOtpButtonPressed;
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\bloc\auth_state.dart
+==================================================
+part of 'auth_bloc.dart';
+
+@freezed
+sealed class AuthState with _$AuthState {
+  /// The default, idle state of the auth forms.
+  const factory AuthState.initial() = _Initial;
+
+  /// The state when an auth operation (login, register, etc.) is in progress.
+  const factory AuthState.loading() = _Loading;
+
+  /// State emitted upon successful login.
+  const factory AuthState.loginSuccess() = _LoginSuccess;
+
+  /// State emitted upon successful registration.
+  /// We pass the phone number to the VerifySmsPage.
+  const factory AuthState.registrationSuccess({
+    required String phoneNumber,
+  }) = _RegistrationSuccess;
+
+  /// State emitted upon successful SMS verification.
+  const factory AuthState.verificationSuccess() = _VerificationSuccess;
+
+  /// State emitted when a new OTP is successfully sent.
+  const factory AuthState.otpResent() = _OtpResent;
+
+  /// The state when an auth operation fails.
+  /// The [message] will be displayed to the user.
+  const factory AuthState.failure(String message) = _Failure;
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\pages\login_page.dart
+==================================================
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sahbifit/core/config/app_theme.dart';
+import 'package:sahbifit/core/di/service_locator.dart';
+import 'package:sahbifit/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:sahbifit/features/auth/presentation/widgets/login_form.dart';
+import 'package:go_router/go_router.dart'; // ADD THIS IMPORT
+
+
+
+class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => getIt<AuthBloc>(),
+      child: Scaffold(
+        backgroundColor: AppTheme.cleanWhite,
+        body: SafeArea(
+          child: BlocListener<AuthBloc, AuthState>(
+            listener: (context, state) {
+              state.maybeWhen(
+                // loginSuccess is handled by the AppBloc state change,
+                // which will trigger a navigation update.
+                // We only need to show errors here.
+                failure: (message) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(message),
+                      backgroundColor: AppTheme.primaryRed,
+                    ),
+                  );
+                },
+                orElse: () {},
+              );
+            },
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppTheme.defaultPadding),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Add your Logo here
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+                  Text(
+                    'Welcome Back',
+                    style: context.textTheme.displaySmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Login to find your next workout partner.',
+                    style: context.textTheme.bodyLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppTheme.sectionSpacing * 2),
+                  const LoginForm(),
+                  const SizedBox(height: AppTheme.sectionSpacing),
+                  _buildRegisterButton(context),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRegisterButton(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          "Don't have an account?",
+          style: context.textTheme.bodyMedium,
+        ),
+        TextButton(
+          onPressed: () {
+            // Navigate to the registration page
+            context.push('/register');
+          },
+          child: const Text('Register Now'),
+        ),
+      ],
+    );
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\pages\register_page.dart
+==================================================
+// lib/features/auth/presentation/pages/register_page.dart
+import 'dart:io'; // ADD THIS IMPORT
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sahbifit/core/config/app_theme.dart';
+import 'package:sahbifit/core/di/service_locator.dart';
+import 'package:sahbifit/features/auth/domain/usecases/register_user.dart';
+import 'package:sahbifit/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:sahbifit/features/auth/presentation/widgets/profile_setup_form.dart';
+import 'package:sahbifit/features/auth/presentation/widgets/register_form_step_1.dart';
+import 'package:sahbifit/features/gym/presentation/cubit/gym_list_cubit.dart';
+import 'package:sahbifit/features/tag/presentation/cubit/tags_cubit.dart';
+import 'package:sahbifit/shared/widgets/app_bars/custom_app_bar.dart';
+import 'package:go_router/go_router.dart';
+
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  final PageController _pageController = PageController();
+  // Data from Step 1
+  String? _phoneNumber;
+  String? _password;
+  String? _recaptchaToken;
+
+  void _onStep1Next(
+    String phoneNumber,
+    String password,
+    String recaptchaToken,
+  ) {
+    setState(() {
+      _phoneNumber = phoneNumber;
+      _password = password;
+      _recaptchaToken = recaptchaToken;
+    });
+    _pageController.animateToPage(
+      1,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  // --- UPDATE THIS METHOD SIGNATURE AND LOGIC ---
+  void _onStep2Register({
+    required String firstName,
+    required String dateOfBirth,
+    required String primaryGymId,
+    required List<int> goalTagIds,
+    required List<int> scheduleTagIds,
+    File? profileImageFile, // <-- CHANGE THIS
+  }) {
+    if (_phoneNumber == null || _password == null || _recaptchaToken == null) {
+      // Should not happen, but as a safeguard
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error going from step 1 to 2')),
+      );
+      _pageController.jumpToPage(0);
+      return;
+    }
+
+    final params = RegisterParams(
+      phoneNumber: _phoneNumber!,
+      password: _password!,
+      recaptchaToken: _recaptchaToken!,
+      firstName: firstName,
+      dateOfBirth: dateOfBirth,
+      primaryGymId: primaryGymId,
+      goalTagIds: goalTagIds,
+      scheduleTagIds: scheduleTagIds,
+      profilePhotoUrl: null, // <-- CHANGE THIS (BLoC will set it)
+    );
+    
+    // Dispatch the event with BOTH the params and the file
+    context.read<AuthBloc>().add(AuthEvent.registerButtonPressed(
+      params: params,
+      profileImageFile: profileImageFile, // <-- PASS THE FILE
+    ));
+  }
+  // --- END UPDATE ---
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => getIt<AuthBloc>()),
+        BlocProvider(create: (context) => getIt<GymListCubit>()),
+        BlocProvider(create: (context) => getIt<TagsCubit>()),
+      ],
+      child: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          state.maybeWhen(
+            registrationSuccess: (phoneNumber) {
+              // Navigate to VerifySmsPage on success
+              context.push('/verify-sms', extra: phoneNumber);
+            },
+            failure: (message) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(message),
+                  backgroundColor: AppTheme.primaryRed,
+                ),
+              );
+            },
+            orElse: () {},
+          );
+        },
+        child: Scaffold(
+          appBar: CustomAppBar(
+            title: 'Create Account',
+            onBackPressed: () {
+              if (_pageController.page == 1.0) {
+                _pageController.animateToPage(
+                  0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              } else {
+                context.pop();
+              }
+            },
+          ),
+          body: PageView(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              RegisterFormStep1(onNext: _onStep1Next),
+              ProfileSetupForm(onRegister: _onStep2Register),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\pages\verify_sms_page.dart
+==================================================
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart'; // ADD THIS IMPORT
+import 'package:sahbifit/core/config/app_theme.dart';
+import 'package:sahbifit/core/di/service_locator.dart';
+import 'package:sahbifit/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:sahbifit/features/auth/presentation/widgets/sms_otp_input.dart';
+import 'package:sahbifit/shared/widgets/app_bars/custom_app_bar.dart';
+
+
+class VerifySmsPage extends StatelessWidget {
+  final String phoneNumber;
+  const VerifySmsPage({super.key, required this.phoneNumber});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => getIt<AuthBloc>(),
+      child: Scaffold(
+        appBar: const CustomAppBar(title: 'Verify Account'),
+        body: BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            state.maybeWhen(
+              verificationSuccess: () {
+                // On success, show a message and pop all auth routes
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Account verified successfully! Please log in.'),
+                    backgroundColor: AppTheme.successGreen,
+                  ),
+                );
+                context.go('/login');
+              },
+              otpResent: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('A new OTP has been sent.'),
+                    backgroundColor: AppTheme.trustBlue,
+                  ),
+                );
+              },
+              failure: (message) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(message),
+                    backgroundColor: AppTheme.primaryRed,
+                  ),
+                );
+              },
+              orElse: () {},
+            );
+          },
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppTheme.defaultPadding),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: AppTheme.sectionSpacing),
+                Text(
+                  'Enter Verification Code',
+                  style: context.textTheme.displaySmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: context.textTheme.bodyLarge,
+                    children: [
+                      const TextSpan(text: 'We sent a 6-digit code to '),
+                      TextSpan(
+                        text: '+216 $phoneNumber',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppTheme.sectionSpacing * 2),
+                SmsOtpInput(phoneNumber: phoneNumber),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\widgets\login_form.dart
+==================================================
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sahbifit/core/config/app_theme.dart';
+import 'package:sahbifit/core/utils/phone_number_validator.dart';
+import 'package:sahbifit/core/utils/validators.dart';
+import 'package:sahbifit/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:sahbifit/shared/widgets/buttons/custom_buttons.dart';
+import 'package:sahbifit/shared/widgets/inputs/custom_inputs.dart';
+
+class LoginForm extends StatefulWidget {
+  const LoginForm({super.key});
+
+  @override
+  State<LoginForm> createState() => _LoginFormState();
+}
+
+class _LoginFormState extends State<LoginForm> {
+  final _formKey = GlobalKey<FormState>();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscureText = true;
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _onLoginPressed() {
+    if (_formKey.currentState!.validate()) {
+      context.read<AuthBloc>().add(
+            AuthEvent.loginButtonPressed(
+              phoneNumber: _phoneController.text.trim(),
+              password: _passwordController.text.trim(),
+            ),
+          );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          PrimaryTextField(
+            label: 'Phone Number',
+            hintText: 'e.g. 50123456',
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            prefixIcon: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+              child: Text(
+                '+216',
+                style: context.textTheme.bodyLarge?.copyWith(
+                  color: AppTheme.darkGray,
+                ),
+              ),
+            ),
+            validator: validateTunisianPhoneNumber,
+          ),
+          const SizedBox(height: AppTheme.defaultPadding),
+          PrimaryTextField(
+            label: 'Password',
+            hintText: 'Enter your password',
+            controller: _passwordController,
+            obscureText: _obscureText,
+            validator: validatePassword,
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscureText ? Icons.visibility_off : Icons.visibility,
+                color: AppTheme.disabledGray,
+              ),
+              onPressed: () {
+                setState(() {
+                  _obscureText = !_obscureText;
+                });
+              },
+            ),
+          ),
+          const SizedBox(height: AppTheme.sectionSpacing),
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              final isLoading = state.maybeWhen(
+                loading: () => true,
+                orElse: () => false,
+              );
+              return PrimaryButton(
+                text: 'Login',
+                onPressed: _onLoginPressed,
+                isLoading: isLoading,
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\widgets\profile_setup_form.dart
+==================================================
+// lib/features/auth/presentation/widgets/profile_setup_form.dart
+
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:sahbifit/core/config/app_theme.dart';
+import 'package:sahbifit/core/utils/date_formatters.dart';
+import 'package:sahbifit/core/utils/validators.dart';
+import 'package:sahbifit/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:sahbifit/features/gym/domain/entities/gym.dart';
+import 'package:sahbifit/features/gym/presentation/cubit/gym_list_cubit.dart';
+import 'package:sahbifit/features/tag/domain/entities/tag.dart';
+import 'package:sahbifit/features/tag/presentation/cubit/tags_cubit.dart';
+import 'package:sahbifit/shared/widgets/badges/custom_badges.dart';
+import 'package:sahbifit/shared/widgets/buttons/custom_buttons.dart';
+import 'package:sahbifit/shared/widgets/inputs/custom_inputs.dart';
+import 'package:sahbifit/shared/widgets/states/loading_states.dart';
+
+class ProfileSetupForm extends StatefulWidget {
+  final Function({
+    required String firstName,
+    required String dateOfBirth,
+    required String primaryGymId,
+    required List<int> goalTagIds,
+    required List<int> scheduleTagIds,
+    File? profileImageFile, // Updated signature
+  }) onRegister;
+
+  const ProfileSetupForm({super.key, required this.onRegister});
+
+  @override
+  State<ProfileSetupForm> createState() => _ProfileSetupFormState();
+}
+
+class _ProfileSetupFormState extends State<ProfileSetupForm> {
+  final _formKey = GlobalKey<FormState>();
+  final _firstNameController = TextEditingController();
+  final _dobController = TextEditingController();
+
+  DateTime? _selectedDate;
+  String? _selectedGymId;
+  final List<int> _selectedGoalIds = [];
+  final List<int> _selectedScheduleIds = [];
+
+  // These stay, as the widget still picks the image
+  File? _pickedImage;
+  final ImagePicker _picker = ImagePicker();
+  // --- END ---
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<GymListCubit>().fetchApprovedGyms();
+    context.read<TagsCubit>().loadAllTags();
+  }
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _dobController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime(2000, 1, 1),
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
+      helpText: 'Select Your Date of Birth',
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+        _dobController.text = formatToYyyyMmDd(picked);
+      });
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxHeight: 1024,
+      maxWidth: 1024,
+      imageQuality: 80,
+    );
+    if (image != null) {
+      setState(() {
+        _pickedImage = File(image.path);
+      });
+    }
+  }
+
+  // Updated method: No async, no upload logic
+  void _onRegisterPressed() {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    if (_selectedGymId == null) {
+      _showError('Please select your primary gym.');
+      return;
+    }
+    if (_selectedGoalIds.isEmpty) {
+      _showError('Please select at least one goal.');
+      return;
+    }
+    if (_selectedScheduleIds.isEmpty) {
+      _showError('Please select your schedule.');
+      return;
+    }
+
+    // Call the onRegister callback with the File
+    widget.onRegister(
+      firstName: _firstNameController.text.trim(),
+      dateOfBirth: _dobController.text,
+      primaryGymId: _selectedGymId!,
+      goalTagIds: _selectedGoalIds,
+      scheduleTagIds: _selectedScheduleIds,
+      profileImageFile: _pickedImage, // Pass the File
+    );
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.primaryRed,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppTheme.defaultPadding),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: GestureDetector(
+                onTap: _pickImage,
+                child: CircleAvatar(
+                  radius: 50,
+                  backgroundColor: AppTheme.lightGray,
+                  backgroundImage:
+                      _pickedImage != null ? FileImage(_pickedImage!) : null,
+                  child: _pickedImage == null
+                      ? const Icon(Icons.add_a_photo,
+                          color: AppTheme.disabledGray, size: 40)
+                      : null,
+                ),
+              ),
+            ),
+            Text(
+              'Tell us about you',
+              style: context.textTheme.displaySmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppTheme.sectionSpacing),
+            PrimaryTextField(
+              label: 'First Name',
+              hintText: 'e.g. Ahmed',
+              controller: _firstNameController,
+              validator: (value) => validateNotEmpty(value, 'First Name'),
+            ),
+            const SizedBox(height: AppTheme.defaultPadding),
+            PrimaryTextField(
+              label: 'Date of Birth',
+              hintText: 'Select your birthday',
+              controller: _dobController,
+              readOnly: true,
+              onTap: () => _pickDate(context),
+              suffixIcon: const Icon(Icons.calendar_today),
+              validator: (value) => validateNotEmpty(value, 'Date of Birth'),
+            ),
+            const SizedBox(height: AppTheme.defaultPadding),
+            _buildGymSelector(),
+            const SizedBox(height: AppTheme.sectionSpacing),
+            _buildTagSelector(),
+            const SizedBox(height: AppTheme.sectionSpacing),
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                // Check AuthBloc loading
+                final isAuthLoading = state.maybeWhen(
+                  loading: () => true,
+                  orElse: () => false,
+                );
+                return PrimaryButton(
+                  text: 'Create Account',
+                  onPressed: _onRegisterPressed,
+                  isLoading: isAuthLoading, // Only depends on AuthBloc now
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGymSelector() {
+    return BlocBuilder<GymListCubit, GymListState>(
+      builder: (context, state) {
+        return state.maybeWhen(
+          loading: () => const LoadingIndicator(),
+          error: (message) => Text('Error: $message'),
+          loaded: (gyms) {
+            return DropdownButtonFormField<String>(
+              initialValue: _selectedGymId,
+              hint: const Text('Select your primary gym'),
+              decoration: const InputDecoration(
+                labelText: 'Primary Gym',
+              ),
+              items: gyms.map((Gym gym) {
+                return DropdownMenuItem<String>(
+                  value: gym.gymId,
+                  child: Text(gym.name),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedGymId = newValue;
+                });
+              },
+              validator: (value) =>
+                  value == null ? 'Please select a gym.' : null,
+            );
+          },
+          orElse: () => const SizedBox.shrink(),
+        );
+      },
+    );
+  }
+
+  Widget _buildTagSelector() {
+    return BlocBuilder<TagsCubit, TagsState>(
+      builder: (context, state) {
+        return state.maybeWhen(
+          loading: () => const LoadingIndicator(),
+          error: (message) => Text('Error: $message'),
+          loaded: (goalTags, scheduleTags) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTagSection(
+                  'Your Goals',
+                  goalTags,
+                  _selectedGoalIds,
+                ),
+                const SizedBox(height: AppTheme.defaultPadding),
+                _buildTagSection(
+                  'Your Schedule',
+                  scheduleTags,
+                  _selectedScheduleIds,
+                ),
+              ],
+            );
+          },
+          orElse: () => const SizedBox.shrink(),
+        );
+      },
+    );
+  }
+
+  Widget _buildTagSection(
+      String title, List<Tag> tags, List<int> selectedIds) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: context.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 8.0,
+          children: tags.map((tag) {
+            final isSelected = selectedIds.contains(tag.tagId);
+            return TagChip(
+              label: tag.tagName,
+              selected: isSelected,
+              onTap: () {
+                setState(() {
+                  if (isSelected) {
+                    selectedIds.remove(tag.tagId);
+                  } else {
+                    selectedIds.add(tag.tagId);
+                  }
+                });
+              },
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\widgets\register_form_step_1.dart
+==================================================
+import 'package:flutter/material.dart';
+import 'package:sahbifit/core/config/app_theme.dart';
+import 'package:sahbifit/core/di/service_locator.dart';
+import 'package:sahbifit/core/services/recaptcha_service.dart';
+import 'package:sahbifit/core/utils/phone_number_validator.dart';
+import 'package:sahbifit/core/utils/validators.dart';
+import 'package:sahbifit/shared/widgets/buttons/custom_buttons.dart';
+import 'package:sahbifit/shared/widgets/inputs/custom_inputs.dart';
+
+class RegisterFormStep1 extends StatefulWidget {
+  final Function(String phoneNumber, String password, String recaptchaToken)
+      onNext;
+  const RegisterFormStep1({super.key, required this.onNext});
+
+  @override
+  State<RegisterFormStep1> createState() => _RegisterFormStep1State();
+}
+
+class _RegisterFormStep1State extends State<RegisterFormStep1> {
+  final _formKey = GlobalKey<FormState>();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onNextPressed() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Get reCAPTCHA token
+      final recaptchaToken =
+          await getIt<ReCaptchaService>().getToken('register');
+
+      // Pass data to parent page
+      widget.onNext(
+        _phoneController.text.trim(),
+        _passwordController.text.trim(),
+        recaptchaToken,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('reCAPTCHA failed: ${e.toString()}'),
+          backgroundColor: AppTheme.primaryRed,
+        ),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppTheme.defaultPadding),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Your Account',
+              style: context.textTheme.displaySmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppTheme.sectionSpacing),
+            PrimaryTextField(
+              label: 'Phone Number',
+              hintText: 'e.g. 50123456',
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              prefixIcon: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                child: Text(
+                  '+216',
+                  style: context.textTheme.bodyLarge?.copyWith(
+                    color: AppTheme.darkGray,
+                  ),
+                ),
+              ),
+              validator: validateTunisianPhoneNumber,
+            ),
+            const SizedBox(height: AppTheme.defaultPadding),
+            PrimaryTextField(
+              label: 'Password',
+              hintText: 'At least 8 characters',
+              controller: _passwordController,
+              obscureText: _obscurePassword,
+              validator: validatePassword,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  color: AppTheme.disabledGray,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(height: AppTheme.defaultPadding),
+            PrimaryTextField(
+              label: 'Confirm Password',
+              hintText: 'Re-enter your password',
+              controller: _confirmPasswordController,
+              obscureText: _obscureConfirmPassword,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please confirm your password.';
+                }
+                if (value != _passwordController.text) {
+                  return 'Passwords do not match.';
+                }
+                return null;
+              },
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureConfirmPassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                  color: AppTheme.disabledGray,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscureConfirmPassword = !_obscureConfirmPassword;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(height: AppTheme.sectionSpacing),
+            PrimaryButton(
+              text: 'Next',
+              onPressed: _onNextPressed,
+              isLoading: _isLoading,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\widgets\sms_otp_input.dart
+==================================================
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sahbifit/core/config/app_theme.dart';
+import 'package:sahbifit/core/di/service_locator.dart';
+import 'package:sahbifit/core/services/recaptcha_service.dart';
+import 'package:sahbifit/core/utils/validators.dart';
+import 'package:sahbifit/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:sahbifit/shared/widgets/buttons/custom_buttons.dart';
+import 'package:sahbifit/shared/widgets/inputs/custom_inputs.dart';
+
+class SmsOtpInput extends StatefulWidget {
+  final String phoneNumber;
+  const SmsOtpInput({super.key, required this.phoneNumber});
+
+  @override
+  State<SmsOtpInput> createState() => _SmsOtpInputState();
+}
+
+class _SmsOtpInputState extends State<SmsOtpInput> {
+  final _formKey = GlobalKey<FormState>();
+  final _otpController = TextEditingController();
+
+  Timer? _resendTimer;
+  int _countdown = 60;
+  bool _isResending = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startResendTimer();
+  }
+
+  @override
+  void dispose() {
+    _resendTimer?.cancel();
+    _otpController.dispose();
+    super.dispose();
+  }
+
+  void _startResendTimer() {
+    setState(() => _countdown = 60);
+    _resendTimer?.cancel(); // Cancel any existing timer
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_countdown > 0) {
+        setState(() => _countdown--);
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  Future<void> _onResendPressed() async {
+    if (_countdown > 0) return;
+
+    setState(() => _isResending = true);
+    try {
+      final recaptchaToken =
+          await getIt<ReCaptchaService>().getToken('resend-otp');
+      if (mounted) {
+        context.read<AuthBloc>().add(
+              AuthEvent.resendOtpButtonPressed(
+                phoneNumber: widget.phoneNumber,
+                recaptchaToken: recaptchaToken,
+              ),
+            );
+      }
+      _startResendTimer();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('reCAPTCHA failed: ${e.toString()}'),
+            backgroundColor: AppTheme.primaryRed,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isResending = false);
+    }
+  }
+
+  void _onVerifyPressed() {
+    if (_formKey.currentState!.validate()) {
+      context.read<AuthBloc>().add(
+            AuthEvent.verifySmsButtonPressed(
+              phoneNumber: widget.phoneNumber,
+              otp: _otpController.text.trim(),
+            ),
+          );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          PrimaryTextField(
+            label: '6-Digit OTP',
+            hintText: '------',
+            controller: _otpController,
+            keyboardType: TextInputType.number,
+            validator: validateOtp,
+            maxLength: 6,
+          ),
+          const SizedBox(height: AppTheme.sectionSpacing),
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              final isLoading = state.maybeWhen(
+                loading: () => true,
+                orElse: () => false,
+              );
+              return PrimaryButton(
+                text: 'Verify',
+                onPressed: _onVerifyPressed,
+                isLoading: isLoading,
+              );
+            },
+          ),
+          const SizedBox(height: AppTheme.defaultPadding),
+          TextButton(
+            onPressed: _countdown == 0 ? _onResendPressed : null,
+            child: _isResending
+                ? const SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(
+                    _countdown == 0
+                        ? 'Resend OTP'
+                        : 'Resend OTP in $_countdown s',
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

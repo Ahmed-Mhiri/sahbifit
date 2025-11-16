@@ -4,8 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:sahbifit/app/bloc/app_bloc.dart';
 
 // --- Import all your Page files ---
-// You will get errors here until you remove the @RoutePage() 
-// annotations from these files in a later step.
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/verify_sms_page.dart';
@@ -20,6 +18,8 @@ import '../../features/verification/presentation/pages/submit_verification_page.
 import '../../features/rating/presentation/pages/pending_ratings_page.dart';
 import '../../features/report/presentation/pages/report_user_page.dart';
 import '../../features/gym/presentation/pages/submit_gym_page.dart';
+// --- REMOVED THIS IMPORT ---
+// import '../../features/session/domain/entities/session.dart';
 
 /// A wrapper class to hold the GoRouter instance.
 /// This allows us to pass the AppBloc to the redirect logic.
@@ -121,6 +121,8 @@ class AppRouter {
             GoRoute(
               path: 'attendance',
               builder: (context, state) {
+                // --- THIS BLOCK IS MODIFIED ---
+                // Get the sessionId from the URL path parameters
                 final sessionId = state.pathParameters['sessionId']!;
                 return MarkAttendancePage(sessionId: sessionId);
               },

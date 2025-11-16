@@ -1,9 +1,13 @@
 package com.sahbifit.api.user;
 
 import java.security.Principal;
+import java.util.List; // <-- Added import
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize; // <-- Added import for @PreAuthorize
+import org.springframework.web.bind.annotation.DeleteMapping; // <-- Added import
+import org.springframework.web.bind.annotation.GetMapping; // <-- Added import
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -11,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sahbifit.api.user.dto.PublicUserProfileDto; // <-- Added import
 import com.sahbifit.api.user.dto.UpdateFcmTokenDto;
 import com.sahbifit.api.user.dto.UpdateVisibilityDto;
 
@@ -63,5 +68,31 @@ public class UserController {
         
         userService.updateProfileVisibility(principal.getName(), dto);
         return ResponseEntity.ok().build();
+    }
+
+    // --- ADDED ENDPOINTS ---
+
+    /**
+     * Gets the list of users the authenticated user has blocked.
+     */
+    @GetMapping("/me/blocked")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<List<PublicUserProfileDto>> getMyBlockedUsers(Principal principal) {
+        List<PublicUserProfileDto> blockedUsers = userService.getBlockedUsers(principal.getName());
+        return ResponseEntity.ok(blockedUsers);
+    }
+
+    /**
+     * Unblocks a user.
+     * We use the DELETE verb on the resource that is being deleted (the block record).
+     */
+    @DeleteMapping("/me/blocked/{userId}")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<Void> unblockUser(
+            @PathVariable UUID userId,
+            Principal principal) {
+        
+        userService.unblockUser(principal.getName(), userId);
+        return ResponseEntity.noContent().build(); // 204 No Content is standard for success
     }
 }

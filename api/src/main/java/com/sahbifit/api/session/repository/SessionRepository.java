@@ -3,6 +3,7 @@ package com.sahbifit.api.session.repository;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional; // <-- ADDED
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -47,6 +48,13 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
      */
     @Query("SELECT s FROM Session s WHERE s.endTime < :now AND s.isRatingNotified = false AND s.status = 'active'")
     List<Session> findCompletedSessionsPendingNotification(@Param("now") OffsetDateTime now);
+
+    /**
+     * Finds a single session by its ID, fetching creator and gym data in one query.
+     * This prevents N+1 queries.
+     */
+    @Query("SELECT s FROM Session s JOIN FETCH s.creator JOIN FETCH s.gym WHERE s.sessionId = :sessionId")
+    Optional<Session> findByIdWithCreatorAndGym(@Param("sessionId") UUID sessionId);
 
     // --- NEW METHODS FOR EPHEMERAL CHAT ---
 

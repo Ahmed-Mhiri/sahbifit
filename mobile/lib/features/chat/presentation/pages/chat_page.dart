@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sahbifit/app/bloc/app_bloc.dart';
+// REMOVED: import 'package:sahbifit/app/bloc/app_bloc.dart';
 import 'package:sahbifit/core/di/service_locator.dart';
 import 'package:sahbifit/features/chat/domain/entities/message.dart';
 import 'package:sahbifit/features/chat/presentation/cubit/chat_cubit.dart';
@@ -10,6 +10,11 @@ import 'package:sahbifit/features/chat/presentation/widgets/chat_logistics_heade
 import 'package:sahbifit/features/chat/presentation/widgets/message_bubble.dart';
 import 'package:sahbifit/shared/widgets/app_bars/custom_app_bar.dart';
 import 'package:sahbifit/shared/widgets/states/loading_states.dart';
+
+// --- ADDED PROFILE BLOC IMPORTS ---
+import 'package:sahbifit/features/user/presentation/bloc/profile_bloc.dart';
+
+// ---------------------------------
 
 class ChatPage extends StatelessWidget {
   final String sessionId;
@@ -25,63 +30,73 @@ class ChatPage extends StatelessWidget {
     // It also triggers the initial data load.
     return BlocProvider(
       create: (context) => getIt<ChatCubit>()..listenToChat(sessionId),
-      child: BlocBuilder<AppBloc, AppState>(
-        // We need the AppBloc to get the current user's ID
-        builder: (context, appState) {
-          // Assume AppState has an 'authenticated' state with a 'user' object
-          final currentUserId =
-              appState.mapOrNull(authenticated: (state) => state.user.userId);
-
-          if (currentUserId == null) {
-            // This case should ideally not happen if routing is correct,
-            // but it's good practice to handle it.
-            return const Scaffold(
-              body: LoadingIndicator(message: 'Authenticating...'),
-            );
-          }
-
-          return Scaffold(
-            appBar: const CustomAppBar(title: 'Session Chat'),
-            body: Column(
-              children: [
-                const ChatLogisticsHeader(),
-                Expanded(
-                  // This builder handles the chat's own state
-                  child: BlocBuilder<ChatCubit, ChatState>(
-                    builder: (context, chatState) {
-                      return chatState.when(
-                        initial: () => const SizedBox.shrink(),
-                        loading: () =>
-                            const LoadingIndicator(message: 'Loading chat...'),
-                        error: (message) => ErrorStateWidget(
-                          message: message,
-                          buttonText: 'Retry',
-                          onRetry: () {
-                            context.read<ChatCubit>().listenToChat(sessionId);
-                          },
-                        ),
-                        loaded: (messages) => _buildChatList(
-                          context,
-                          messages,
-                          currentUserId,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                ChatInputField(
-                  enabled: true, // Add logic here if chat can be disabled
-                  onSend: (text) {
-                    context.read<ChatCubit>().sendMessage(
-                          sessionId: sessionId,
-                          senderId: currentUserId,
-                          text: text,
-                        );
-                  },
-                ),
-              ],
+      // --- MODIFIED: Listen to ProfileBloc instead of AppBloc ---
+      child: BlocBuilder<ProfileBloc, ProfileState>(
+        builder: (context, profileState) {
+          // --- Handle Profile states ---
+          return profileState.when(
+            initial: () => const Scaffold(
+                body: LoadingIndicator(message: 'Loading profile...')),
+            loading: () => const Scaffold(
+                body: LoadingIndicator(message: 'Loading profile...')),
+            error: (message) => Scaffold(
+              body: ErrorStateWidget(
+                message: message,
+                buttonText: 'Retry',
+                onRetry: () => context
+                    .read<ProfileBloc>()
+                    .add(const ProfileEvent.loadMyProfile()),
+              ),
             ),
+            // --- Profile is loaded, we have the user ---
+            loaded: (user) {
+              final currentUserId = user.userId;
+
+              return Scaffold(
+                appBar: const CustomAppBar(title: 'Session Chat'),
+                body: Column(
+                  children: [
+                    const ChatLogisticsHeader(),
+                    Expanded(
+                      // This builder handles the chat's own state
+                      child: BlocBuilder<ChatCubit, ChatState>(
+                        builder: (context, chatState) {
+                          return chatState.when(
+                            initial: () => const SizedBox.shrink(),
+                            loading: () =>
+                                const LoadingIndicator(message: 'Loading chat...'),
+                            error: (message) => ErrorStateWidget(
+                              message: message,
+                              buttonText: 'Retry',
+                              onRetry: () {
+                                context.read<ChatCubit>().listenToChat(sessionId);
+                              },
+                            ),
+                            loaded: (messages) => _buildChatList(
+                              context,
+                              messages,
+                              currentUserId, // <-- Pass user ID
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    ChatInputField(
+                      enabled: true, // Add logic here if chat can be disabled
+                      onSend: (text) {
+                        context.read<ChatCubit>().sendMessage(
+                              sessionId: sessionId,
+                              senderId: currentUserId, // <-- Pass user ID
+                              text: text,
+                            );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
           );
+          // ---------------------------------
         },
       ),
     );

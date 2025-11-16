@@ -1,5 +1,5 @@
 ﻿==================================================
-Path: ChatActivationService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\ChatActivationService.java
 ==================================================
 package com.sahbifit.api.session;
 
@@ -87,9 +87,8 @@ public class ChatActivationService {
     }
 }
 
-
 ==================================================
-Path: SessionController.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\SessionController.java
 ==================================================
 // Pfad: src/main/java/com/sahbifit/api/session/SessionController.java
 package com.sahbifit.api.session;
@@ -161,9 +160,8 @@ public class SessionController {
     }
 }
 
-
 ==================================================
-Path: SessionCreatedEvent.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\SessionCreatedEvent.java
 ==================================================
 package com.sahbifit.api.session;
 
@@ -184,9 +182,8 @@ public class SessionCreatedEvent extends ApplicationEvent {
     }
 }
 
-
 ==================================================
-Path: SessionEventListener.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\SessionEventListener.java
 ==================================================
 package com.sahbifit.api.session;
 
@@ -246,9 +243,8 @@ public class SessionEventListener {
     }
 }
 
-
 ==================================================
-Path: SessionService.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\SessionService.java
 ==================================================
 package com.sahbifit.api.session;
 
@@ -310,9 +306,9 @@ public class SessionService {
             throw new IllegalStateException("You must be fully verified to create a session.");
         }
 
-        // Gate 2 (Reputation - MVP 3.5)
-        if (dto.sessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 3) {
-            throw new IllegalStateException("You must attend 3 group sessions before creating a 1-on-1 session.");
+        // Gate 2 (Reputation - "The 1-Session Gate" Strategy)
+        if (dto.sessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 1) { // <-- CHANGED FROM 3 to 1
+            throw new IllegalStateException("You must attend 1 group session before creating a 1-on-1 session."); // <-- UPDATED MESSAGE
         }
 
         Gym gym = gymRepository.findById(dto.gymId())
@@ -373,9 +369,9 @@ public class SessionService {
             }
         }
 
-        // Gate 2 (Reputation - MVP 3.5)
-        if (session.getSessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 3) {
-            throw new IllegalStateException("You must attend 3 group sessions before joining a 1-on-1 session.");
+        // Gate 2 (Reputation - "The 1-Session Gate" Strategy)
+        if (session.getSessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 1) { // <-- CHANGED FROM 3 to 1
+            throw new IllegalStateException("You must attend 1 group session before joining a 1-on-1 session."); // <-- UPDATED MESSAGE
         }
 
         // Gate 3 (Session Full?)
@@ -500,9 +496,8 @@ public class SessionService {
     }
 }
 
-
 ==================================================
-Path: CreateSessionDto.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\dto\CreateSessionDto.java
 ==================================================
 package com.sahbifit.api.session.dto;
 
@@ -520,9 +515,8 @@ public record CreateSessionDto(
     Integer maxParticipants
 ) {}
 
-
 ==================================================
-Path: MarkAttendanceDto.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\dto\MarkAttendanceDto.java
 ==================================================
 package com.sahbifit.api.session.dto;
 
@@ -543,9 +537,8 @@ public record MarkAttendanceDto(
     ParticipantStatus newStatus
 ) {}
 
-
 ==================================================
-Path: ParticipantStatus.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\model\ParticipantStatus.java
 ==================================================
 package com.sahbifit.api.session.model;
 
@@ -556,9 +549,8 @@ public enum ParticipantStatus {
     left
 }
 
-
 ==================================================
-Path: Session.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\model\Session.java
 ==================================================
 package com.sahbifit.api.session.model;
 
@@ -703,9 +695,8 @@ public class Session {
     private Set<Report> reports;
 }
 
-
 ==================================================
-Path: SessionParticipant.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\model\SessionParticipant.java
 ==================================================
 package com.sahbifit.api.session.model;
 
@@ -765,9 +756,8 @@ public class SessionParticipant {
     private OffsetDateTime joinedAt;
 }
 
-
 ==================================================
-Path: SessionParticipantId.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\model\SessionParticipantId.java
 ==================================================
 package com.sahbifit.api.session.model;
 
@@ -789,9 +779,8 @@ public class SessionParticipantId implements Serializable {
     private UUID userId;
 }
 
-
 ==================================================
-Path: SessionStatus.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\model\SessionStatus.java
 ==================================================
 package com.sahbifit.api.session.model;
 
@@ -801,9 +790,8 @@ public enum SessionStatus {
     completed
 }
 
-
 ==================================================
-Path: SessionType.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\model\SessionType.java
 ==================================================
 package com.sahbifit.api.session.model;
 
@@ -812,9 +800,8 @@ public enum SessionType {
     one_on_one
 }
 
-
 ==================================================
-Path: SessionParticipantRepository.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\repository\SessionParticipantRepository.java
 ==================================================
 // Pfad: src/main/java/com/sahbifit/api/session/repository/SessionParticipantRepository.java
 package com.sahbifit.api.session.repository;
@@ -863,9 +850,8 @@ public interface SessionParticipantRepository extends JpaRepository<SessionParti
     List<SessionParticipant> findBySessionAndStatus(Session session, ParticipantStatus status);
 }
 
-
 ==================================================
-Path: SessionRepository.java
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\repository\SessionRepository.java
 ==================================================
 // Path: src/main/java/com/sahbifit/api/session/repository/SessionRepository.java
 package com.sahbifit.api.session.repository;
@@ -940,5 +926,4 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
 
     // --- END OF NEW METHODS ---
 }
-
 

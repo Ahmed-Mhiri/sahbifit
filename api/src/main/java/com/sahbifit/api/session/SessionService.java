@@ -1,3 +1,4 @@
+// Path: src/main/java/com/sahbifit/api/session/SessionService.java
 package com.sahbifit.api.session;
 
 import java.util.List;
@@ -183,6 +184,38 @@ public class SessionService {
                 .filter(session -> isVisible(session.getCreator(), viewer))
                 .collect(Collectors.toList());
     }
+
+    /**
+     * (NEW METHOD) Get a single session by its ID.
+     * Applies all "View" gates (privacy, visibility, probation).
+     */
+    @Transactional(readOnly = true)
+    public Session getSessionById(UUID sessionId, String userPhoneNumber) {
+        
+        // 1. Get the session with creator and gym (optimized)
+        Session session = sessionRepository.findByIdWithCreatorAndGym(sessionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", sessionId));
+
+        // 2. Get the user who is VIEWING the session
+        User viewer = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
+
+        // 3. Apply PRIVACY FILTER (re-using existing helper)
+        if (!isVisible(session.getCreator(), viewer)) {
+            // Hide its existence
+            throw new ResourceNotFoundException("Session", "sessionId", sessionId);
+        }
+
+        // 4. Apply PROBATIONARY MODE FILTER (Gate 1 from joinSession)
+        if (viewer.getVerificationStatus() == VerificationStatus.pending_review) {
+            if (session.getCreator().getRole() != UserRole.ambassador) {
+                throw new AccessDeniedException("Verification pending. You can only view Ambassador sessions.");
+            }
+        }
+
+        return session;
+    }
+
 
     /**
      * Helper method to check if a creator's profile is visible to a viewer.

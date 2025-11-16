@@ -55,11 +55,12 @@ extension AuthEventPatterns on AuthEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _LoginButtonPressed value)?  loginButtonPressed,TResult Function( _RegisterButtonPressed value)?  registerButtonPressed,TResult Function( _VerifySmsButtonPressed value)?  verifySmsButtonPressed,TResult Function( _ResendOtpButtonPressed value)?  resendOtpButtonPressed,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _LoginButtonPressed value)?  loginButtonPressed,TResult Function( _NextStepPressed value)?  nextStepPressed,TResult Function( _RegisterButtonPressed value)?  registerButtonPressed,TResult Function( _VerifySmsButtonPressed value)?  verifySmsButtonPressed,TResult Function( _ResendOtpButtonPressed value)?  resendOtpButtonPressed,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _LoginButtonPressed() when loginButtonPressed != null:
-return loginButtonPressed(_that);case _RegisterButtonPressed() when registerButtonPressed != null:
+return loginButtonPressed(_that);case _NextStepPressed() when nextStepPressed != null:
+return nextStepPressed(_that);case _RegisterButtonPressed() when registerButtonPressed != null:
 return registerButtonPressed(_that);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
 return verifySmsButtonPressed(_that);case _ResendOtpButtonPressed() when resendOtpButtonPressed != null:
 return resendOtpButtonPressed(_that);case _:
@@ -80,11 +81,12 @@ return resendOtpButtonPressed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _LoginButtonPressed value)  loginButtonPressed,required TResult Function( _RegisterButtonPressed value)  registerButtonPressed,required TResult Function( _VerifySmsButtonPressed value)  verifySmsButtonPressed,required TResult Function( _ResendOtpButtonPressed value)  resendOtpButtonPressed,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _LoginButtonPressed value)  loginButtonPressed,required TResult Function( _NextStepPressed value)  nextStepPressed,required TResult Function( _RegisterButtonPressed value)  registerButtonPressed,required TResult Function( _VerifySmsButtonPressed value)  verifySmsButtonPressed,required TResult Function( _ResendOtpButtonPressed value)  resendOtpButtonPressed,}){
 final _that = this;
 switch (_that) {
 case _LoginButtonPressed():
-return loginButtonPressed(_that);case _RegisterButtonPressed():
+return loginButtonPressed(_that);case _NextStepPressed():
+return nextStepPressed(_that);case _RegisterButtonPressed():
 return registerButtonPressed(_that);case _VerifySmsButtonPressed():
 return verifySmsButtonPressed(_that);case _ResendOtpButtonPressed():
 return resendOtpButtonPressed(_that);}
@@ -101,11 +103,12 @@ return resendOtpButtonPressed(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _LoginButtonPressed value)?  loginButtonPressed,TResult? Function( _RegisterButtonPressed value)?  registerButtonPressed,TResult? Function( _VerifySmsButtonPressed value)?  verifySmsButtonPressed,TResult? Function( _ResendOtpButtonPressed value)?  resendOtpButtonPressed,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _LoginButtonPressed value)?  loginButtonPressed,TResult? Function( _NextStepPressed value)?  nextStepPressed,TResult? Function( _RegisterButtonPressed value)?  registerButtonPressed,TResult? Function( _VerifySmsButtonPressed value)?  verifySmsButtonPressed,TResult? Function( _ResendOtpButtonPressed value)?  resendOtpButtonPressed,}){
 final _that = this;
 switch (_that) {
 case _LoginButtonPressed() when loginButtonPressed != null:
-return loginButtonPressed(_that);case _RegisterButtonPressed() when registerButtonPressed != null:
+return loginButtonPressed(_that);case _NextStepPressed() when nextStepPressed != null:
+return nextStepPressed(_that);case _RegisterButtonPressed() when registerButtonPressed != null:
 return registerButtonPressed(_that);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
 return verifySmsButtonPressed(_that);case _ResendOtpButtonPressed() when resendOtpButtonPressed != null:
 return resendOtpButtonPressed(_that);case _:
@@ -125,11 +128,12 @@ return resendOtpButtonPressed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String phoneNumber,  String password)?  loginButtonPressed,TResult Function( RegisterParams params)?  registerButtonPressed,TResult Function( String phoneNumber,  String otp)?  verifySmsButtonPressed,TResult Function( String phoneNumber,  String recaptchaToken)?  resendOtpButtonPressed,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String phoneNumber,  String password)?  loginButtonPressed,TResult Function( String phoneNumber,  String password)?  nextStepPressed,TResult Function( RegisterParams params,  File? profileImageFile)?  registerButtonPressed,TResult Function( String phoneNumber,  String otp)?  verifySmsButtonPressed,TResult Function( String phoneNumber,  String recaptchaToken)?  resendOtpButtonPressed,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LoginButtonPressed() when loginButtonPressed != null:
-return loginButtonPressed(_that.phoneNumber,_that.password);case _RegisterButtonPressed() when registerButtonPressed != null:
-return registerButtonPressed(_that.params);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
+return loginButtonPressed(_that.phoneNumber,_that.password);case _NextStepPressed() when nextStepPressed != null:
+return nextStepPressed(_that.phoneNumber,_that.password);case _RegisterButtonPressed() when registerButtonPressed != null:
+return registerButtonPressed(_that.params,_that.profileImageFile);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
 return verifySmsButtonPressed(_that.phoneNumber,_that.otp);case _ResendOtpButtonPressed() when resendOtpButtonPressed != null:
 return resendOtpButtonPressed(_that.phoneNumber,_that.recaptchaToken);case _:
   return orElse();
@@ -149,11 +153,12 @@ return resendOtpButtonPressed(_that.phoneNumber,_that.recaptchaToken);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String phoneNumber,  String password)  loginButtonPressed,required TResult Function( RegisterParams params)  registerButtonPressed,required TResult Function( String phoneNumber,  String otp)  verifySmsButtonPressed,required TResult Function( String phoneNumber,  String recaptchaToken)  resendOtpButtonPressed,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String phoneNumber,  String password)  loginButtonPressed,required TResult Function( String phoneNumber,  String password)  nextStepPressed,required TResult Function( RegisterParams params,  File? profileImageFile)  registerButtonPressed,required TResult Function( String phoneNumber,  String otp)  verifySmsButtonPressed,required TResult Function( String phoneNumber,  String recaptchaToken)  resendOtpButtonPressed,}) {final _that = this;
 switch (_that) {
 case _LoginButtonPressed():
-return loginButtonPressed(_that.phoneNumber,_that.password);case _RegisterButtonPressed():
-return registerButtonPressed(_that.params);case _VerifySmsButtonPressed():
+return loginButtonPressed(_that.phoneNumber,_that.password);case _NextStepPressed():
+return nextStepPressed(_that.phoneNumber,_that.password);case _RegisterButtonPressed():
+return registerButtonPressed(_that.params,_that.profileImageFile);case _VerifySmsButtonPressed():
 return verifySmsButtonPressed(_that.phoneNumber,_that.otp);case _ResendOtpButtonPressed():
 return resendOtpButtonPressed(_that.phoneNumber,_that.recaptchaToken);}
 }
@@ -169,11 +174,12 @@ return resendOtpButtonPressed(_that.phoneNumber,_that.recaptchaToken);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String phoneNumber,  String password)?  loginButtonPressed,TResult? Function( RegisterParams params)?  registerButtonPressed,TResult? Function( String phoneNumber,  String otp)?  verifySmsButtonPressed,TResult? Function( String phoneNumber,  String recaptchaToken)?  resendOtpButtonPressed,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String phoneNumber,  String password)?  loginButtonPressed,TResult? Function( String phoneNumber,  String password)?  nextStepPressed,TResult? Function( RegisterParams params,  File? profileImageFile)?  registerButtonPressed,TResult? Function( String phoneNumber,  String otp)?  verifySmsButtonPressed,TResult? Function( String phoneNumber,  String recaptchaToken)?  resendOtpButtonPressed,}) {final _that = this;
 switch (_that) {
 case _LoginButtonPressed() when loginButtonPressed != null:
-return loginButtonPressed(_that.phoneNumber,_that.password);case _RegisterButtonPressed() when registerButtonPressed != null:
-return registerButtonPressed(_that.params);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
+return loginButtonPressed(_that.phoneNumber,_that.password);case _NextStepPressed() when nextStepPressed != null:
+return nextStepPressed(_that.phoneNumber,_that.password);case _RegisterButtonPressed() when registerButtonPressed != null:
+return registerButtonPressed(_that.params,_that.profileImageFile);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
 return verifySmsButtonPressed(_that.phoneNumber,_that.otp);case _ResendOtpButtonPressed() when resendOtpButtonPressed != null:
 return resendOtpButtonPressed(_that.phoneNumber,_that.recaptchaToken);case _:
   return null;
@@ -254,11 +260,80 @@ as String,
 /// @nodoc
 
 
+class _NextStepPressed implements AuthEvent {
+  const _NextStepPressed({required this.phoneNumber, required this.password});
+  
+
+ final  String phoneNumber;
+ final  String password;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$NextStepPressedCopyWith<_NextStepPressed> get copyWith => __$NextStepPressedCopyWithImpl<_NextStepPressed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _NextStepPressed&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.password, password) || other.password == password));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber,password);
+
+@override
+String toString() {
+  return 'AuthEvent.nextStepPressed(phoneNumber: $phoneNumber, password: $password)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$NextStepPressedCopyWith<$Res> implements $AuthEventCopyWith<$Res> {
+  factory _$NextStepPressedCopyWith(_NextStepPressed value, $Res Function(_NextStepPressed) _then) = __$NextStepPressedCopyWithImpl;
+@useResult
+$Res call({
+ String phoneNumber, String password
+});
+
+
+
+
+}
+/// @nodoc
+class __$NextStepPressedCopyWithImpl<$Res>
+    implements _$NextStepPressedCopyWith<$Res> {
+  __$NextStepPressedCopyWithImpl(this._self, this._then);
+
+  final _NextStepPressed _self;
+  final $Res Function(_NextStepPressed) _then;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? phoneNumber = null,Object? password = null,}) {
+  return _then(_NextStepPressed(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
 class _RegisterButtonPressed implements AuthEvent {
-  const _RegisterButtonPressed({required this.params});
+  const _RegisterButtonPressed({required this.params, this.profileImageFile});
   
 
  final  RegisterParams params;
+ final  File? profileImageFile;
 
 /// Create a copy of AuthEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -270,16 +345,16 @@ _$RegisterButtonPressedCopyWith<_RegisterButtonPressed> get copyWith => __$Regis
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegisterButtonPressed&&(identical(other.params, params) || other.params == params));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegisterButtonPressed&&(identical(other.params, params) || other.params == params)&&(identical(other.profileImageFile, profileImageFile) || other.profileImageFile == profileImageFile));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,params);
+int get hashCode => Object.hash(runtimeType,params,profileImageFile);
 
 @override
 String toString() {
-  return 'AuthEvent.registerButtonPressed(params: $params)';
+  return 'AuthEvent.registerButtonPressed(params: $params, profileImageFile: $profileImageFile)';
 }
 
 
@@ -290,7 +365,7 @@ abstract mixin class _$RegisterButtonPressedCopyWith<$Res> implements $AuthEvent
   factory _$RegisterButtonPressedCopyWith(_RegisterButtonPressed value, $Res Function(_RegisterButtonPressed) _then) = __$RegisterButtonPressedCopyWithImpl;
 @useResult
 $Res call({
- RegisterParams params
+ RegisterParams params, File? profileImageFile
 });
 
 
@@ -307,10 +382,11 @@ class __$RegisterButtonPressedCopyWithImpl<$Res>
 
 /// Create a copy of AuthEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? params = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? params = null,Object? profileImageFile = freezed,}) {
   return _then(_RegisterButtonPressed(
 params: null == params ? _self.params : params // ignore: cast_nullable_to_non_nullable
-as RegisterParams,
+as RegisterParams,profileImageFile: freezed == profileImageFile ? _self.profileImageFile : profileImageFile // ignore: cast_nullable_to_non_nullable
+as File?,
   ));
 }
 
@@ -497,13 +573,14 @@ extension AuthStatePatterns on AuthState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial value)?  initial,TResult Function( _Loading value)?  loading,TResult Function( _LoginSuccess value)?  loginSuccess,TResult Function( _RegistrationSuccess value)?  registrationSuccess,TResult Function( _VerificationSuccess value)?  verificationSuccess,TResult Function( _OtpResent value)?  otpResent,TResult Function( _Failure value)?  failure,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial value)?  initial,TResult Function( _Loading value)?  loading,TResult Function( _LoginSuccess value)?  loginSuccess,TResult Function( _RegisterStep1Success value)?  registerStep1Success,TResult Function( _RegistrationSuccess value)?  registrationSuccess,TResult Function( _VerificationSuccess value)?  verificationSuccess,TResult Function( _OtpResent value)?  otpResent,TResult Function( _Failure value)?  failure,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial(_that);case _Loading() when loading != null:
 return loading(_that);case _LoginSuccess() when loginSuccess != null:
-return loginSuccess(_that);case _RegistrationSuccess() when registrationSuccess != null:
+return loginSuccess(_that);case _RegisterStep1Success() when registerStep1Success != null:
+return registerStep1Success(_that);case _RegistrationSuccess() when registrationSuccess != null:
 return registrationSuccess(_that);case _VerificationSuccess() when verificationSuccess != null:
 return verificationSuccess(_that);case _OtpResent() when otpResent != null:
 return otpResent(_that);case _Failure() when failure != null:
@@ -525,13 +602,14 @@ return failure(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial value)  initial,required TResult Function( _Loading value)  loading,required TResult Function( _LoginSuccess value)  loginSuccess,required TResult Function( _RegistrationSuccess value)  registrationSuccess,required TResult Function( _VerificationSuccess value)  verificationSuccess,required TResult Function( _OtpResent value)  otpResent,required TResult Function( _Failure value)  failure,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial value)  initial,required TResult Function( _Loading value)  loading,required TResult Function( _LoginSuccess value)  loginSuccess,required TResult Function( _RegisterStep1Success value)  registerStep1Success,required TResult Function( _RegistrationSuccess value)  registrationSuccess,required TResult Function( _VerificationSuccess value)  verificationSuccess,required TResult Function( _OtpResent value)  otpResent,required TResult Function( _Failure value)  failure,}){
 final _that = this;
 switch (_that) {
 case _Initial():
 return initial(_that);case _Loading():
 return loading(_that);case _LoginSuccess():
-return loginSuccess(_that);case _RegistrationSuccess():
+return loginSuccess(_that);case _RegisterStep1Success():
+return registerStep1Success(_that);case _RegistrationSuccess():
 return registrationSuccess(_that);case _VerificationSuccess():
 return verificationSuccess(_that);case _OtpResent():
 return otpResent(_that);case _Failure():
@@ -549,13 +627,14 @@ return failure(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial value)?  initial,TResult? Function( _Loading value)?  loading,TResult? Function( _LoginSuccess value)?  loginSuccess,TResult? Function( _RegistrationSuccess value)?  registrationSuccess,TResult? Function( _VerificationSuccess value)?  verificationSuccess,TResult? Function( _OtpResent value)?  otpResent,TResult? Function( _Failure value)?  failure,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial value)?  initial,TResult? Function( _Loading value)?  loading,TResult? Function( _LoginSuccess value)?  loginSuccess,TResult? Function( _RegisterStep1Success value)?  registerStep1Success,TResult? Function( _RegistrationSuccess value)?  registrationSuccess,TResult? Function( _VerificationSuccess value)?  verificationSuccess,TResult? Function( _OtpResent value)?  otpResent,TResult? Function( _Failure value)?  failure,}){
 final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial(_that);case _Loading() when loading != null:
 return loading(_that);case _LoginSuccess() when loginSuccess != null:
-return loginSuccess(_that);case _RegistrationSuccess() when registrationSuccess != null:
+return loginSuccess(_that);case _RegisterStep1Success() when registerStep1Success != null:
+return registerStep1Success(_that);case _RegistrationSuccess() when registrationSuccess != null:
 return registrationSuccess(_that);case _VerificationSuccess() when verificationSuccess != null:
 return verificationSuccess(_that);case _OtpResent() when otpResent != null:
 return otpResent(_that);case _Failure() when failure != null:
@@ -576,12 +655,13 @@ return failure(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function()?  loginSuccess,TResult Function( String phoneNumber)?  registrationSuccess,TResult Function()?  verificationSuccess,TResult Function()?  otpResent,TResult Function( String message)?  failure,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function()?  loginSuccess,TResult Function( String phoneNumber,  String password,  String recaptchaToken)?  registerStep1Success,TResult Function( String phoneNumber)?  registrationSuccess,TResult Function()?  verificationSuccess,TResult Function()?  otpResent,TResult Function( String message)?  failure,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _LoginSuccess() when loginSuccess != null:
-return loginSuccess();case _RegistrationSuccess() when registrationSuccess != null:
+return loginSuccess();case _RegisterStep1Success() when registerStep1Success != null:
+return registerStep1Success(_that.phoneNumber,_that.password,_that.recaptchaToken);case _RegistrationSuccess() when registrationSuccess != null:
 return registrationSuccess(_that.phoneNumber);case _VerificationSuccess() when verificationSuccess != null:
 return verificationSuccess();case _OtpResent() when otpResent != null:
 return otpResent();case _Failure() when failure != null:
@@ -603,12 +683,13 @@ return failure(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function()  loginSuccess,required TResult Function( String phoneNumber)  registrationSuccess,required TResult Function()  verificationSuccess,required TResult Function()  otpResent,required TResult Function( String message)  failure,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function()  loginSuccess,required TResult Function( String phoneNumber,  String password,  String recaptchaToken)  registerStep1Success,required TResult Function( String phoneNumber)  registrationSuccess,required TResult Function()  verificationSuccess,required TResult Function()  otpResent,required TResult Function( String message)  failure,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Loading():
 return loading();case _LoginSuccess():
-return loginSuccess();case _RegistrationSuccess():
+return loginSuccess();case _RegisterStep1Success():
+return registerStep1Success(_that.phoneNumber,_that.password,_that.recaptchaToken);case _RegistrationSuccess():
 return registrationSuccess(_that.phoneNumber);case _VerificationSuccess():
 return verificationSuccess();case _OtpResent():
 return otpResent();case _Failure():
@@ -626,12 +707,13 @@ return failure(_that.message);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function()?  loginSuccess,TResult? Function( String phoneNumber)?  registrationSuccess,TResult? Function()?  verificationSuccess,TResult? Function()?  otpResent,TResult? Function( String message)?  failure,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function()?  loginSuccess,TResult? Function( String phoneNumber,  String password,  String recaptchaToken)?  registerStep1Success,TResult? Function( String phoneNumber)?  registrationSuccess,TResult? Function()?  verificationSuccess,TResult? Function()?  otpResent,TResult? Function( String message)?  failure,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _LoginSuccess() when loginSuccess != null:
-return loginSuccess();case _RegistrationSuccess() when registrationSuccess != null:
+return loginSuccess();case _RegisterStep1Success() when registerStep1Success != null:
+return registerStep1Success(_that.phoneNumber,_that.password,_that.recaptchaToken);case _RegistrationSuccess() when registrationSuccess != null:
 return registrationSuccess(_that.phoneNumber);case _VerificationSuccess() when verificationSuccess != null:
 return verificationSuccess();case _OtpResent() when otpResent != null:
 return otpResent();case _Failure() when failure != null:
@@ -738,6 +820,76 @@ String toString() {
 
 
 
+
+/// @nodoc
+
+
+class _RegisterStep1Success implements AuthState {
+  const _RegisterStep1Success({required this.phoneNumber, required this.password, required this.recaptchaToken});
+  
+
+ final  String phoneNumber;
+ final  String password;
+ final  String recaptchaToken;
+
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RegisterStep1SuccessCopyWith<_RegisterStep1Success> get copyWith => __$RegisterStep1SuccessCopyWithImpl<_RegisterStep1Success>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegisterStep1Success&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.password, password) || other.password == password)&&(identical(other.recaptchaToken, recaptchaToken) || other.recaptchaToken == recaptchaToken));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber,password,recaptchaToken);
+
+@override
+String toString() {
+  return 'AuthState.registerStep1Success(phoneNumber: $phoneNumber, password: $password, recaptchaToken: $recaptchaToken)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RegisterStep1SuccessCopyWith<$Res> implements $AuthStateCopyWith<$Res> {
+  factory _$RegisterStep1SuccessCopyWith(_RegisterStep1Success value, $Res Function(_RegisterStep1Success) _then) = __$RegisterStep1SuccessCopyWithImpl;
+@useResult
+$Res call({
+ String phoneNumber, String password, String recaptchaToken
+});
+
+
+
+
+}
+/// @nodoc
+class __$RegisterStep1SuccessCopyWithImpl<$Res>
+    implements _$RegisterStep1SuccessCopyWith<$Res> {
+  __$RegisterStep1SuccessCopyWithImpl(this._self, this._then);
+
+  final _RegisterStep1Success _self;
+  final $Res Function(_RegisterStep1Success) _then;
+
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? phoneNumber = null,Object? password = null,Object? recaptchaToken = null,}) {
+  return _then(_RegisterStep1Success(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
+as String,recaptchaToken: null == recaptchaToken ? _self.recaptchaToken : recaptchaToken // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
 
 /// @nodoc
 

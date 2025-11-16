@@ -39,6 +39,19 @@ public class SessionController {
     }
 
     /**
+     * (NEW ENDPOINT) (Mobile App) Get a single session by its ID.
+     */
+    @GetMapping("/{sessionId}")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<Session> getSessionById(
+            @PathVariable UUID sessionId, 
+            Principal principal) {
+        
+        Session session = sessionService.getSessionById(sessionId, principal.getName());
+        return ResponseEntity.ok(session);
+    }
+
+    /**
      * (Mobile App) Create a new session.
      */
     @PostMapping

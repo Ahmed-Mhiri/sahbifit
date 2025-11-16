@@ -1,64 +1,77 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// --- REMOVED ---
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
-import 'package:sahbifit/app/bloc/app_bloc.dart';
+// REMOVED: import 'package:sahbifit/app/bloc/app_bloc.dart';
 import 'package:sahbifit/core/errors/failure.dart';
-import 'package:sahbifit/features/session/data/models/session_participant_model.dart';
+// --- REMOVED ---
+// import 'package:sahbifit/features/session/data/models/session_participant_model.dart';
 import 'package:sahbifit/features/session/domain/entities/session.dart';
 import 'package:sahbifit/features/session/domain/entities/session_participant.dart';
-import 'package:sahbifit/features/session/domain/usecases/get_active_sessions.dart';
+// --- ADDED ---
+import 'package:sahbifit/features/session/domain/usecases/get_participants_stream.dart';
+import 'package:sahbifit/features/session/domain/usecases/get_session_by_id.dart';
 import 'package:sahbifit/features/session/domain/usecases/join_session.dart';
+// --- ADDED PROFILE BLOC IMPORTS ---
+import 'package:sahbifit/features/user/presentation/bloc/profile_bloc.dart';
+// ---------------------------------
 
 part 'session_details_cubit.freezed.dart';
 part 'session_details_state.dart';
 
 @injectable
 class SessionDetailsCubit extends Cubit<SessionDetailsState> {
-  final GetActiveSessions _getActiveSessions;
+  final GetSessionById _getSessionById;
   final JoinSession _joinSession;
-  final FirebaseFirestore _firestore;
-  final AppBloc _appBloc;
+  // --- REMOVED ---
+  // final FirebaseFirestore _firestore;
+  // --- ADDED ---
+  final GetParticipantsStream _getParticipantsStream;
+  // MODIFIED: final AppBloc _appBloc;
+  final ProfileBloc _profileBloc; // <-- CHANGED
 
   StreamSubscription? _participantsSubscription;
 
   SessionDetailsCubit(
-    this._getActiveSessions,
+    this._getSessionById,
     this._joinSession,
-    this._firestore,
-    this._appBloc,
+    // --- REMOVED ---
+    // this._firestore,
+    // --- ADDED ---
+    this._getParticipantsStream,
+    this._profileBloc, // <-- CHANGED
   ) : super(const SessionDetailsState.initial());
 
   Future<void> fetchSessionDetails(String sessionId) async {
     emit(const SessionDetailsState.loading());
     try {
-      // 1. Get current user ID from AppBloc
-      final currentUserId = _appBloc.state.mapOrNull(
-        authenticated: (s) => s.user.userId,
+      // 1. Get current user ID from ProfileBloc
+      // --- MODIFIED LOGIC ---
+      final profileState = _profileBloc.state;
+      final currentUserId = profileState.maybeMap(
+        loaded: (s) => s.user.userId,
+        orElse: () => null,
       );
+      // ----------------------
+
       if (currentUserId == null) {
-        emit(const SessionDetailsState.error('Not authenticated'));
+        // Updated error message to be more accurate
+        emit(const SessionDetailsState.error('Profile not loaded'));
         return;
       }
 
-      // 2. Fetch base session data (Workaround: fetching all and filtering)
-      // A dedicated GetSessionById use case would be better.
-      final sessions = await _getActiveSessions(const GetActiveSessionsParams());
-      final session = sessions.firstWhere((s) => s.sessionId == sessionId);
-
-      // 3. Listen for participants from Firestore
+      // 2. Fetch base session data
+      final session =
+          await _getSessionById(GetSessionByIdParams(sessionId: sessionId));
+          
+      // --- MODIFIED: Use GetParticipantsStream use case ---
+      // 3. Listen for participants
       _participantsSubscription?.cancel();
-      _participantsSubscription = _firestore
-          .collection('sessions')
-          .doc(sessionId)
-          .collection('participants')
-          .snapshots()
-          .listen((snapshot) {
-        final participants = snapshot.docs
-            .map((doc) => SessionParticipantModel.fromJson(doc.data()).toEntity())
-            .toList();
-
+      _participantsSubscription = _getParticipantsStream(
+        GetParticipantsStreamParams(sessionId: sessionId),
+      ).listen((participants) {
         final isJoined = participants.any((p) => p.userId == currentUserId);
 
         emit(SessionDetailsState.loaded(
@@ -85,7 +98,8 @@ class SessionDetailsCubit extends Cubit<SessionDetailsState> {
           await _joinSession(JoinSessionParams(sessionId: sessionId));
           // The stream listener will automatically update the state,
           // so we just need to wait for it.
-          // We'll reset loading state when the stream updates.
+          // We'll reset
+          // loading state when the stream updates.
         } on ServerFailure catch (e) {
           // Emit an error but keep the loaded state
           emit(s.copyWith(
@@ -93,6 +107,7 @@ class SessionDetailsCubit extends Cubit<SessionDetailsState> {
             errorMessage: e.message,
           ));
           // Remove the error message after a delay
+
           await Future.delayed(const Duration(seconds: 3));
           emit(s.copyWith(errorMessage: null));
         }

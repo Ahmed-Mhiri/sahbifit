@@ -1,15 +1,13 @@
-// BEGIN: /mobile/lib/features/auth/presentation/widgets/profile_setup_form.dart
+// lib/features/auth/presentation/widgets/profile_setup_form.dart
 
-import 'dart:io'; // ADDED
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart'; // ADDED
+import 'package:image_picker/image_picker.dart';
 import 'package:sahbifit/core/config/app_theme.dart';
-import 'package:sahbifit/core/di/service_locator.dart';
 import 'package:sahbifit/core/utils/date_formatters.dart';
 import 'package:sahbifit/core/utils/validators.dart';
 import 'package:sahbifit/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:sahbifit/features/file/domain/usecases/upload_profile_photo.dart'; // ADDED
 import 'package:sahbifit/features/gym/domain/entities/gym.dart';
 import 'package:sahbifit/features/gym/presentation/cubit/gym_list_cubit.dart';
 import 'package:sahbifit/features/tag/domain/entities/tag.dart';
@@ -19,10 +17,6 @@ import 'package:sahbifit/shared/widgets/buttons/custom_buttons.dart';
 import 'package:sahbifit/shared/widgets/inputs/custom_inputs.dart';
 import 'package:sahbifit/shared/widgets/states/loading_states.dart';
 
-// NOTE: The new _onRegisterPressed method uses `getIt`,
-// but the import for it (e.g., 'package:sahbifit/locator.dart')
-// was not in the instructions. You may need to add it manually.
-
 class ProfileSetupForm extends StatefulWidget {
   final Function({
     required String firstName,
@@ -30,7 +24,7 @@ class ProfileSetupForm extends StatefulWidget {
     required String primaryGymId,
     required List<int> goalTagIds,
     required List<int> scheduleTagIds,
-    String? profilePhotoUrl,
+    File? profileImageFile, // Updated signature
   }) onRegister;
 
   const ProfileSetupForm({super.key, required this.onRegister});
@@ -49,16 +43,14 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
   final List<int> _selectedGoalIds = [];
   final List<int> _selectedScheduleIds = [];
 
-  // --- ADD THESE ---
+  // These stay, as the widget still picks the image
   File? _pickedImage;
-  bool _isLoading = false;
   final ImagePicker _picker = ImagePicker();
-  // --- END ADD ---
+  // --- END ---
 
   @override
   void initState() {
     super.initState();
-    // Fetch data when the widget is initialized
     context.read<GymListCubit>().fetchApprovedGyms();
     context.read<TagsCubit>().loadAllTags();
   }
@@ -81,12 +73,11 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
-        _dobController.text = formatToYyyyMmDd(picked); // Format for backend
+        _dobController.text = formatToYyyyMmDd(picked);
       });
     }
   }
 
-  // --- ADD THIS METHOD ---
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(
       source: ImageSource.gallery,
@@ -94,17 +85,15 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
       maxWidth: 1024,
       imageQuality: 80,
     );
-
     if (image != null) {
       setState(() {
         _pickedImage = File(image.path);
       });
     }
   }
-  // --- END ADD ---
 
-  // --- REPLACE THIS METHOD ---
-  void _onRegisterPressed() async { // <-- Add async
+  // Updated method: No async, no upload logic
+  void _onRegisterPressed() {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -121,38 +110,16 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
       return;
     }
 
-    setState(() => _isLoading = true);
-    String? profilePhotoUrl;
-
-    try {
-      // 1. Upload image if one was picked
-      if (_pickedImage != null) {
-        profilePhotoUrl = await getIt<UploadProfilePhoto>().call(
-          UploadProfilePhotoParams(file: _pickedImage!),
-        );
-      }
-
-      // 2. Call the onRegister callback with the URL
-      widget.onRegister(
-        firstName: _firstNameController.text.trim(),
-        dateOfBirth: _dobController.text,
-        primaryGymId: _selectedGymId!,
-        goalTagIds: _selectedGoalIds,
-        scheduleTagIds: _selectedScheduleIds,
-        profilePhotoUrl: profilePhotoUrl, // <-- Pass the URL
-      );
-
-    } catch (e) {
-      _showError('Failed to upload photo: $e');
-    } finally {
-      // We only set isLoading to false on error.
-      // On success, the parent page will navigate away.
-      if (mounted) {
-         setState(() => _isLoading = false);
-      }
-    }
+    // Call the onRegister callback with the File
+    widget.onRegister(
+      firstName: _firstNameController.text.trim(),
+      dateOfBirth: _dobController.text,
+      primaryGymId: _selectedGymId!,
+      goalTagIds: _selectedGoalIds,
+      scheduleTagIds: _selectedScheduleIds,
+      profileImageFile: _pickedImage, // Pass the File
+    );
   }
-  // --- END REPLACE ---
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -172,16 +139,14 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // --- ADD THIS WIDGET ---
             Center(
               child: GestureDetector(
                 onTap: _pickImage,
                 child: CircleAvatar(
                   radius: 50,
                   backgroundColor: AppTheme.lightGray,
-                  backgroundImage: _pickedImage != null
-                      ? FileImage(_pickedImage!)
-                      : null,
+                  backgroundImage:
+                      _pickedImage != null ? FileImage(_pickedImage!) : null,
                   child: _pickedImage == null
                       ? const Icon(Icons.add_a_photo,
                           color: AppTheme.disabledGray, size: 40)
@@ -189,7 +154,6 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
                 ),
               ),
             ),
-            // --- END ADD ---
             Text(
               'Tell us about you',
               style: context.textTheme.displaySmall,
@@ -219,7 +183,7 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
             const SizedBox(height: AppTheme.sectionSpacing),
             BlocBuilder<AuthBloc, AuthState>(
               builder: (context, state) {
-                // Check both AuthBloc loading and local upload loading
+                // Check AuthBloc loading
                 final isAuthLoading = state.maybeWhen(
                   loading: () => true,
                   orElse: () => false,
@@ -227,7 +191,7 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
                 return PrimaryButton(
                   text: 'Create Account',
                   onPressed: _onRegisterPressed,
-                  isLoading: isAuthLoading || _isLoading, // <-- Update this
+                  isLoading: isAuthLoading, // Only depends on AuthBloc now
                 );
               },
             ),
@@ -242,8 +206,8 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
       builder: (context, state) {
         return state.maybeWhen(
           loading: () => const LoadingIndicator(),
-          error: (message) => Text('Error: $message'), // <-- CORRECTED
-          loaded: (gyms) { // <-- CORRECTED
+          error: (message) => Text('Error: $message'),
+          loaded: (gyms) {
             return DropdownButtonFormField<String>(
               initialValue: _selectedGymId,
               hint: const Text('Select your primary gym'),
@@ -276,8 +240,8 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
       builder: (context, state) {
         return state.maybeWhen(
           loading: () => const LoadingIndicator(),
-          error: (message) => Text('Error: $message'), // <-- CORRECTED
-          loaded: (goalTags, scheduleTags) { // <-- CORRECTED
+          error: (message) => Text('Error: $message'),
+          loaded: (goalTags, scheduleTags) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -301,7 +265,8 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
     );
   }
 
-  Widget _buildTagSection(String title, List<Tag> tags, List<int> selectedIds) {
+  Widget _buildTagSection(
+      String title, List<Tag> tags, List<int> selectedIds) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

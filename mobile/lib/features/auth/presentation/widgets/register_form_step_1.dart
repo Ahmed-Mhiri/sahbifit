@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sahbifit/core/config/app_theme.dart';
-import 'package:sahbifit/core/di/service_locator.dart';
-import 'package:sahbifit/core/services/recaptcha_service.dart';
 import 'package:sahbifit/core/utils/phone_number_validator.dart';
 import 'package:sahbifit/core/utils/validators.dart';
+import 'package:sahbifit/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:sahbifit/shared/widgets/buttons/custom_buttons.dart';
 import 'package:sahbifit/shared/widgets/inputs/custom_inputs.dart';
 
 class RegisterFormStep1 extends StatefulWidget {
-  final Function(String phoneNumber, String password, String recaptchaToken)
-      onNext;
-  const RegisterFormStep1({super.key, required this.onNext});
+  const RegisterFormStep1({super.key});
 
   @override
   State<RegisterFormStep1> createState() => _RegisterFormStep1State();
@@ -24,7 +22,6 @@ class _RegisterFormStep1State extends State<RegisterFormStep1> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -34,34 +31,18 @@ class _RegisterFormStep1State extends State<RegisterFormStep1> {
     super.dispose();
   }
 
-  Future<void> _onNextPressed() async {
+  void _onNextPressed() {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    setState(() => _isLoading = true);
-
-    try {
-      // Get reCAPTCHA token
-      final recaptchaToken =
-          await getIt<ReCaptchaService>().getToken('register');
-
-      // Pass data to parent page
-      widget.onNext(
-        _phoneController.text.trim(),
-        _passwordController.text.trim(),
-        recaptchaToken,
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('reCAPTCHA failed: ${e.toString()}'),
-          backgroundColor: AppTheme.primaryRed,
-        ),
-      );
-    } finally {
-      setState(() => _isLoading = false);
-    }
+    // Dispatch event to BLoC to handle logic
+    context.read<AuthBloc>().add(
+          AuthEvent.nextStepPressed(
+            phoneNumber: _phoneController.text.trim(),
+            password: _passwordController.text.trim(),
+          ),
+        );
   }
 
   @override
@@ -144,10 +125,18 @@ class _RegisterFormStep1State extends State<RegisterFormStep1> {
               ),
             ),
             const SizedBox(height: AppTheme.sectionSpacing),
-            PrimaryButton(
-              text: 'Next',
-              onPressed: _onNextPressed,
-              isLoading: _isLoading,
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                final isLoading = state.maybeWhen(
+                  loading: () => true,
+                  orElse: () => false,
+                );
+                return PrimaryButton(
+                  text: 'Next',
+                  onPressed: _onNextPressed,
+                  isLoading: isLoading,
+                );
+              },
             ),
           ],
         ),

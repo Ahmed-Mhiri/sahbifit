@@ -3165,9 +3165,10 @@ import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sahbifit/core/services/secure_storage_service.dart';
-import 'package:sahbifit/features/user/domain/usecases/get_my_profile.dart';
-import 'package:sahbifit/core/usecases/usecase.dart';
-import 'package:sahbifit/features/user/domain/entities/user.dart';
+// REMOVED: import 'package:sahbifit/features/user/domain/usecases/get_my_profile.dart';
+// REMOVED: import 'package:sahbifit/core/usecases/usecase.dart';
+// REMOVED: import 'package:sahbifit/features/user/domain/entities/user.dart';
+
 part 'app_bloc.freezed.dart';
 part 'app_event.dart';
 part 'app_state.dart';
@@ -3175,9 +3176,9 @@ part 'app_state.dart';
 @injectable
 class AppBloc extends Bloc<AppEvent, AppState> {
   final SecureStorageService _storageService;
-  final GetMyProfile _getMyProfile; // <-- ADDED
+  // REMOVED: final GetMyProfile _getMyProfile;
 
-  AppBloc(this._storageService, this._getMyProfile) // <-- UPDATED CONSTRUCTOR
+  AppBloc(this._storageService) // <-- UPDATED CONSTRUCTOR
       : super(const AppState.initial()) {
     on<_CheckAuthStatus>(_onCheckAuthStatus);
     on<_LogoutRequested>(_onLogoutRequested);
@@ -3195,15 +3196,15 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     try {
       final token = await _storageService.readToken();
       if (token != null) {
-        // --- THIS IS THE NEW LOGIC ---
-        final user = await _getMyProfile(NoParams());
-        emit(AppState.authenticated(user));
-        // -----------------------------
+        // --- THIS IS THE MODIFIED LOGIC ---
+        emit(const AppState.authenticated());
+        // ----------------------------------
       } else {
         emit(const AppState.unauthenticated());
       }
     } catch (e) {
-      // If getting profile fails, log them out
+      // If reading token fails, treat as unauthenticated
+      print('Error reading token: $e');
       emit(const AppState.unauthenticated());
     }
   }
@@ -3575,11 +3576,11 @@ return unauthenticated(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function( User user)?  authenticated,TResult Function()?  unauthenticated,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  authenticated,TResult Function()?  unauthenticated,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Authenticated() when authenticated != null:
-return authenticated(_that.user);case _Unauthenticated() when unauthenticated != null:
+return authenticated();case _Unauthenticated() when unauthenticated != null:
 return unauthenticated();case _:
   return orElse();
 
@@ -3598,11 +3599,11 @@ return unauthenticated();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function( User user)  authenticated,required TResult Function()  unauthenticated,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  authenticated,required TResult Function()  unauthenticated,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Authenticated():
-return authenticated(_that.user);case _Unauthenticated():
+return authenticated();case _Unauthenticated():
 return unauthenticated();}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -3617,11 +3618,11 @@ return unauthenticated();}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function( User user)?  authenticated,TResult? Function()?  unauthenticated,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  authenticated,TResult? Function()?  unauthenticated,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Authenticated() when authenticated != null:
-return authenticated(_that.user);case _Unauthenticated() when unauthenticated != null:
+return authenticated();case _Unauthenticated() when unauthenticated != null:
 return unauthenticated();case _:
   return null;
 
@@ -3666,67 +3667,33 @@ String toString() {
 
 
 class _Authenticated implements AppState {
-  const _Authenticated(this.user);
+  const _Authenticated();
   
 
- final  User user;
 
-/// Create a copy of AppState
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-_$AuthenticatedCopyWith<_Authenticated> get copyWith => __$AuthenticatedCopyWithImpl<_Authenticated>(this, _$identity);
+
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Authenticated&&(identical(other.user, user) || other.user == user));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Authenticated);
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,user);
+int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'AppState.authenticated(user: $user)';
+  return 'AppState.authenticated()';
 }
 
 
 }
 
-/// @nodoc
-abstract mixin class _$AuthenticatedCopyWith<$Res> implements $AppStateCopyWith<$Res> {
-  factory _$AuthenticatedCopyWith(_Authenticated value, $Res Function(_Authenticated) _then) = __$AuthenticatedCopyWithImpl;
-@useResult
-$Res call({
- User user
-});
 
 
-
-
-}
-/// @nodoc
-class __$AuthenticatedCopyWithImpl<$Res>
-    implements _$AuthenticatedCopyWith<$Res> {
-  __$AuthenticatedCopyWithImpl(this._self, this._then);
-
-  final _Authenticated _self;
-  final $Res Function(_Authenticated) _then;
-
-/// Create a copy of AppState
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? user = null,}) {
-  return _then(_Authenticated(
-null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
-as User,
-  ));
-}
-
-
-}
 
 /// @nodoc
 
@@ -3788,7 +3755,7 @@ sealed class AppState with _$AppState {
 
   /// The state when a user is successfully authenticated (token exists).
   // AFTER
-  const factory AppState.authenticated(User user) = _Authenticated;
+  const factory AppState.authenticated() = _Authenticated; // <-- MODIFIED
 
   /// The state when no user is authenticated (no token).
   const factory AppState.unauthenticated() = _Unauthenticated;
@@ -3939,8 +3906,6 @@ import 'package:go_router/go_router.dart';
 import 'package:sahbifit/app/bloc/app_bloc.dart';
 
 // --- Import all your Page files ---
-// You will get errors here until you remove the @RoutePage() 
-// annotations from these files in a later step.
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/verify_sms_page.dart';
@@ -3955,6 +3920,8 @@ import '../../features/verification/presentation/pages/submit_verification_page.
 import '../../features/rating/presentation/pages/pending_ratings_page.dart';
 import '../../features/report/presentation/pages/report_user_page.dart';
 import '../../features/gym/presentation/pages/submit_gym_page.dart';
+// --- REMOVED THIS IMPORT ---
+// import '../../features/session/domain/entities/session.dart';
 
 /// A wrapper class to hold the GoRouter instance.
 /// This allows us to pass the AppBloc to the redirect logic.
@@ -4056,6 +4023,8 @@ class AppRouter {
             GoRoute(
               path: 'attendance',
               builder: (context, state) {
+                // --- THIS BLOCK IS MODIFIED ---
+                // Get the sessionId from the URL path parameters
                 final sessionId = state.pathParameters['sessionId']!;
                 return MarkAttendancePage(sessionId: sessionId);
               },
@@ -7363,16 +7332,19 @@ class VerifySmsParams extends Equatable {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\bloc\auth_bloc.dart
 ==================================================
+import 'dart:io'; // ADDED
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 
 import 'package:sahbifit/app/bloc/app_bloc.dart';
 import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/core/services/recaptcha_service.dart';
 import 'package:sahbifit/features/auth/domain/usecases/login_user.dart';
 import 'package:sahbifit/features/auth/domain/usecases/register_user.dart';
 import 'package:sahbifit/features/auth/domain/usecases/resend_otp.dart';
 import 'package:sahbifit/features/auth/domain/usecases/verify_sms.dart';
+import 'package:sahbifit/features/file/domain/usecases/upload_profile_photo.dart';
 
 part 'auth_bloc.freezed.dart';
 part 'auth_event.dart';
@@ -7384,7 +7356,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final RegisterUser _registerUser;
   final VerifySms _verifySms;
   final ResendOtp _resendOtp;
-  final AppBloc _appBloc; // Injected to dispatch events to the AppBloc
+  final AppBloc _appBloc;
+  final UploadProfilePhoto _uploadProfilePhoto;
+  final ReCaptchaService _reCaptchaService;
 
   AuthBloc(
     this._loginUser,
@@ -7392,8 +7366,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     this._verifySms,
     this._resendOtp,
     this._appBloc,
+    this._uploadProfilePhoto,
+    this._reCaptchaService,
   ) : super(const AuthState.initial()) {
     on<_LoginButtonPressed>(_onLoginButtonPressed);
+    on<_NextStepPressed>(_onNextStepPressed);
     on<_RegisterButtonPressed>(_onRegisterButtonPressed);
     on<_VerifySmsButtonPressed>(_onVerifySmsButtonPressed);
     on<_ResendOtpButtonPressed>(_onResendOtpButtonPressed);
@@ -7411,13 +7388,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       await _loginUser(params);
 
-      // ---
-      // ðŸš€ REQUIREMENT FULFILLED
-      // On success, dispatch CheckAuthStatus to the AppBloc.
-      // The AppBloc will read the new token and emit AppState.authenticated
-      // ---
       _appBloc.add(const AppEvent.checkAuthStatus());
-
       emit(const AuthState.loginSuccess());
     } on ServerFailure catch (e) {
       emit(AuthState.failure(e.message));
@@ -7426,16 +7397,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onRegisterButtonPressed(
-    _RegisterButtonPressed event,
+  Future<void> _onNextStepPressed(
+    _NextStepPressed event,
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthState.loading());
     try {
-      // The event already contains the complex RegisterParams
-      await _registerUser(event.params);
-      emit(AuthState.registrationSuccess(
-        phoneNumber: event.params.phoneNumber,
+      final token = await _reCaptchaService.getToken('register');
+      emit(AuthState.registerStep1Success(
+        phoneNumber: event.phoneNumber,
+        password: event.password,
+        recaptchaToken: token,
       ));
     } on ServerFailure catch (e) {
       emit(AuthState.failure(e.message));
@@ -7443,6 +7415,53 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthState.failure(e.toString()));
     }
   }
+
+  // --- REWRITTEN METHOD ---
+  Future<void> _onRegisterButtonPressed(
+    _RegisterButtonPressed event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthState.loading());
+    try {
+      String? profilePhotoUrl;
+
+      // 1. Upload image if one was provided
+      if (event.profileImageFile != null) {
+        // Use injected use case
+        profilePhotoUrl = await _uploadProfilePhoto(
+          UploadProfilePhotoParams(file: event.profileImageFile!),
+        );
+      }
+
+      // 2. Create final RegisterParams with the new URL
+      // We can't use copyWith, so we rebuild the object
+      final finalParams = RegisterParams(
+        phoneNumber: event.params.phoneNumber,
+        password: event.params.password,
+        recaptchaToken: event.params.recaptchaToken,
+        firstName: event.params.firstName,
+        dateOfBirth: event.params.dateOfBirth,
+        primaryGymId: event.params.primaryGymId,
+        goalTagIds: event.params.goalTagIds,
+        scheduleTagIds: event.params.scheduleTagIds,
+        profilePhotoUrl: profilePhotoUrl, // Pass the (potentially null) URL
+      );
+
+      // 3. Call the register use case
+      await _registerUser(finalParams);
+
+      // 4. Emit success
+      emit(AuthState.registrationSuccess(
+        phoneNumber: event.params.phoneNumber,
+      ));
+    } on ServerFailure catch (e) {
+      emit(AuthState.failure(e.message));
+    } catch (e) {
+      // This will catch errors from both file upload and registration
+      emit(AuthState.failure(e.toString()));
+    }
+  }
+  // --- END REWRITE ---
 
   Future<void> _onVerifySmsButtonPressed(
     _VerifySmsButtonPressed event,
@@ -7543,11 +7562,12 @@ extension AuthEventPatterns on AuthEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _LoginButtonPressed value)?  loginButtonPressed,TResult Function( _RegisterButtonPressed value)?  registerButtonPressed,TResult Function( _VerifySmsButtonPressed value)?  verifySmsButtonPressed,TResult Function( _ResendOtpButtonPressed value)?  resendOtpButtonPressed,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _LoginButtonPressed value)?  loginButtonPressed,TResult Function( _NextStepPressed value)?  nextStepPressed,TResult Function( _RegisterButtonPressed value)?  registerButtonPressed,TResult Function( _VerifySmsButtonPressed value)?  verifySmsButtonPressed,TResult Function( _ResendOtpButtonPressed value)?  resendOtpButtonPressed,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _LoginButtonPressed() when loginButtonPressed != null:
-return loginButtonPressed(_that);case _RegisterButtonPressed() when registerButtonPressed != null:
+return loginButtonPressed(_that);case _NextStepPressed() when nextStepPressed != null:
+return nextStepPressed(_that);case _RegisterButtonPressed() when registerButtonPressed != null:
 return registerButtonPressed(_that);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
 return verifySmsButtonPressed(_that);case _ResendOtpButtonPressed() when resendOtpButtonPressed != null:
 return resendOtpButtonPressed(_that);case _:
@@ -7568,11 +7588,12 @@ return resendOtpButtonPressed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _LoginButtonPressed value)  loginButtonPressed,required TResult Function( _RegisterButtonPressed value)  registerButtonPressed,required TResult Function( _VerifySmsButtonPressed value)  verifySmsButtonPressed,required TResult Function( _ResendOtpButtonPressed value)  resendOtpButtonPressed,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _LoginButtonPressed value)  loginButtonPressed,required TResult Function( _NextStepPressed value)  nextStepPressed,required TResult Function( _RegisterButtonPressed value)  registerButtonPressed,required TResult Function( _VerifySmsButtonPressed value)  verifySmsButtonPressed,required TResult Function( _ResendOtpButtonPressed value)  resendOtpButtonPressed,}){
 final _that = this;
 switch (_that) {
 case _LoginButtonPressed():
-return loginButtonPressed(_that);case _RegisterButtonPressed():
+return loginButtonPressed(_that);case _NextStepPressed():
+return nextStepPressed(_that);case _RegisterButtonPressed():
 return registerButtonPressed(_that);case _VerifySmsButtonPressed():
 return verifySmsButtonPressed(_that);case _ResendOtpButtonPressed():
 return resendOtpButtonPressed(_that);}
@@ -7589,11 +7610,12 @@ return resendOtpButtonPressed(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _LoginButtonPressed value)?  loginButtonPressed,TResult? Function( _RegisterButtonPressed value)?  registerButtonPressed,TResult? Function( _VerifySmsButtonPressed value)?  verifySmsButtonPressed,TResult? Function( _ResendOtpButtonPressed value)?  resendOtpButtonPressed,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _LoginButtonPressed value)?  loginButtonPressed,TResult? Function( _NextStepPressed value)?  nextStepPressed,TResult? Function( _RegisterButtonPressed value)?  registerButtonPressed,TResult? Function( _VerifySmsButtonPressed value)?  verifySmsButtonPressed,TResult? Function( _ResendOtpButtonPressed value)?  resendOtpButtonPressed,}){
 final _that = this;
 switch (_that) {
 case _LoginButtonPressed() when loginButtonPressed != null:
-return loginButtonPressed(_that);case _RegisterButtonPressed() when registerButtonPressed != null:
+return loginButtonPressed(_that);case _NextStepPressed() when nextStepPressed != null:
+return nextStepPressed(_that);case _RegisterButtonPressed() when registerButtonPressed != null:
 return registerButtonPressed(_that);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
 return verifySmsButtonPressed(_that);case _ResendOtpButtonPressed() when resendOtpButtonPressed != null:
 return resendOtpButtonPressed(_that);case _:
@@ -7613,11 +7635,12 @@ return resendOtpButtonPressed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String phoneNumber,  String password)?  loginButtonPressed,TResult Function( RegisterParams params)?  registerButtonPressed,TResult Function( String phoneNumber,  String otp)?  verifySmsButtonPressed,TResult Function( String phoneNumber,  String recaptchaToken)?  resendOtpButtonPressed,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String phoneNumber,  String password)?  loginButtonPressed,TResult Function( String phoneNumber,  String password)?  nextStepPressed,TResult Function( RegisterParams params,  File? profileImageFile)?  registerButtonPressed,TResult Function( String phoneNumber,  String otp)?  verifySmsButtonPressed,TResult Function( String phoneNumber,  String recaptchaToken)?  resendOtpButtonPressed,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LoginButtonPressed() when loginButtonPressed != null:
-return loginButtonPressed(_that.phoneNumber,_that.password);case _RegisterButtonPressed() when registerButtonPressed != null:
-return registerButtonPressed(_that.params);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
+return loginButtonPressed(_that.phoneNumber,_that.password);case _NextStepPressed() when nextStepPressed != null:
+return nextStepPressed(_that.phoneNumber,_that.password);case _RegisterButtonPressed() when registerButtonPressed != null:
+return registerButtonPressed(_that.params,_that.profileImageFile);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
 return verifySmsButtonPressed(_that.phoneNumber,_that.otp);case _ResendOtpButtonPressed() when resendOtpButtonPressed != null:
 return resendOtpButtonPressed(_that.phoneNumber,_that.recaptchaToken);case _:
   return orElse();
@@ -7637,11 +7660,12 @@ return resendOtpButtonPressed(_that.phoneNumber,_that.recaptchaToken);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String phoneNumber,  String password)  loginButtonPressed,required TResult Function( RegisterParams params)  registerButtonPressed,required TResult Function( String phoneNumber,  String otp)  verifySmsButtonPressed,required TResult Function( String phoneNumber,  String recaptchaToken)  resendOtpButtonPressed,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String phoneNumber,  String password)  loginButtonPressed,required TResult Function( String phoneNumber,  String password)  nextStepPressed,required TResult Function( RegisterParams params,  File? profileImageFile)  registerButtonPressed,required TResult Function( String phoneNumber,  String otp)  verifySmsButtonPressed,required TResult Function( String phoneNumber,  String recaptchaToken)  resendOtpButtonPressed,}) {final _that = this;
 switch (_that) {
 case _LoginButtonPressed():
-return loginButtonPressed(_that.phoneNumber,_that.password);case _RegisterButtonPressed():
-return registerButtonPressed(_that.params);case _VerifySmsButtonPressed():
+return loginButtonPressed(_that.phoneNumber,_that.password);case _NextStepPressed():
+return nextStepPressed(_that.phoneNumber,_that.password);case _RegisterButtonPressed():
+return registerButtonPressed(_that.params,_that.profileImageFile);case _VerifySmsButtonPressed():
 return verifySmsButtonPressed(_that.phoneNumber,_that.otp);case _ResendOtpButtonPressed():
 return resendOtpButtonPressed(_that.phoneNumber,_that.recaptchaToken);}
 }
@@ -7657,11 +7681,12 @@ return resendOtpButtonPressed(_that.phoneNumber,_that.recaptchaToken);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String phoneNumber,  String password)?  loginButtonPressed,TResult? Function( RegisterParams params)?  registerButtonPressed,TResult? Function( String phoneNumber,  String otp)?  verifySmsButtonPressed,TResult? Function( String phoneNumber,  String recaptchaToken)?  resendOtpButtonPressed,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String phoneNumber,  String password)?  loginButtonPressed,TResult? Function( String phoneNumber,  String password)?  nextStepPressed,TResult? Function( RegisterParams params,  File? profileImageFile)?  registerButtonPressed,TResult? Function( String phoneNumber,  String otp)?  verifySmsButtonPressed,TResult? Function( String phoneNumber,  String recaptchaToken)?  resendOtpButtonPressed,}) {final _that = this;
 switch (_that) {
 case _LoginButtonPressed() when loginButtonPressed != null:
-return loginButtonPressed(_that.phoneNumber,_that.password);case _RegisterButtonPressed() when registerButtonPressed != null:
-return registerButtonPressed(_that.params);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
+return loginButtonPressed(_that.phoneNumber,_that.password);case _NextStepPressed() when nextStepPressed != null:
+return nextStepPressed(_that.phoneNumber,_that.password);case _RegisterButtonPressed() when registerButtonPressed != null:
+return registerButtonPressed(_that.params,_that.profileImageFile);case _VerifySmsButtonPressed() when verifySmsButtonPressed != null:
 return verifySmsButtonPressed(_that.phoneNumber,_that.otp);case _ResendOtpButtonPressed() when resendOtpButtonPressed != null:
 return resendOtpButtonPressed(_that.phoneNumber,_that.recaptchaToken);case _:
   return null;
@@ -7742,11 +7767,80 @@ as String,
 /// @nodoc
 
 
+class _NextStepPressed implements AuthEvent {
+  const _NextStepPressed({required this.phoneNumber, required this.password});
+  
+
+ final  String phoneNumber;
+ final  String password;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$NextStepPressedCopyWith<_NextStepPressed> get copyWith => __$NextStepPressedCopyWithImpl<_NextStepPressed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _NextStepPressed&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.password, password) || other.password == password));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber,password);
+
+@override
+String toString() {
+  return 'AuthEvent.nextStepPressed(phoneNumber: $phoneNumber, password: $password)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$NextStepPressedCopyWith<$Res> implements $AuthEventCopyWith<$Res> {
+  factory _$NextStepPressedCopyWith(_NextStepPressed value, $Res Function(_NextStepPressed) _then) = __$NextStepPressedCopyWithImpl;
+@useResult
+$Res call({
+ String phoneNumber, String password
+});
+
+
+
+
+}
+/// @nodoc
+class __$NextStepPressedCopyWithImpl<$Res>
+    implements _$NextStepPressedCopyWith<$Res> {
+  __$NextStepPressedCopyWithImpl(this._self, this._then);
+
+  final _NextStepPressed _self;
+  final $Res Function(_NextStepPressed) _then;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? phoneNumber = null,Object? password = null,}) {
+  return _then(_NextStepPressed(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
 class _RegisterButtonPressed implements AuthEvent {
-  const _RegisterButtonPressed({required this.params});
+  const _RegisterButtonPressed({required this.params, this.profileImageFile});
   
 
  final  RegisterParams params;
+ final  File? profileImageFile;
 
 /// Create a copy of AuthEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -7758,16 +7852,16 @@ _$RegisterButtonPressedCopyWith<_RegisterButtonPressed> get copyWith => __$Regis
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegisterButtonPressed&&(identical(other.params, params) || other.params == params));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegisterButtonPressed&&(identical(other.params, params) || other.params == params)&&(identical(other.profileImageFile, profileImageFile) || other.profileImageFile == profileImageFile));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,params);
+int get hashCode => Object.hash(runtimeType,params,profileImageFile);
 
 @override
 String toString() {
-  return 'AuthEvent.registerButtonPressed(params: $params)';
+  return 'AuthEvent.registerButtonPressed(params: $params, profileImageFile: $profileImageFile)';
 }
 
 
@@ -7778,7 +7872,7 @@ abstract mixin class _$RegisterButtonPressedCopyWith<$Res> implements $AuthEvent
   factory _$RegisterButtonPressedCopyWith(_RegisterButtonPressed value, $Res Function(_RegisterButtonPressed) _then) = __$RegisterButtonPressedCopyWithImpl;
 @useResult
 $Res call({
- RegisterParams params
+ RegisterParams params, File? profileImageFile
 });
 
 
@@ -7795,10 +7889,11 @@ class __$RegisterButtonPressedCopyWithImpl<$Res>
 
 /// Create a copy of AuthEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? params = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? params = null,Object? profileImageFile = freezed,}) {
   return _then(_RegisterButtonPressed(
 params: null == params ? _self.params : params // ignore: cast_nullable_to_non_nullable
-as RegisterParams,
+as RegisterParams,profileImageFile: freezed == profileImageFile ? _self.profileImageFile : profileImageFile // ignore: cast_nullable_to_non_nullable
+as File?,
   ));
 }
 
@@ -7985,13 +8080,14 @@ extension AuthStatePatterns on AuthState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial value)?  initial,TResult Function( _Loading value)?  loading,TResult Function( _LoginSuccess value)?  loginSuccess,TResult Function( _RegistrationSuccess value)?  registrationSuccess,TResult Function( _VerificationSuccess value)?  verificationSuccess,TResult Function( _OtpResent value)?  otpResent,TResult Function( _Failure value)?  failure,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial value)?  initial,TResult Function( _Loading value)?  loading,TResult Function( _LoginSuccess value)?  loginSuccess,TResult Function( _RegisterStep1Success value)?  registerStep1Success,TResult Function( _RegistrationSuccess value)?  registrationSuccess,TResult Function( _VerificationSuccess value)?  verificationSuccess,TResult Function( _OtpResent value)?  otpResent,TResult Function( _Failure value)?  failure,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial(_that);case _Loading() when loading != null:
 return loading(_that);case _LoginSuccess() when loginSuccess != null:
-return loginSuccess(_that);case _RegistrationSuccess() when registrationSuccess != null:
+return loginSuccess(_that);case _RegisterStep1Success() when registerStep1Success != null:
+return registerStep1Success(_that);case _RegistrationSuccess() when registrationSuccess != null:
 return registrationSuccess(_that);case _VerificationSuccess() when verificationSuccess != null:
 return verificationSuccess(_that);case _OtpResent() when otpResent != null:
 return otpResent(_that);case _Failure() when failure != null:
@@ -8013,13 +8109,14 @@ return failure(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial value)  initial,required TResult Function( _Loading value)  loading,required TResult Function( _LoginSuccess value)  loginSuccess,required TResult Function( _RegistrationSuccess value)  registrationSuccess,required TResult Function( _VerificationSuccess value)  verificationSuccess,required TResult Function( _OtpResent value)  otpResent,required TResult Function( _Failure value)  failure,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial value)  initial,required TResult Function( _Loading value)  loading,required TResult Function( _LoginSuccess value)  loginSuccess,required TResult Function( _RegisterStep1Success value)  registerStep1Success,required TResult Function( _RegistrationSuccess value)  registrationSuccess,required TResult Function( _VerificationSuccess value)  verificationSuccess,required TResult Function( _OtpResent value)  otpResent,required TResult Function( _Failure value)  failure,}){
 final _that = this;
 switch (_that) {
 case _Initial():
 return initial(_that);case _Loading():
 return loading(_that);case _LoginSuccess():
-return loginSuccess(_that);case _RegistrationSuccess():
+return loginSuccess(_that);case _RegisterStep1Success():
+return registerStep1Success(_that);case _RegistrationSuccess():
 return registrationSuccess(_that);case _VerificationSuccess():
 return verificationSuccess(_that);case _OtpResent():
 return otpResent(_that);case _Failure():
@@ -8037,13 +8134,14 @@ return failure(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial value)?  initial,TResult? Function( _Loading value)?  loading,TResult? Function( _LoginSuccess value)?  loginSuccess,TResult? Function( _RegistrationSuccess value)?  registrationSuccess,TResult? Function( _VerificationSuccess value)?  verificationSuccess,TResult? Function( _OtpResent value)?  otpResent,TResult? Function( _Failure value)?  failure,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial value)?  initial,TResult? Function( _Loading value)?  loading,TResult? Function( _LoginSuccess value)?  loginSuccess,TResult? Function( _RegisterStep1Success value)?  registerStep1Success,TResult? Function( _RegistrationSuccess value)?  registrationSuccess,TResult? Function( _VerificationSuccess value)?  verificationSuccess,TResult? Function( _OtpResent value)?  otpResent,TResult? Function( _Failure value)?  failure,}){
 final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial(_that);case _Loading() when loading != null:
 return loading(_that);case _LoginSuccess() when loginSuccess != null:
-return loginSuccess(_that);case _RegistrationSuccess() when registrationSuccess != null:
+return loginSuccess(_that);case _RegisterStep1Success() when registerStep1Success != null:
+return registerStep1Success(_that);case _RegistrationSuccess() when registrationSuccess != null:
 return registrationSuccess(_that);case _VerificationSuccess() when verificationSuccess != null:
 return verificationSuccess(_that);case _OtpResent() when otpResent != null:
 return otpResent(_that);case _Failure() when failure != null:
@@ -8064,12 +8162,13 @@ return failure(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function()?  loginSuccess,TResult Function( String phoneNumber)?  registrationSuccess,TResult Function()?  verificationSuccess,TResult Function()?  otpResent,TResult Function( String message)?  failure,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function()?  loginSuccess,TResult Function( String phoneNumber,  String password,  String recaptchaToken)?  registerStep1Success,TResult Function( String phoneNumber)?  registrationSuccess,TResult Function()?  verificationSuccess,TResult Function()?  otpResent,TResult Function( String message)?  failure,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _LoginSuccess() when loginSuccess != null:
-return loginSuccess();case _RegistrationSuccess() when registrationSuccess != null:
+return loginSuccess();case _RegisterStep1Success() when registerStep1Success != null:
+return registerStep1Success(_that.phoneNumber,_that.password,_that.recaptchaToken);case _RegistrationSuccess() when registrationSuccess != null:
 return registrationSuccess(_that.phoneNumber);case _VerificationSuccess() when verificationSuccess != null:
 return verificationSuccess();case _OtpResent() when otpResent != null:
 return otpResent();case _Failure() when failure != null:
@@ -8091,12 +8190,13 @@ return failure(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function()  loginSuccess,required TResult Function( String phoneNumber)  registrationSuccess,required TResult Function()  verificationSuccess,required TResult Function()  otpResent,required TResult Function( String message)  failure,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function()  loginSuccess,required TResult Function( String phoneNumber,  String password,  String recaptchaToken)  registerStep1Success,required TResult Function( String phoneNumber)  registrationSuccess,required TResult Function()  verificationSuccess,required TResult Function()  otpResent,required TResult Function( String message)  failure,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Loading():
 return loading();case _LoginSuccess():
-return loginSuccess();case _RegistrationSuccess():
+return loginSuccess();case _RegisterStep1Success():
+return registerStep1Success(_that.phoneNumber,_that.password,_that.recaptchaToken);case _RegistrationSuccess():
 return registrationSuccess(_that.phoneNumber);case _VerificationSuccess():
 return verificationSuccess();case _OtpResent():
 return otpResent();case _Failure():
@@ -8114,12 +8214,13 @@ return failure(_that.message);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function()?  loginSuccess,TResult? Function( String phoneNumber)?  registrationSuccess,TResult? Function()?  verificationSuccess,TResult? Function()?  otpResent,TResult? Function( String message)?  failure,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function()?  loginSuccess,TResult? Function( String phoneNumber,  String password,  String recaptchaToken)?  registerStep1Success,TResult? Function( String phoneNumber)?  registrationSuccess,TResult? Function()?  verificationSuccess,TResult? Function()?  otpResent,TResult? Function( String message)?  failure,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _LoginSuccess() when loginSuccess != null:
-return loginSuccess();case _RegistrationSuccess() when registrationSuccess != null:
+return loginSuccess();case _RegisterStep1Success() when registerStep1Success != null:
+return registerStep1Success(_that.phoneNumber,_that.password,_that.recaptchaToken);case _RegistrationSuccess() when registrationSuccess != null:
 return registrationSuccess(_that.phoneNumber);case _VerificationSuccess() when verificationSuccess != null:
 return verificationSuccess();case _OtpResent() when otpResent != null:
 return otpResent();case _Failure() when failure != null:
@@ -8226,6 +8327,76 @@ String toString() {
 
 
 
+
+/// @nodoc
+
+
+class _RegisterStep1Success implements AuthState {
+  const _RegisterStep1Success({required this.phoneNumber, required this.password, required this.recaptchaToken});
+  
+
+ final  String phoneNumber;
+ final  String password;
+ final  String recaptchaToken;
+
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RegisterStep1SuccessCopyWith<_RegisterStep1Success> get copyWith => __$RegisterStep1SuccessCopyWithImpl<_RegisterStep1Success>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegisterStep1Success&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.password, password) || other.password == password)&&(identical(other.recaptchaToken, recaptchaToken) || other.recaptchaToken == recaptchaToken));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,phoneNumber,password,recaptchaToken);
+
+@override
+String toString() {
+  return 'AuthState.registerStep1Success(phoneNumber: $phoneNumber, password: $password, recaptchaToken: $recaptchaToken)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RegisterStep1SuccessCopyWith<$Res> implements $AuthStateCopyWith<$Res> {
+  factory _$RegisterStep1SuccessCopyWith(_RegisterStep1Success value, $Res Function(_RegisterStep1Success) _then) = __$RegisterStep1SuccessCopyWithImpl;
+@useResult
+$Res call({
+ String phoneNumber, String password, String recaptchaToken
+});
+
+
+
+
+}
+/// @nodoc
+class __$RegisterStep1SuccessCopyWithImpl<$Res>
+    implements _$RegisterStep1SuccessCopyWith<$Res> {
+  __$RegisterStep1SuccessCopyWithImpl(this._self, this._then);
+
+  final _RegisterStep1Success _self;
+  final $Res Function(_RegisterStep1Success) _then;
+
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? phoneNumber = null,Object? password = null,Object? recaptchaToken = null,}) {
+  return _then(_RegisterStep1Success(
+phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
+as String,recaptchaToken: null == recaptchaToken ? _self.recaptchaToken : recaptchaToken // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
 
 /// @nodoc
 
@@ -8428,7 +8599,10 @@ as String,
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\bloc\auth_event.dart
 ==================================================
+// lib/features/auth/presentation/bloc/auth_event.dart
 part of 'auth_bloc.dart';
+
+// NO IMPORTS ALLOWED HERE
 
 @freezed
 sealed class AuthEvent with _$AuthEvent {
@@ -8438,10 +8612,17 @@ sealed class AuthEvent with _$AuthEvent {
     required String password,
   }) = _LoginButtonPressed;
 
+  /// Dispatched when the user presses 'Next' on step 1 of registration.
+  const factory AuthEvent.nextStepPressed({
+    required String phoneNumber,
+    required String password,
+  }) = _NextStepPressed;
+
   /// Dispatched when the user presses the final register button.
-  /// We pass the complete `RegisterParams` object.
+  /// We pass the params and the optional image file.
   const factory AuthEvent.registerButtonPressed({
     required RegisterParams params,
+    File? profileImageFile, // This File type is now imported from auth_bloc.dart
   }) = _RegisterButtonPressed;
 
   /// Dispatched when the user submits the OTP.
@@ -8472,6 +8653,13 @@ sealed class AuthState with _$AuthState {
 
   /// State emitted upon successful login.
   const factory AuthState.loginSuccess() = _LoginSuccess;
+
+  /// State emitted upon successful step 1 of registration (reCAPTCHA success).
+  const factory AuthState.registerStep1Success({
+    required String phoneNumber,
+    required String password,
+    required String recaptchaToken,
+  }) = _RegisterStep1Success;
 
   /// State emitted upon successful registration.
   /// We pass the phone number to the VerifySmsPage.
@@ -8585,6 +8773,8 @@ class LoginPage extends StatelessWidget {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\pages\register_page.dart
 ==================================================
+// lib/features/auth/presentation/pages/register_page.dart
+import 'dart:io'; // ADD THIS IMPORT
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sahbifit/core/config/app_theme.dart';
@@ -8596,8 +8786,7 @@ import 'package:sahbifit/features/auth/presentation/widgets/register_form_step_1
 import 'package:sahbifit/features/gym/presentation/cubit/gym_list_cubit.dart';
 import 'package:sahbifit/features/tag/presentation/cubit/tags_cubit.dart';
 import 'package:sahbifit/shared/widgets/app_bars/custom_app_bar.dart';
-import 'package:go_router/go_router.dart'; // ADD THIS IMPORT
-
+import 'package:go_router/go_router.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -8608,12 +8797,12 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final PageController _pageController = PageController();
-
   // Data from Step 1
   String? _phoneNumber;
   String? _password;
   String? _recaptchaToken;
 
+  // This method is now triggered by the BLoC listener
   void _onStep1Next(
     String phoneNumber,
     String password,
@@ -8631,13 +8820,14 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
+  // --- UPDATE THIS METHOD SIGNATURE AND LOGIC ---
   void _onStep2Register({
     required String firstName,
     required String dateOfBirth,
     required String primaryGymId,
     required List<int> goalTagIds,
     required List<int> scheduleTagIds,
-    String? profilePhotoUrl,
+    File? profileImageFile, // <-- CHANGE THIS
   }) {
     if (_phoneNumber == null || _password == null || _recaptchaToken == null) {
       // Should not happen, but as a safeguard
@@ -8657,11 +8847,16 @@ class _RegisterPageState extends State<RegisterPage> {
       primaryGymId: primaryGymId,
       goalTagIds: goalTagIds,
       scheduleTagIds: scheduleTagIds,
-      profilePhotoUrl: profilePhotoUrl,
+      profilePhotoUrl: null, // <-- CHANGE THIS (BLoC will set it)
     );
 
-    context.read<AuthBloc>().add(AuthEvent.registerButtonPressed(params: params));
+    // Dispatch the event with BOTH the params and the file
+    context.read<AuthBloc>().add(AuthEvent.registerButtonPressed(
+          params: params,
+          profileImageFile: profileImageFile, // <-- PASS THE FILE
+        ));
   }
+  // --- END UPDATE ---
 
   @override
   Widget build(BuildContext context) {
@@ -8674,6 +8869,12 @@ class _RegisterPageState extends State<RegisterPage> {
       child: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           state.maybeWhen(
+            // --- ADDED ---
+            registerStep1Success: (phoneNumber, password, recaptchaToken) {
+              // Call the local method to store data and move to the next page
+              _onStep1Next(phoneNumber, password, recaptchaToken);
+            },
+            // --- END ADD ---
             registrationSuccess: (phoneNumber) {
               // Navigate to VerifySmsPage on success
               context.push('/verify-sms', extra: phoneNumber);
@@ -8701,7 +8902,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 );
               } else {
                 context.pop();
-
               }
             },
           ),
@@ -8709,7 +8909,9 @@ class _RegisterPageState extends State<RegisterPage> {
             controller: _pageController,
             physics: const NeverScrollableScrollPhysics(),
             children: [
-              RegisterFormStep1(onNext: _onStep1Next),
+              // --- UPDATED ---
+              RegisterFormStep1(),
+              // --- END UPDATE ---
               ProfileSetupForm(onRegister: _onStep2Register),
             ],
           ),
@@ -8918,18 +9120,16 @@ class _LoginFormState extends State<LoginForm> {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\widgets\profile_setup_form.dart
 ==================================================
-// BEGIN: /mobile/lib/features/auth/presentation/widgets/profile_setup_form.dart
+// lib/features/auth/presentation/widgets/profile_setup_form.dart
 
-import 'dart:io'; // ADDED
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart'; // ADDED
+import 'package:image_picker/image_picker.dart';
 import 'package:sahbifit/core/config/app_theme.dart';
-import 'package:sahbifit/core/di/service_locator.dart';
 import 'package:sahbifit/core/utils/date_formatters.dart';
 import 'package:sahbifit/core/utils/validators.dart';
 import 'package:sahbifit/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:sahbifit/features/file/domain/usecases/upload_profile_photo.dart'; // ADDED
 import 'package:sahbifit/features/gym/domain/entities/gym.dart';
 import 'package:sahbifit/features/gym/presentation/cubit/gym_list_cubit.dart';
 import 'package:sahbifit/features/tag/domain/entities/tag.dart';
@@ -8939,10 +9139,6 @@ import 'package:sahbifit/shared/widgets/buttons/custom_buttons.dart';
 import 'package:sahbifit/shared/widgets/inputs/custom_inputs.dart';
 import 'package:sahbifit/shared/widgets/states/loading_states.dart';
 
-// NOTE: The new _onRegisterPressed method uses `getIt`,
-// but the import for it (e.g., 'package:sahbifit/locator.dart')
-// was not in the instructions. You may need to add it manually.
-
 class ProfileSetupForm extends StatefulWidget {
   final Function({
     required String firstName,
@@ -8950,7 +9146,7 @@ class ProfileSetupForm extends StatefulWidget {
     required String primaryGymId,
     required List<int> goalTagIds,
     required List<int> scheduleTagIds,
-    String? profilePhotoUrl,
+    File? profileImageFile, // Updated signature
   }) onRegister;
 
   const ProfileSetupForm({super.key, required this.onRegister});
@@ -8969,16 +9165,14 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
   final List<int> _selectedGoalIds = [];
   final List<int> _selectedScheduleIds = [];
 
-  // --- ADD THESE ---
+  // These stay, as the widget still picks the image
   File? _pickedImage;
-  bool _isLoading = false;
   final ImagePicker _picker = ImagePicker();
-  // --- END ADD ---
+  // --- END ---
 
   @override
   void initState() {
     super.initState();
-    // Fetch data when the widget is initialized
     context.read<GymListCubit>().fetchApprovedGyms();
     context.read<TagsCubit>().loadAllTags();
   }
@@ -9001,12 +9195,11 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
-        _dobController.text = formatToYyyyMmDd(picked); // Format for backend
+        _dobController.text = formatToYyyyMmDd(picked);
       });
     }
   }
 
-  // --- ADD THIS METHOD ---
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(
       source: ImageSource.gallery,
@@ -9014,17 +9207,15 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
       maxWidth: 1024,
       imageQuality: 80,
     );
-
     if (image != null) {
       setState(() {
         _pickedImage = File(image.path);
       });
     }
   }
-  // --- END ADD ---
 
-  // --- REPLACE THIS METHOD ---
-  void _onRegisterPressed() async { // <-- Add async
+  // Updated method: No async, no upload logic
+  void _onRegisterPressed() {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -9041,38 +9232,16 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
       return;
     }
 
-    setState(() => _isLoading = true);
-    String? profilePhotoUrl;
-
-    try {
-      // 1. Upload image if one was picked
-      if (_pickedImage != null) {
-        profilePhotoUrl = await getIt<UploadProfilePhoto>().call(
-          UploadProfilePhotoParams(file: _pickedImage!),
-        );
-      }
-
-      // 2. Call the onRegister callback with the URL
-      widget.onRegister(
-        firstName: _firstNameController.text.trim(),
-        dateOfBirth: _dobController.text,
-        primaryGymId: _selectedGymId!,
-        goalTagIds: _selectedGoalIds,
-        scheduleTagIds: _selectedScheduleIds,
-        profilePhotoUrl: profilePhotoUrl, // <-- Pass the URL
-      );
-
-    } catch (e) {
-      _showError('Failed to upload photo: $e');
-    } finally {
-      // We only set isLoading to false on error.
-      // On success, the parent page will navigate away.
-      if (mounted) {
-         setState(() => _isLoading = false);
-      }
-    }
+    // Call the onRegister callback with the File
+    widget.onRegister(
+      firstName: _firstNameController.text.trim(),
+      dateOfBirth: _dobController.text,
+      primaryGymId: _selectedGymId!,
+      goalTagIds: _selectedGoalIds,
+      scheduleTagIds: _selectedScheduleIds,
+      profileImageFile: _pickedImage, // Pass the File
+    );
   }
-  // --- END REPLACE ---
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -9092,16 +9261,14 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // --- ADD THIS WIDGET ---
             Center(
               child: GestureDetector(
                 onTap: _pickImage,
                 child: CircleAvatar(
                   radius: 50,
                   backgroundColor: AppTheme.lightGray,
-                  backgroundImage: _pickedImage != null
-                      ? FileImage(_pickedImage!)
-                      : null,
+                  backgroundImage:
+                      _pickedImage != null ? FileImage(_pickedImage!) : null,
                   child: _pickedImage == null
                       ? const Icon(Icons.add_a_photo,
                           color: AppTheme.disabledGray, size: 40)
@@ -9109,7 +9276,6 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
                 ),
               ),
             ),
-            // --- END ADD ---
             Text(
               'Tell us about you',
               style: context.textTheme.displaySmall,
@@ -9139,7 +9305,7 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
             const SizedBox(height: AppTheme.sectionSpacing),
             BlocBuilder<AuthBloc, AuthState>(
               builder: (context, state) {
-                // Check both AuthBloc loading and local upload loading
+                // Check AuthBloc loading
                 final isAuthLoading = state.maybeWhen(
                   loading: () => true,
                   orElse: () => false,
@@ -9147,7 +9313,7 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
                 return PrimaryButton(
                   text: 'Create Account',
                   onPressed: _onRegisterPressed,
-                  isLoading: isAuthLoading || _isLoading, // <-- Update this
+                  isLoading: isAuthLoading, // Only depends on AuthBloc now
                 );
               },
             ),
@@ -9162,8 +9328,8 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
       builder: (context, state) {
         return state.maybeWhen(
           loading: () => const LoadingIndicator(),
-          error: (message) => Text('Error: $message'), // <-- CORRECTED
-          loaded: (gyms) { // <-- CORRECTED
+          error: (message) => Text('Error: $message'),
+          loaded: (gyms) {
             return DropdownButtonFormField<String>(
               initialValue: _selectedGymId,
               hint: const Text('Select your primary gym'),
@@ -9196,8 +9362,8 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
       builder: (context, state) {
         return state.maybeWhen(
           loading: () => const LoadingIndicator(),
-          error: (message) => Text('Error: $message'), // <-- CORRECTED
-          loaded: (goalTags, scheduleTags) { // <-- CORRECTED
+          error: (message) => Text('Error: $message'),
+          loaded: (goalTags, scheduleTags) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -9221,7 +9387,8 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
     );
   }
 
-  Widget _buildTagSection(String title, List<Tag> tags, List<int> selectedIds) {
+  Widget _buildTagSection(
+      String title, List<Tag> tags, List<int> selectedIds) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -9256,18 +9423,16 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\auth\presentation\widgets\register_form_step_1.dart
 ==================================================
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sahbifit/core/config/app_theme.dart';
-import 'package:sahbifit/core/di/service_locator.dart';
-import 'package:sahbifit/core/services/recaptcha_service.dart';
 import 'package:sahbifit/core/utils/phone_number_validator.dart';
 import 'package:sahbifit/core/utils/validators.dart';
+import 'package:sahbifit/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:sahbifit/shared/widgets/buttons/custom_buttons.dart';
 import 'package:sahbifit/shared/widgets/inputs/custom_inputs.dart';
 
 class RegisterFormStep1 extends StatefulWidget {
-  final Function(String phoneNumber, String password, String recaptchaToken)
-      onNext;
-  const RegisterFormStep1({super.key, required this.onNext});
+  const RegisterFormStep1({super.key});
 
   @override
   State<RegisterFormStep1> createState() => _RegisterFormStep1State();
@@ -9281,7 +9446,6 @@ class _RegisterFormStep1State extends State<RegisterFormStep1> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -9291,34 +9455,18 @@ class _RegisterFormStep1State extends State<RegisterFormStep1> {
     super.dispose();
   }
 
-  Future<void> _onNextPressed() async {
+  void _onNextPressed() {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    setState(() => _isLoading = true);
-
-    try {
-      // Get reCAPTCHA token
-      final recaptchaToken =
-          await getIt<ReCaptchaService>().getToken('register');
-
-      // Pass data to parent page
-      widget.onNext(
-        _phoneController.text.trim(),
-        _passwordController.text.trim(),
-        recaptchaToken,
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('reCAPTCHA failed: ${e.toString()}'),
-          backgroundColor: AppTheme.primaryRed,
-        ),
-      );
-    } finally {
-      setState(() => _isLoading = false);
-    }
+    // Dispatch event to BLoC to handle logic
+    context.read<AuthBloc>().add(
+          AuthEvent.nextStepPressed(
+            phoneNumber: _phoneController.text.trim(),
+            password: _passwordController.text.trim(),
+          ),
+        );
   }
 
   @override
@@ -9401,10 +9549,18 @@ class _RegisterFormStep1State extends State<RegisterFormStep1> {
               ),
             ),
             const SizedBox(height: AppTheme.sectionSpacing),
-            PrimaryButton(
-              text: 'Next',
-              onPressed: _onNextPressed,
-              isLoading: _isLoading,
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                final isLoading = state.maybeWhen(
+                  loading: () => true,
+                  orElse: () => false,
+                );
+                return PrimaryButton(
+                  text: 'Next',
+                  onPressed: _onNextPressed,
+                  isLoading: isLoading,
+                );
+              },
             ),
           ],
         ),
@@ -10717,7 +10873,7 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\chat\presentation\page
 ==================================================
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sahbifit/app/bloc/app_bloc.dart';
+// REMOVED: import 'package:sahbifit/app/bloc/app_bloc.dart';
 import 'package:sahbifit/core/di/service_locator.dart';
 import 'package:sahbifit/features/chat/domain/entities/message.dart';
 import 'package:sahbifit/features/chat/presentation/cubit/chat_cubit.dart';
@@ -10727,6 +10883,11 @@ import 'package:sahbifit/features/chat/presentation/widgets/chat_logistics_heade
 import 'package:sahbifit/features/chat/presentation/widgets/message_bubble.dart';
 import 'package:sahbifit/shared/widgets/app_bars/custom_app_bar.dart';
 import 'package:sahbifit/shared/widgets/states/loading_states.dart';
+
+// --- ADDED PROFILE BLOC IMPORTS ---
+import 'package:sahbifit/features/user/presentation/bloc/profile_bloc.dart';
+
+// ---------------------------------
 
 class ChatPage extends StatelessWidget {
   final String sessionId;
@@ -10742,63 +10903,73 @@ class ChatPage extends StatelessWidget {
     // It also triggers the initial data load.
     return BlocProvider(
       create: (context) => getIt<ChatCubit>()..listenToChat(sessionId),
-      child: BlocBuilder<AppBloc, AppState>(
-        // We need the AppBloc to get the current user's ID
-        builder: (context, appState) {
-          // Assume AppState has an 'authenticated' state with a 'user' object
-          final currentUserId =
-              appState.mapOrNull(authenticated: (state) => state.user.userId);
-
-          if (currentUserId == null) {
-            // This case should ideally not happen if routing is correct,
-            // but it's good practice to handle it.
-            return const Scaffold(
-              body: LoadingIndicator(message: 'Authenticating...'),
-            );
-          }
-
-          return Scaffold(
-            appBar: const CustomAppBar(title: 'Session Chat'),
-            body: Column(
-              children: [
-                const ChatLogisticsHeader(),
-                Expanded(
-                  // This builder handles the chat's own state
-                  child: BlocBuilder<ChatCubit, ChatState>(
-                    builder: (context, chatState) {
-                      return chatState.when(
-                        initial: () => const SizedBox.shrink(),
-                        loading: () =>
-                            const LoadingIndicator(message: 'Loading chat...'),
-                        error: (message) => ErrorStateWidget(
-                          message: message,
-                          buttonText: 'Retry',
-                          onRetry: () {
-                            context.read<ChatCubit>().listenToChat(sessionId);
-                          },
-                        ),
-                        loaded: (messages) => _buildChatList(
-                          context,
-                          messages,
-                          currentUserId,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                ChatInputField(
-                  enabled: true, // Add logic here if chat can be disabled
-                  onSend: (text) {
-                    context.read<ChatCubit>().sendMessage(
-                          sessionId: sessionId,
-                          senderId: currentUserId,
-                          text: text,
-                        );
-                  },
-                ),
-              ],
+      // --- MODIFIED: Listen to ProfileBloc instead of AppBloc ---
+      child: BlocBuilder<ProfileBloc, ProfileState>(
+        builder: (context, profileState) {
+          // --- Handle Profile states ---
+          return profileState.when(
+            initial: () => const Scaffold(
+                body: LoadingIndicator(message: 'Loading profile...')),
+            loading: () => const Scaffold(
+                body: LoadingIndicator(message: 'Loading profile...')),
+            error: (message) => Scaffold(
+              body: ErrorStateWidget(
+                message: message,
+                buttonText: 'Retry',
+                onRetry: () => context
+                    .read<ProfileBloc>()
+                    .add(const ProfileEvent.loadMyProfile()),
+              ),
             ),
+            // --- Profile is loaded, we have the user ---
+            loaded: (user) {
+              final currentUserId = user.userId;
+
+              return Scaffold(
+                appBar: const CustomAppBar(title: 'Session Chat'),
+                body: Column(
+                  children: [
+                    const ChatLogisticsHeader(),
+                    Expanded(
+                      // This builder handles the chat's own state
+                      child: BlocBuilder<ChatCubit, ChatState>(
+                        builder: (context, chatState) {
+                          return chatState.when(
+                            initial: () => const SizedBox.shrink(),
+                            loading: () =>
+                                const LoadingIndicator(message: 'Loading chat...'),
+                            error: (message) => ErrorStateWidget(
+                              message: message,
+                              buttonText: 'Retry',
+                              onRetry: () {
+                                context.read<ChatCubit>().listenToChat(sessionId);
+                              },
+                            ),
+                            loaded: (messages) => _buildChatList(
+                              context,
+                              messages,
+                              currentUserId, // <-- Pass user ID
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    ChatInputField(
+                      enabled: true, // Add logic here if chat can be disabled
+                      onSend: (text) {
+                        context.read<ChatCubit>().sendMessage(
+                              sessionId: sessionId,
+                              senderId: currentUserId, // <-- Pass user ID
+                              text: text,
+                            );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
           );
+          // ---------------------------------
         },
       ),
     );
@@ -11018,7 +11189,7 @@ class ChatLogisticsHeader extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Chat is active 1 hour before and 24 hours after the session.',
+              'Chat is active 1 hour before and 1 hour after the session.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppTheme.disabledGray,
                     fontWeight: FontWeight.w500,
@@ -17521,6 +17692,8 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\datasourc
 import 'package:sahbifit/features/session/data/models/create_session_model.dart';
 import 'package:sahbifit/features/session/data/models/mark_attendance_model.dart';
 import 'package:sahbifit/features/session/data/models/session_model.dart';
+// --- ADD THIS IMPORT ---
+import 'package:sahbifit/features/session/data/models/session_participant_model.dart';
 import 'package:sahbifit/features/verification/domain/enums/verified_gender_enum.dart';
 
 abstract class SessionRemoteDatasource {
@@ -17528,12 +17701,17 @@ abstract class SessionRemoteDatasource {
   Future<SessionModel> createSession(CreateSessionModel request);
   Future<void> joinSession(String sessionId);
   Future<void> markAttendance(MarkAttendanceModel request);
-}
+  Future<SessionModel> getSessionById(String sessionId);
 
+  // --- ADD THIS LINE ---
+  Stream<List<SessionParticipantModel>> getParticipantsStream(String sessionId);
+}
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\data\datasources\session_remote_datasource_impl.dart
 ==================================================
+// --- ADDED ---
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sahbifit/core/api/api_client.dart';
@@ -17543,16 +17721,22 @@ import 'package:sahbifit/features/session/data/datasources/session_remote_dataso
 import 'package:sahbifit/features/session/data/models/create_session_model.dart';
 import 'package:sahbifit/features/session/data/models/mark_attendance_model.dart';
 import 'package:sahbifit/features/session/data/models/session_model.dart';
+// --- ADDED ---
+import 'package:sahbifit/features/session/data/models/session_participant_model.dart';
 import 'package:sahbifit/features/verification/domain/enums/verified_gender_enum.dart';
 
 @Injectable(as: SessionRemoteDatasource)
 class SessionRemoteDatasourceImpl implements SessionRemoteDatasource {
   final ApiClient _apiClient;
+  // --- ADDED ---
+  final FirebaseFirestore _firestore;
 
-  SessionRemoteDatasourceImpl(this._apiClient);
+  // --- MODIFIED CONSTRUCTOR ---
+  SessionRemoteDatasourceImpl(this._apiClient, this._firestore);
 
   @override
-  Future<List<SessionModel>> getActiveSessions(VerifiedGender? genderFilter) async {
+  Future<List<SessionModel>> getActiveSessions(
+      VerifiedGender? genderFilter) async {
     try {
       final Map<String, dynamic> queryParams = {};
       if (genderFilter != null) {
@@ -17563,7 +17747,6 @@ class SessionRemoteDatasourceImpl implements SessionRemoteDatasource {
         ApiEndpoints.sessions,
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
-
       return (response.data as List)
           .map((json) => SessionModel.fromJson(json))
           .toList();
@@ -17580,6 +17763,19 @@ class SessionRemoteDatasourceImpl implements SessionRemoteDatasource {
         data: request.toJson(),
       );
       // Backend returns the created session
+      return SessionModel.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<SessionModel> getSessionById(String sessionId) async {
+    try {
+      // Use the base 'sessions' endpoint and append the ID
+      final response = await _apiClient.dio.get(
+        '${ApiEndpoints.sessions}/$sessionId',
+      );
       return SessionModel.fromJson(response.data);
     } on DioException catch (e) {
       throw ServerException.fromDio(e);
@@ -17607,6 +17803,23 @@ class SessionRemoteDatasourceImpl implements SessionRemoteDatasource {
     } on DioException catch (e) {
       throw ServerException.fromDio(e);
     }
+  }
+
+  // --- ADDED ---
+  @override
+  Stream<List<SessionParticipantModel>> getParticipantsStream(
+      String sessionId) {
+    // No try-catch needed here; the stream itself will propagate errors.
+    return _firestore
+        .collection('sessions')
+        .doc(sessionId)
+        .collection('participants')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => SessionParticipantModel.fromJson(doc.data()))
+          .toList();
+    });
   }
 }
 
@@ -19473,6 +19686,7 @@ import 'package:sahbifit/features/session/data/datasources/session_remote_dataso
 import 'package:sahbifit/features/session/data/models/create_session_model.dart';
 import 'package:sahbifit/features/session/data/models/mark_attendance_model.dart';
 import 'package:sahbifit/features/session/domain/entities/session.dart';
+import 'package:sahbifit/features/session/domain/entities/session_participant.dart'; // --- ADDED ---
 import 'package:sahbifit/features/session/domain/enums/participant_status.dart';
 import 'package:sahbifit/features/session/domain/repositories/session_repository.dart';
 import 'package:sahbifit/features/verification/domain/enums/verified_gender_enum.dart';
@@ -19486,8 +19700,19 @@ class SessionRepositoryImpl implements SessionRepository {
   @override
   Future<List<Session>> getActiveSessions(VerifiedGender? genderFilter) async {
     try {
-      final sessionModels = await _remoteDatasource.getActiveSessions(genderFilter);
+      final sessionModels =
+          await _remoteDatasource.getActiveSessions(genderFilter);
       return sessionModels.map((model) => model.toEntity()).toList();
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+
+  @override
+  Future<Session> getSessionById(String sessionId) async {
+    try {
+      final sessionModel = await _remoteDatasource.getSessionById(sessionId);
+      return sessionModel.toEntity();
     } on ServerException catch (e) {
       throw ServerFailure(message: e.message);
     }
@@ -19513,7 +19738,8 @@ class SessionRepositoryImpl implements SessionRepository {
   }
 
   @override
-  Future<void> markAttendance(String sessionId, String userId, ParticipantStatus status) async {
+  Future<void> markAttendance(
+      String sessionId, String userId, ParticipantStatus status) async {
     try {
       final requestModel = MarkAttendanceModel(
         sessionId: sessionId,
@@ -19524,6 +19750,15 @@ class SessionRepositoryImpl implements SessionRepository {
     } on ServerException catch (e) {
       throw ServerFailure(message: e.message);
     }
+  }
+
+  // --- ADDED ---
+  @override
+  Stream<List<SessionParticipant>> getParticipantsStream(String sessionId) {
+    // Map the stream from Model to Entity
+    return _remoteDatasource.getParticipantsStream(sessionId).map((models) {
+      return models.map((model) => model.toEntity()).toList();
+    });
   }
 }
 
@@ -19651,6 +19886,8 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\domain\reposit
 ==================================================
 import 'package:sahbifit/features/session/domain/entities/session.dart';
 import 'package:sahbifit/features/session/data/models/create_session_model.dart';
+// --- ADDED ---
+import 'package:sahbifit/features/session/domain/entities/session_participant.dart';
 import 'package:sahbifit/features/session/domain/enums/participant_status.dart';
 import 'package:sahbifit/features/verification/domain/enums/verified_gender_enum.dart';
 
@@ -19658,7 +19895,14 @@ abstract class SessionRepository {
   Future<List<Session>> getActiveSessions(VerifiedGender? genderFilter);
   Future<Session> createSession(CreateSessionModel request);
   Future<void> joinSession(String sessionId);
-  Future<void> markAttendance(String sessionId, String userId, ParticipantStatus status);
+  Future<void> markAttendance(
+      String sessionId, String userId, ParticipantStatus status);
+
+  // New method added
+  Future<Session> getSessionById(String sessionId);
+
+  // --- ADDED ---
+  Stream<List<SessionParticipant>> getParticipantsStream(String sessionId);
 }
 
 ==================================================
@@ -19750,6 +19994,66 @@ class GetActiveSessionsParams extends Equatable {
 
   @override
   List<Object?> get props => [genderFilter];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\domain\usecases\get_participants_stream.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+// Usecase import removed
+import 'package:sahbifit/features/session/domain/entities/session_participant.dart';
+import 'package:sahbifit/features/session/domain/repositories/session_repository.dart';
+
+@injectable
+class GetParticipantsStream { // 'implements UseCase' removed
+  final SessionRepository _repository;
+
+  GetParticipantsStream(this._repository);
+
+  // '@override' removed
+  Stream<List<SessionParticipant>> call(GetParticipantsStreamParams params) {
+    return _repository.getParticipantsStream(params.sessionId);
+  }
+}
+
+class GetParticipantsStreamParams extends Equatable {
+  final String sessionId;
+
+  const GetParticipantsStreamParams({required this.sessionId});
+
+  @override
+  List<Object?> get props => [sessionId];
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\domain\usecases\get_session_by_id.dart
+==================================================
+import 'package:equatable/equatable.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/usecases/usecase.dart';
+import 'package:sahbifit/features/session/domain/entities/session.dart';
+import 'package:sahbifit/features/session/domain/repositories/session_repository.dart';
+
+@injectable
+class GetSessionById implements UseCase<Session, GetSessionByIdParams> {
+  final SessionRepository _repository;
+
+  GetSessionById(this._repository);
+
+  @override
+  Future<Session> call(GetSessionByIdParams params) async {
+    return _repository.getSessionById(params.sessionId);
+  }
+}
+
+class GetSessionByIdParams extends Equatable {
+  final String sessionId;
+
+  const GetSessionByIdParams({required this.sessionId});
+
+  @override
+  List<Object?> get props => [sessionId];
 }
 
 ==================================================
@@ -20232,56 +20536,65 @@ sealed class CreateSessionState with _$CreateSessionState {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\cubit\mark_attendance_cubit.dart
 ==================================================
+// lib/features/session/presentation/cubit/mark_attendance_cubit.dart
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// --- REMOVED ---
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sahbifit/core/errors/failure.dart';
-import 'package:sahbifit/features/session/data/models/session_participant_model.dart';
+// --- REMOVED ---
+// import 'package:sahbifit/features/session/data/models/session_participant_model.dart';
 import 'package:sahbifit/features/session/domain/entities/session.dart';
+// --- ADDED ---
 import 'package:sahbifit/features/session/domain/entities/session_participant.dart';
 import 'package:sahbifit/features/session/domain/enums/participant_status.dart';
-import 'package:sahbifit/features/session/domain/usecases/get_active_sessions.dart';
+// --- ADDED ---
+import 'package:sahbifit/features/session/domain/usecases/get_participants_stream.dart';
 import 'package:sahbifit/features/session/domain/usecases/mark_attendance.dart';
+// --- ADDED ---
+import 'package:sahbifit/features/session/domain/usecases/get_session_by_id.dart';
 
 part 'mark_attendance_cubit.freezed.dart';
 part 'mark_attendance_state.dart';
 
 @injectable
 class MarkAttendanceCubit extends Cubit<MarkAttendanceState> {
-  final GetActiveSessions _getActiveSessions;
+  // --- ADDED ---
+  final GetSessionById _getSessionById;
   final MarkAttendance _markAttendance;
-  final FirebaseFirestore _firestore;
+  // --- REMOVED ---
+  // final FirebaseFirestore _firestore;
+  // --- ADDED ---
+  final GetParticipantsStream _getParticipantsStream;
 
   StreamSubscription? _participantsSubscription;
 
   MarkAttendanceCubit(
-    this._getActiveSessions,
+    // --- ADDED ---
+    this._getSessionById,
     this._markAttendance,
-    this._firestore,
+    // --- REMOVED ---
+    // this._firestore,
+    // --- ADDED ---
+    this._getParticipantsStream,
   ) : super(const MarkAttendanceState.initial());
 
-  Future<void> loadSession(String sessionId) async {
+  Future<void> loadSession(String sessionId) async { // <-- CHANGED SIGNATURE
     emit(const MarkAttendanceState.loading());
     try {
       // 1. Fetch base session data
-      final sessions = await _getActiveSessions(const GetActiveSessionsParams());
-      final session = sessions.firstWhere((s) => s.sessionId == sessionId);
+      final session =
+          await _getSessionById(GetSessionByIdParams(sessionId: sessionId));
 
       // 2. Listen for participants
       _participantsSubscription?.cancel();
-      _participantsSubscription = _firestore
-          .collection('sessions')
-          .doc(sessionId)
-          .collection('participants')
-          .snapshots()
-          .listen((snapshot) {
-        final participants = snapshot.docs
-            .map((doc) => SessionParticipantModel.fromJson(doc.data()).toEntity())
-            .toList();
+      _participantsSubscription = _getParticipantsStream(
+        GetParticipantsStreamParams(sessionId: session.sessionId),
+      ).listen((participants) {
         emit(MarkAttendanceState.loaded(
-          session: session,
+          session: session, // <-- Use newly fetched session
           participants: participants,
         ));
       });
@@ -20293,6 +20606,7 @@ class MarkAttendanceCubit extends Cubit<MarkAttendanceState> {
   }
 
   Future<void> submitAttendance(String userId, ParticipantStatus status) async {
+    // ... (rest of the method is unchanged) ...
     final currentState = state;
     if (currentState is _Loaded) {
       emit(currentState.copyWith(isSubmitting: true));
@@ -20306,7 +20620,8 @@ class MarkAttendanceCubit extends Cubit<MarkAttendanceState> {
         emit(currentState.copyWith(isSubmitting: false));
       } on ServerFailure catch (e) {
         // Show error on the loaded state
-        emit(currentState.copyWith(isSubmitting: false, errorMessage: e.message));
+        emit(
+            currentState.copyWith(isSubmitting: false, errorMessage: e.message));
         // Clear error after a few seconds
         await Future.delayed(const Duration(seconds: 3));
         emit(currentState.copyWith(errorMessage: null));
@@ -20742,65 +21057,78 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\c
 ==================================================
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// --- REMOVED ---
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
-import 'package:sahbifit/app/bloc/app_bloc.dart';
+// REMOVED: import 'package:sahbifit/app/bloc/app_bloc.dart';
 import 'package:sahbifit/core/errors/failure.dart';
-import 'package:sahbifit/features/session/data/models/session_participant_model.dart';
+// --- REMOVED ---
+// import 'package:sahbifit/features/session/data/models/session_participant_model.dart';
 import 'package:sahbifit/features/session/domain/entities/session.dart';
 import 'package:sahbifit/features/session/domain/entities/session_participant.dart';
-import 'package:sahbifit/features/session/domain/usecases/get_active_sessions.dart';
+// --- ADDED ---
+import 'package:sahbifit/features/session/domain/usecases/get_participants_stream.dart';
+import 'package:sahbifit/features/session/domain/usecases/get_session_by_id.dart';
 import 'package:sahbifit/features/session/domain/usecases/join_session.dart';
+// --- ADDED PROFILE BLOC IMPORTS ---
+import 'package:sahbifit/features/user/presentation/bloc/profile_bloc.dart';
+// ---------------------------------
 
 part 'session_details_cubit.freezed.dart';
 part 'session_details_state.dart';
 
 @injectable
 class SessionDetailsCubit extends Cubit<SessionDetailsState> {
-  final GetActiveSessions _getActiveSessions;
+  final GetSessionById _getSessionById;
   final JoinSession _joinSession;
-  final FirebaseFirestore _firestore;
-  final AppBloc _appBloc;
+  // --- REMOVED ---
+  // final FirebaseFirestore _firestore;
+  // --- ADDED ---
+  final GetParticipantsStream _getParticipantsStream;
+  // MODIFIED: final AppBloc _appBloc;
+  final ProfileBloc _profileBloc; // <-- CHANGED
 
   StreamSubscription? _participantsSubscription;
 
   SessionDetailsCubit(
-    this._getActiveSessions,
+    this._getSessionById,
     this._joinSession,
-    this._firestore,
-    this._appBloc,
+    // --- REMOVED ---
+    // this._firestore,
+    // --- ADDED ---
+    this._getParticipantsStream,
+    this._profileBloc, // <-- CHANGED
   ) : super(const SessionDetailsState.initial());
 
   Future<void> fetchSessionDetails(String sessionId) async {
     emit(const SessionDetailsState.loading());
     try {
-      // 1. Get current user ID from AppBloc
-      final currentUserId = _appBloc.state.mapOrNull(
-        authenticated: (s) => s.user.userId,
+      // 1. Get current user ID from ProfileBloc
+      // --- MODIFIED LOGIC ---
+      final profileState = _profileBloc.state;
+      final currentUserId = profileState.maybeMap(
+        loaded: (s) => s.user.userId,
+        orElse: () => null,
       );
+      // ----------------------
+
       if (currentUserId == null) {
-        emit(const SessionDetailsState.error('Not authenticated'));
+        // Updated error message to be more accurate
+        emit(const SessionDetailsState.error('Profile not loaded'));
         return;
       }
 
-      // 2. Fetch base session data (Workaround: fetching all and filtering)
-      // A dedicated GetSessionById use case would be better.
-      final sessions = await _getActiveSessions(const GetActiveSessionsParams());
-      final session = sessions.firstWhere((s) => s.sessionId == sessionId);
-
-      // 3. Listen for participants from Firestore
+      // 2. Fetch base session data
+      final session =
+          await _getSessionById(GetSessionByIdParams(sessionId: sessionId));
+          
+      // --- MODIFIED: Use GetParticipantsStream use case ---
+      // 3. Listen for participants
       _participantsSubscription?.cancel();
-      _participantsSubscription = _firestore
-          .collection('sessions')
-          .doc(sessionId)
-          .collection('participants')
-          .snapshots()
-          .listen((snapshot) {
-        final participants = snapshot.docs
-            .map((doc) => SessionParticipantModel.fromJson(doc.data()).toEntity())
-            .toList();
-
+      _participantsSubscription = _getParticipantsStream(
+        GetParticipantsStreamParams(sessionId: sessionId),
+      ).listen((participants) {
         final isJoined = participants.any((p) => p.userId == currentUserId);
 
         emit(SessionDetailsState.loaded(
@@ -20827,7 +21155,8 @@ class SessionDetailsCubit extends Cubit<SessionDetailsState> {
           await _joinSession(JoinSessionParams(sessionId: sessionId));
           // The stream listener will automatically update the state,
           // so we just need to wait for it.
-          // We'll reset loading state when the stream updates.
+          // We'll reset
+          // loading state when the stream updates.
         } on ServerFailure catch (e) {
           // Emit an error but keep the loaded state
           emit(s.copyWith(
@@ -20835,6 +21164,7 @@ class SessionDetailsCubit extends Cubit<SessionDetailsState> {
             errorMessage: e.message,
           ));
           // Remove the error message after a delay
+
           await Future.delayed(const Duration(seconds: 3));
           emit(s.copyWith(errorMessage: null));
         }
@@ -21922,100 +22252,118 @@ class _GymSelector extends StatelessWidget {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\pages\mark_attendance_page.dart
 ==================================================
+// lib/features/session/presentation/pages/mark_attendance_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sahbifit/core/config/app_theme.dart';
-import 'package:sahbifit/core/di/service_locator.dart';
+// --- REMOVED ---
+// import 'package:sahbifit/features/session/domain/entities/session.dart';
 import 'package:sahbifit/features/session/presentation/cubit/mark_attendance_cubit.dart';
 import 'package:sahbifit/features/session/presentation/widgets/session_participant_list.dart';
 import 'package:sahbifit/shared/widgets/app_bars/custom_app_bar.dart';
 import 'package:sahbifit/shared/widgets/states/loading_states.dart';
+import 'package:sahbifit/core/di/service_locator.dart';
 
-class MarkAttendancePage extends StatefulWidget {
-  final String sessionId;
+// Assuming your context.textTheme extension is imported via another file or AppTheme
+// If not, you might need to use Theme.of(context).textTheme...
+
+/// This widget is responsible for providing the [MarkAttendanceCubit]
+/// to the [MarkAttendanceView].
+class MarkAttendancePage extends StatelessWidget {
+  final String sessionId; // <-- CHANGED
 
   const MarkAttendancePage({
     super.key,
-    required this.sessionId,
+    required this.sessionId, // <-- CHANGED
   });
-
-  @override
-  State<MarkAttendancePage> createState() => _MarkAttendancePageState();
-}
-
-class _MarkAttendancePageState extends State<MarkAttendancePage> {
-  late final MarkAttendanceCubit _cubit;
-
-  @override
-  void initState() {
-    super.initState();
-    _cubit = getIt<MarkAttendanceCubit>()..loadSession(widget.sessionId);
-  }
-
-  @override
-  void dispose() {
-    _cubit.close();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _cubit,
-      child: Scaffold(
-        appBar: const CustomAppBar(title: 'Mark Attendance'),
-        body: BlocConsumer<MarkAttendanceCubit, MarkAttendanceState>(
-          listener: (context, state) {
-            state.maybeMap(
-              loaded: (s) {
-                if (s.errorMessage != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(s.errorMessage!),
-                        backgroundColor: AppTheme.primaryRed),
-                  );
-                }
-              },
-              orElse: () {},
-            );
-          },
-          builder: (context, state) {
-            return state.map(
-              initial: (_) => const LoadingIndicator(),
-              loading: (_) => const LoadingIndicator(),
-              error: (e) => ErrorStateWidget(
-                message: e.message,
-                buttonText: 'Try Again',
-                onRetry: () => _cubit.loadSession(widget.sessionId),
-              ),
-              loaded: (s) {
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppTheme.defaultPadding),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(s.session.title,
-                          style: context.textTheme.headlineMedium),
-                      const SizedBox(height: AppTheme.elementSpacing),
-                      Text(
-                        'Mark participants as "Attended" or "No Show". This affects their reliability rating.',
-                        style: context.textTheme.bodyMedium,
-                      ),
-                      const Divider(height: AppTheme.sectionSpacing),
-                      if (s.isSubmitting) const LinearProgressIndicator(),
-                      SessionParticipantList(
-                        participants: s.participants,
-                        onMarkAttendance: (userId, status) {
-                          _cubit.submitAttendance(userId, status);
-                        },
-                      ),
-                    ],
+    return BlocProvider(
+      create: (context) => getIt<MarkAttendanceCubit>()
+        ..loadSession(sessionId), // <-- PASS THE SESSION ID
+      child: MarkAttendanceView(
+        // We pass the session ID to the view for the 'Try Again' button
+        sessionId: sessionId,
+      ),
+    );
+  }
+}
+
+/// This widget displays the UI for marking attendance, consuming the
+/// [MarkAttendanceCubit] provided by [MarkAttendancePage].
+class MarkAttendanceView extends StatelessWidget {
+  final String sessionId; // <-- CHANGED
+
+  const MarkAttendanceView({
+    super.key,
+    required this.sessionId, // <-- CHANGED
+  });
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: const CustomAppBar(title: 'Mark Attendance'),
+      body: BlocConsumer<MarkAttendanceCubit, MarkAttendanceState>(
+        listener: (context, state) {
+          state.maybeMap(
+            loaded: (s) {
+              if (s.errorMessage != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(s.errorMessage!),
+                    backgroundColor: AppTheme.primaryRed,
                   ),
                 );
-              },
-            );
-          },
-        ),
+              }
+            },
+            orElse: () {},
+          );
+        },
+        builder: (context, state) {
+          return state.map(
+            initial: (_) => const LoadingIndicator(),
+            loading: (_) => const LoadingIndicator(),
+            error: (e) => ErrorStateWidget(
+              message: e.message,
+              buttonText: 'Try Again',
+              // Use context.read to access the cubit and pass the sessionId
+              onRetry: () =>
+                  context.read<MarkAttendanceCubit>().loadSession(sessionId),
+            ),
+            loaded: (s) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(AppTheme.defaultPadding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      s.session.title,
+                      // Assuming context.textTheme.headlineMedium is a valid theme extension
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                    const SizedBox(height: AppTheme.elementSpacing),
+                    Text(
+                      'Mark participants as "Attended" or "No Show". This affects their reliability rating.',
+                      // Assuming context.textTheme.bodyMedium is a valid theme extension
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const Divider(height: AppTheme.sectionSpacing),
+                    if (s.isSubmitting) const LinearProgressIndicator(),
+                    SessionParticipantList(
+                      participants: s.participants,
+                      onMarkAttendance: (userId, status) {
+                        // Use context.read to access the cubit
+                        context
+                            .read<MarkAttendanceCubit>()
+                            .submitAttendance(userId, status);
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -22026,13 +22374,13 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\p
 ==================================================
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart'; // ADD THIS IMPORT
-import 'package:sahbifit/app/bloc/app_bloc.dart';
+import 'package:go_router/go_router.dart';
+// REMOVED: import 'package:sahbifit/app/bloc/app_bloc.dart';
 import 'package:sahbifit/core/config/app_theme.dart';
 import 'package:sahbifit/core/di/service_locator.dart';
 import 'package:sahbifit/core/utils/date_formatters.dart';
 import 'package:sahbifit/features/session/domain/entities/session.dart';
-import 'package:sahbifit/features/session/domain/entities/session_participant.dart'; // ADD THIS IMPORT
+import 'package:sahbifit/features/session/domain/entities/session_participant.dart';
 import 'package:sahbifit/features/session/domain/enums/session_type.dart';
 import 'package:sahbifit/features/session/presentation/cubit/session_details_cubit.dart';
 import 'package:sahbifit/features/session/presentation/widgets/reputation_gate_dialog.dart';
@@ -22041,13 +22389,15 @@ import 'package:sahbifit/features/user/domain/entities/user.dart';
 import 'package:sahbifit/shared/widgets/app_bars/custom_app_bar.dart';
 import 'package:sahbifit/shared/widgets/buttons/custom_buttons.dart';
 import 'package:sahbifit/shared/widgets/states/loading_states.dart';
+// --- ADDED PROFILE BLOC IMPORTS (ADJUST PATHS IF NEEDED) ---
+import 'package:sahbifit/features/user/presentation/bloc/profile_bloc.dart';
+// -----------------------------------------------------------
 
 class SessionDetailsPage extends StatefulWidget {
   final String sessionId;
-
   const SessionDetailsPage({
     super.key,
-    required this.sessionId, // REMOVED @PathParam
+    required this.sessionId,
   });
 
   @override
@@ -22056,14 +22406,11 @@ class SessionDetailsPage extends StatefulWidget {
 
 class _SessionDetailsPageState extends State<SessionDetailsPage> {
   late final SessionDetailsCubit _cubit;
-  late final User _currentUser;
-
+  // REMOVED: late final User _currentUser;
   @override
   void initState() {
     super.initState();
-    _currentUser = context.read<AppBloc>().state.mapOrNull(
-          authenticated: (s) => s.user,
-        )!; // Must be authenticated
+    // REMOVED: ProfileBloc logic from here
     _cubit = getIt<SessionDetailsCubit>()
       ..fetchSessionDetails(widget.sessionId);
   }
@@ -22076,52 +22423,77 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _cubit,
-      child: Scaffold(
-        body: BlocConsumer<SessionDetailsCubit, SessionDetailsState>(
-          listener: (context, state) {
-            state.maybeMap(
-              loaded: (s) {
-                if (s.errorMessage != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(s.errorMessage!),
-                        backgroundColor: AppTheme.primaryRed),
-                  );
-                }
-              },
-              orElse: () {},
-            );
-          },
-          builder: (context, state) {
-            // UPDATED from .map to .when
-            return state.when(
-              initial: () => const LoadingIndicator(),
-              loading: () => const LoadingIndicator(),
-              error: (message) => Center(
-                child: ErrorStateWidget(
-                  message: message,
-                  buttonText: 'Try Again',
-                  onRetry: () => _cubit.fetchSessionDetails(widget.sessionId),
+    // --- WRAPPED IN PROFILE BLOC BUILDER ---
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, profileState) {
+        return profileState.when(
+          initial: () => const Scaffold(
+              body: LoadingIndicator(message: 'Loading profile...')),
+          loading: () => const Scaffold(
+              body: LoadingIndicator(message: 'Loading profile...')),
+          error: (message) => Scaffold(
+            body: ErrorStateWidget(
+              message: message,
+              buttonText: 'Retry',
+              onRetry: () => context
+                  .read<ProfileBloc>()
+                  .add(const ProfileEvent.loadMyProfile()),
+            ),
+          ),
+          loaded: (currentUser) {
+            // --- PROFILE IS LOADED, NOW BUILD SESSION DETAILS PAGE ---
+            return BlocProvider.value(
+              value: _cubit,
+              child: Scaffold(
+                body: BlocConsumer<SessionDetailsCubit, SessionDetailsState>(
+                  listener: (context, state) {
+                    state.maybeMap(
+                      loaded: (s) {
+                        if (s.errorMessage != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(s.errorMessage!),
+                                backgroundColor: AppTheme.primaryRed),
+                          );
+                        }
+                      },
+                      orElse: () {},
+                    );
+                  },
+                  builder: (context, state) {
+                    return state.when(
+                      initial: () => const LoadingIndicator(),
+                      loading: () => const LoadingIndicator(),
+                      error: (message) => Center(
+                        child: ErrorStateWidget(
+                          message: message,
+                          buttonText: 'Try Again',
+                          onRetry: () =>
+                              _cubit.fetchSessionDetails(widget.sessionId),
+                        ),
+                      ),
+                      loaded: (session, participants, isJoined, isJoinLoading,
+                          errorMessage) {
+                        return _buildLoadedBody(
+                          context,
+                          session,
+                          participants,
+                          isJoined,
+                          isJoinLoading,
+                          errorMessage,
+                          currentUser, // <-- Pass current user
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
-              loaded: (session, participants, isJoined, isJoinLoading,
-                  errorMessage) {
-                return _buildLoadedBody(
-                  context,
-                  session,
-                  participants,
-                  isJoined,
-                  isJoinLoading,
-                  errorMessage,
-                );
-              },
             );
           },
-        ),
-      ),
+        );
+      },
     );
+    // ----------------------------------------
   }
 
   // UPDATED function signature
@@ -22132,9 +22504,10 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
     bool isJoined,
     bool isJoinLoading,
     String? errorMessage,
+    User currentUser, // <-- Added
   ) {
-    // final session = state.session; // This line is no longer needed
-    final isCreator = session.creator.userId == _currentUser.userId;
+    final isCreator = session.creator.userId == currentUser.userId;
+    // <-- Use passed user
 
     return CustomScrollView(
       slivers: [
@@ -22165,7 +22538,7 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
                   icon: Icons.people_rounded,
                   title: 'Participants',
                   subtitle:
-                      '${participants.length} / ${session.maxParticipants} joined', // UPDATED
+                      '${participants.length} / ${session.maxParticipants} joined',
                 ),
                 const SizedBox(height: AppTheme.elementSpacing),
                 ListTile(
@@ -22177,13 +22550,13 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
                       style: context.textTheme.titleMedium),
                   subtitle: const Text('View Profile'),
                   onTap: () =>
-                      context.push('/user/${session.creator.userId}'), // UPDATED
+                      context.push('/user/${session.creator.userId}'),
                 ),
                 const Divider(),
                 const SizedBox(height: AppTheme.elementSpacing),
                 Text('Who\'s Going', style: context.textTheme.headlineSmall),
                 const SizedBox(height: AppTheme.elementSpacing),
-                SessionParticipantList(participants: participants), // UPDATED
+                SessionParticipantList(participants: participants),
               ],
             ),
           ),
@@ -22197,7 +22570,8 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
             isJoined,
             isJoinLoading,
             isCreator,
-          ), // UPDATED
+            currentUser, // <-- Pass current user
+          ),
         ),
       ],
     );
@@ -22239,13 +22613,13 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
     bool isJoined,
     bool isJoinLoading,
     bool isCreator,
+    User currentUser, // <-- Added
   ) {
-    final bool isFull = participants.length >= session.maxParticipants; // UPDATED
-
+    final bool isFull = participants.length >= session.maxParticipants;
     // Feature 3: Reputation Gate Logic
-    // This assumes AppBloc's user entity has this info.
     final bool hasAttendedGroupSession =
-        _currentUser.groupSessionCount > 0; // Example logic
+        currentUser.groupSessionCount > 0;
+    // <-- Use passed user
     final bool isOneOnOne = session.sessionType == SessionType.oneOnOne;
     final bool isGated = isOneOnOne && !hasAttendedGroupSession;
 
@@ -22253,7 +22627,6 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
     final bool canChat = DateTime.now()
             .isAfter(session.startTime.subtract(const Duration(hours: 1))) &&
         DateTime.now().isBefore(session.endTime.add(const Duration(hours: 1)));
-
     return Container(
       padding: const EdgeInsets.all(AppTheme.defaultPadding),
       decoration: BoxDecoration(
@@ -22272,15 +22645,15 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
           if (isCreator)
             PrimaryButton(
               text: 'Mark Attendance',
-              onPressed: () => context
-                  .push('/session/${session.sessionId}/attendance'), // UPDATED
+              onPressed: () =>
+                  // MODIFIED: Navigation no longer passes the 'extra' argument
+                  context.push('/session/${session.sessionId}/attendance'),
             )
-          else if (isJoined) // UPDATED
+          else if (isJoined)
             PrimaryButton(
               text: canChat ? 'Open Chat' : 'Chat (Locked)',
               onPressed: canChat
-                  ? () => context
-                      .push('/session/${session.sessionId}/chat') // UPDATED
+                  ? () => context.push('/session/${session.sessionId}/chat')
                   : null,
             )
           else if (isFull)
@@ -22290,8 +22663,10 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
             )
           else
             PrimaryButton(
-              text: isGated ? 'Join (Requires 1 Group Session)' : 'Join Session',
-              isLoading: isJoinLoading, // UPDATED
+              text: isGated
+                  ? 'Join (Requires 1 Group Session)'
+                  : 'Join Session',
+              isLoading: isJoinLoading,
               onPressed: isGated
                   ? () => showReputationGateDialog(context)
                   : () => _cubit.joinSession(session.sessionId),
@@ -22308,95 +22683,128 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\session\presentation\p
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sahbifit/app/bloc/app_bloc.dart';
+// REMOVED: import 'package:sahbifit/app/bloc/app_bloc.dart';
 import 'package:sahbifit/core/di/service_locator.dart';
 import 'package:sahbifit/features/session/presentation/cubit/session_feed_cubit.dart';
 import 'package:sahbifit/features/session/presentation/widgets/session_card.dart';
 import 'package:sahbifit/features/user/domain/enums/user_role.dart';
-import 'package:sahbifit/features/verification/domain/enums/verification_status_enum.dart'; // ADDED THIS IMPORT
+import 'package:sahbifit/features/verification/domain/enums/verification_status_enum.dart';
 import 'package:sahbifit/shared/widgets/app_bars/custom_app_bar.dart';
 import 'package:sahbifit/shared/widgets/states/loading_states.dart';
 
-class SessionFeedPage extends StatelessWidget {
+// --- ADDED PROFILE BLOC IMPORTS (ADJUST PATHS IF NEEDED) ---
+import 'package:sahbifit/features/user/presentation/bloc/profile_bloc.dart';
+// -----------------------------------------------------------
+
+class SessionFeedPage extends StatefulWidget { // <-- CONVERTED TO STATEFUL
   const SessionFeedPage({super.key});
 
   @override
+  State<SessionFeedPage> createState() => _SessionFeedPageState();
+}
+
+class _SessionFeedPageState extends State<SessionFeedPage> { // <-- CREATED STATE
+  @override
+  void initState() {
+    super.initState();
+    // --- ADDED: Trigger profile load on init ---
+    // Assumes ProfileBloc is provided above this widget (e.g., in your router)
+    context.read<ProfileBloc>().add(const ProfileEvent.loadMyProfile());
+    // -------------------------------------------
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Assumes AppBloc is provided above this route
-    final appState = context.watch<AppBloc>().state;
-    final currentUser = appState.mapOrNull(authenticated: (s) => s.user);
+    // --- MODIFIED: Watch ProfileBloc instead of AppBloc ---
+    final profileState = context.watch<ProfileBloc>().state;
+    // ----------------------------------------------------
 
-    if (currentUser == null) {
-      // This shouldn't happen if routing is correct, but good to guard
-      return const Scaffold(body: LoadingIndicator(message: 'Authenticating...'));
-    }
-
-    return BlocProvider(
-      create: (context) => getIt<SessionFeedCubit>()..fetchSessions(),
-      child: Scaffold(
-        appBar: const CustomAppBar(
-          title: 'Sessions',
-          showBackButton: false,
-          // You could add filter actions here
-        ),
-        body: BlocBuilder<SessionFeedCubit, SessionFeedState>(
-          builder: (context, state) {
-            return state.map(
-              initial: (_) => const LoadingIndicator(),
-              loading: (_) => const LoadingIndicator(),
-              error: (e) => ErrorStateWidget(
-                message: e.message,
-                buttonText: 'Try Again',
-                onRetry: () =>
-                    context.read<SessionFeedCubit>().fetchSessions(),
-              ),
-              loaded: (s) {
-                if (s.sessions.isEmpty) {
-                  return Center(
-                    child: EmptyStateWidget(
-                      icon: Icons.search_off_rounded,
-                      title: 'No Sessions Yet',
-                      message:
-                          'Looks quiet... Why not be the first to host one?',
-                      buttonText: 'Create a Session',
-                      onButtonPressed: () =>
-                          context.push('/create-session'), // UPDATED
-                    ),
-                  );
-                }
-                return RefreshIndicator(
-                  onRefresh: () =>
-                      context.read<SessionFeedCubit>().fetchSessions(),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(top: 8, bottom: 80),
-                    itemCount: s.sessions.length,
-                    itemBuilder: (context, index) {
-                      final session = s.sessions[index];
-
-                      // Feature 2: Probationary Mode Logic
-                      final bool isAmbassadorSession =
-                          session.creator.role == UserRole.admin; // Placeholder logic
-                      final bool isLocked =
-                          currentUser.verificationStatus == VerificationStatus.pendingReview && // CHANGED THIS LINE
-                              !isAmbassadorSession;
-
-                      return SessionCardWrapper(
-                        session: session,
-                        isLocked: isLocked,
-                      );
-                    },
-                  ),
-                );
-              },
-            );
-          },
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => context.push('/create-session'), // UPDATED
-          child: const Icon(Icons.add),
+    // --- MODIFIED: Handle ProfileBloc states ---
+    return profileState.maybeWhen(
+      loading: () =>
+          const Scaffold(body: LoadingIndicator(message: 'Loading profile...')),
+      error: (message) => Scaffold(
+        body: ErrorStateWidget(
+          message: message,
+          buttonText: 'Try Again',
+          onRetry: () =>
+              context.read<ProfileBloc>().add(const ProfileEvent.loadMyProfile()),
         ),
       ),
+      loaded: (currentUser) {
+        // We have the user, now build the session feed
+        return BlocProvider(
+          create: (context) => getIt<SessionFeedCubit>()..fetchSessions(),
+          child: Scaffold(
+            appBar: const CustomAppBar(
+              title: 'Sessions',
+              showBackButton: false,
+              // You could add filter actions here
+            ),
+            body: BlocBuilder<SessionFeedCubit, SessionFeedState>(
+              builder: (context, state) {
+                return state.map(
+                  initial: (_) => const LoadingIndicator(),
+                  loading: (_) => const LoadingIndicator(),
+                  error: (e) => ErrorStateWidget(
+                    message: e.message,
+                    buttonText: 'Try Again',
+                    onRetry: () =>
+                        context.read<SessionFeedCubit>().fetchSessions(),
+                  ),
+                  loaded: (s) {
+                    if (s.sessions.isEmpty) {
+                      return Center(
+                        child: EmptyStateWidget(
+                          icon: Icons.search_off_rounded,
+                          title: 'No Sessions Yet',
+                          message:
+                              'Looks quiet... Why not be the first to host one?',
+                          buttonText: 'Create a Session',
+                          onButtonPressed: () =>
+                              context.push('/create-session'),
+                        ),
+                      );
+                    }
+                    return RefreshIndicator(
+                      onRefresh: () =>
+                          context.read<SessionFeedCubit>().fetchSessions(),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.only(top: 8, bottom: 80),
+                        itemCount: s.sessions.length,
+                        itemBuilder: (context, index) {
+                          final session = s.sessions[index];
+
+                          // Feature 2: Probationary Mode Logic
+                          final bool isAmbassadorSession =
+                              session.creator.role == UserRole.admin;
+                          final bool isLocked =
+                              currentUser.verificationStatus ==
+                                      VerificationStatus.pendingReview &&
+                                  !isAmbassadorSession;
+
+                          return SessionCardWrapper(
+                            session: session,
+                            isLocked: isLocked,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () => context.push('/create-session'),
+              child: const Icon(Icons.add),
+            ),
+          ),
+        );
+      },
+      orElse: () =>
+          const Scaffold(body: LoadingIndicator(message: 'Initializing...')),
     );
+    // ----------------------------------------------------
   }
 }
 
@@ -28316,6 +28724,449 @@ sealed class BlockedUsersState with _$BlockedUsersState {
 }
 
 ==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\user\presentation\cubit\user_profile_cubit.dart
+==================================================
+// lib/features/user/presentation/cubit/user_profile_cubit.dart
+import 'package:bloc/bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
+import 'package:sahbifit/core/errors/failure.dart';
+import 'package:sahbifit/features/user/domain/entities/user.dart';
+import 'package:sahbifit/features/user/domain/usecases/get_user_profile.dart';
+
+part 'user_profile_cubit.freezed.dart';
+part 'user_profile_state.dart';
+
+@injectable
+class UserProfileCubit extends Cubit<UserProfileState> {
+  final GetUserProfile _getUserProfile;
+
+  UserProfileCubit(this._getUserProfile)
+      : super(const UserProfileState.initial());
+
+  /// Fetches a specific user's profile by their ID.
+  Future<void> loadUserProfile(String userId) async {
+    emit(const UserProfileState.loading());
+    try {
+      // Call the use case with the required parameters
+      final user = await _getUserProfile(GetUserProfileParams(userId: userId));
+      emit(UserProfileState.loaded(user));
+    } on ServerFailure catch (e) {
+      emit(UserProfileState.error(e.message));
+    } catch (e) {
+      emit(UserProfileState.error(e.toString()));
+    }
+  }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\user\presentation\cubit\user_profile_cubit.freezed.dart
+==================================================
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'user_profile_cubit.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+/// @nodoc
+mixin _$UserProfileState {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserProfileState);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'UserProfileState()';
+}
+
+
+}
+
+/// @nodoc
+class $UserProfileStateCopyWith<$Res>  {
+$UserProfileStateCopyWith(UserProfileState _, $Res Function(UserProfileState) __);
+}
+
+
+/// Adds pattern-matching-related methods to [UserProfileState].
+extension UserProfileStatePatterns on UserProfileState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial value)?  initial,TResult Function( _Loading value)?  loading,TResult Function( _Loaded value)?  loaded,TResult Function( _Error value)?  error,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial(_that);case _Loading() when loading != null:
+return loading(_that);case _Loaded() when loaded != null:
+return loaded(_that);case _Error() when error != null:
+return error(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial value)  initial,required TResult Function( _Loading value)  loading,required TResult Function( _Loaded value)  loaded,required TResult Function( _Error value)  error,}){
+final _that = this;
+switch (_that) {
+case _Initial():
+return initial(_that);case _Loading():
+return loading(_that);case _Loaded():
+return loaded(_that);case _Error():
+return error(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial value)?  initial,TResult? Function( _Loading value)?  loading,TResult? Function( _Loaded value)?  loaded,TResult? Function( _Error value)?  error,}){
+final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial(_that);case _Loading() when loading != null:
+return loading(_that);case _Loaded() when loaded != null:
+return loaded(_that);case _Error() when error != null:
+return error(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( User user)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial();case _Loading() when loading != null:
+return loading();case _Loaded() when loaded != null:
+return loaded(_that.user);case _Error() when error != null:
+return error(_that.message);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( User user)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+switch (_that) {
+case _Initial():
+return initial();case _Loading():
+return loading();case _Loaded():
+return loaded(_that.user);case _Error():
+return error(_that.message);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( User user)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+switch (_that) {
+case _Initial() when initial != null:
+return initial();case _Loading() when loading != null:
+return loading();case _Loaded() when loaded != null:
+return loaded(_that.user);case _Error() when error != null:
+return error(_that.message);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _Initial implements UserProfileState {
+  const _Initial();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Initial);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'UserProfileState.initial()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _Loading implements UserProfileState {
+  const _Loading();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loading);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'UserProfileState.loading()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _Loaded implements UserProfileState {
+  const _Loaded(this.user);
+  
+
+ final  User user;
+
+/// Create a copy of UserProfileState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$LoadedCopyWith<_Loaded> get copyWith => __$LoadedCopyWithImpl<_Loaded>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&(identical(other.user, user) || other.user == user));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,user);
+
+@override
+String toString() {
+  return 'UserProfileState.loaded(user: $user)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$LoadedCopyWith<$Res> implements $UserProfileStateCopyWith<$Res> {
+  factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) = __$LoadedCopyWithImpl;
+@useResult
+$Res call({
+ User user
+});
+
+
+
+
+}
+/// @nodoc
+class __$LoadedCopyWithImpl<$Res>
+    implements _$LoadedCopyWith<$Res> {
+  __$LoadedCopyWithImpl(this._self, this._then);
+
+  final _Loaded _self;
+  final $Res Function(_Loaded) _then;
+
+/// Create a copy of UserProfileState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? user = null,}) {
+  return _then(_Loaded(
+null == user ? _self.user : user // ignore: cast_nullable_to_non_nullable
+as User,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _Error implements UserProfileState {
+  const _Error(this.message);
+  
+
+ final  String message;
+
+/// Create a copy of UserProfileState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ErrorCopyWith<_Error> get copyWith => __$ErrorCopyWithImpl<_Error>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Error&&(identical(other.message, message) || other.message == message));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,message);
+
+@override
+String toString() {
+  return 'UserProfileState.error(message: $message)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ErrorCopyWith<$Res> implements $UserProfileStateCopyWith<$Res> {
+  factory _$ErrorCopyWith(_Error value, $Res Function(_Error) _then) = __$ErrorCopyWithImpl;
+@useResult
+$Res call({
+ String message
+});
+
+
+
+
+}
+/// @nodoc
+class __$ErrorCopyWithImpl<$Res>
+    implements _$ErrorCopyWith<$Res> {
+  __$ErrorCopyWithImpl(this._self, this._then);
+
+  final _Error _self;
+  final $Res Function(_Error) _then;
+
+/// Create a copy of UserProfileState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? message = null,}) {
+  return _then(_Error(
+null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+// dart format on
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\user\presentation\cubit\user_profile_state.dart
+==================================================
+// lib/features/user/presentation/cubit/user_profile_state.dart
+part of 'user_profile_cubit.dart';
+
+@freezed
+sealed class UserProfileState with _$UserProfileState {
+  /// The initial state, before the profile has been loaded.
+  const factory UserProfileState.initial() = _Initial;
+
+  /// The state while the profile is being fetched.
+  const factory UserProfileState.loading() = _Loading;
+
+  /// The state when the user's profile has been successfully loaded.
+  const factory UserProfileState.loaded(User user) = _Loaded;
+
+  /// The state when an error occurred while fetching.
+  const factory UserProfileState.error(String message) = _Error;
+}
+
+==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\features\user\presentation\pages\blocked_users_page.dart
 ==================================================
 import 'package:flutter/material.dart';
@@ -28416,7 +29267,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sahbifit/core/config/app_theme.dart';
 import 'package:sahbifit/core/di/service_locator.dart';
 import 'package:sahbifit/features/user/domain/entities/user.dart';
-import 'package:sahbifit/features/user/domain/usecases/get_user_profile.dart';
+// import 'package:sahbifit/features/user/domain/usecases/get_user_profile.dart'; // REMOVED
 import 'package:sahbifit/features/user/presentation/bloc/profile_bloc.dart';
 import 'package:sahbifit/features/user/presentation/widgets/block_user_button.dart';
 import 'package:sahbifit/features/user/presentation/widgets/profile_header.dart';
@@ -28424,6 +29275,12 @@ import 'package:sahbifit/features/user/presentation/widgets/user_badge_list.dart
 import 'package:sahbifit/features/user/presentation/widgets/visibility_settings_widget.dart';
 import 'package:sahbifit/shared/widgets/app_bars/custom_app_bar.dart';
 import 'package:sahbifit/shared/widgets/states/loading_states.dart';
+
+// --- ADD THESE NEW IMPORTS ---
+import 'package:sahbifit/features/user/presentation/cubit/user_profile_cubit.dart';
+// Note: The state is included via the cubit, but adding it is fine too.
+// import 'package:sahbifit/features/user/presentation/cubit/user_profile_state.dart';
+// --- END OF NEW IMPORTS ---
 
 class ProfilePage extends StatefulWidget {
   final String? userId;
@@ -28460,7 +29317,7 @@ class _ProfilePageState extends State<ProfilePage> {
       body: _isMyProfile
           // If it's my profile, use the dedicated ProfileBloc
           ? _MyProfileView()
-          // If it's another user's profile, use a FutureBuilder
+          // If it's another user's profile, use the new UserProfileCubit
           : _UserProfileView(userId: widget.userId!),
     );
   }
@@ -28508,6 +29365,7 @@ class _MyProfileView extends StatelessWidget {
   }
 }
 
+// --- THIS IS THE MODIFIED WIDGET ---
 // View for showing another user's profile
 class _UserProfileView extends StatelessWidget {
   final String userId;
@@ -28515,28 +29373,30 @@ class _UserProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<User>(
-      // Fetch the user profile directly with the use case
-      future: getIt<GetUserProfile>().call(GetUserProfileParams(userId: userId)),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const LoadingIndicator();
-        }
-        if (snapshot.hasError) {
-          return ErrorStateWidget(
-            message: snapshot.error.toString(),
-            buttonText: 'Go Back',
-            onRetry: () => context.pop(),
+    // 1. Provide the new cubit and load the profile
+    return BlocProvider(
+      create: (context) => getIt<UserProfileCubit>()..loadUserProfile(userId),
+      // 2. Use BlocBuilder to listen to state changes
+      child: BlocBuilder<UserProfileCubit, UserProfileState>(
+        builder: (context, state) {
+          // 3. Map states to UI (just like _MyProfileView)
+          return state.when(
+            initial: () => const LoadingIndicator(),
+            loading: () => const LoadingIndicator(),
+            loaded: (user) => _ProfileContent(user: user, isMyProfile: false),
+            error: (message) => ErrorStateWidget(
+              message: message,
+              buttonText: 'Retry', // Made consistent with _MyProfileView
+              onRetry: () =>
+                  context.read<UserProfileCubit>().loadUserProfile(userId),
+            ),
           );
-        }
-        if (snapshot.hasData) {
-          return _ProfileContent(user: snapshot.data!, isMyProfile: false);
-        }
-        return const Center(child: Text('User not found.'));
-      },
+        },
+      ),
     );
   }
 }
+// --- END OF MODIFICATION ---
 
 // Shared content widget for both profile views
 class _ProfileContent extends StatelessWidget {
@@ -28557,8 +29417,11 @@ class _ProfileContent extends StatelessWidget {
               .read<ProfileBloc>()
               .add(const ProfileEvent.loadMyProfile());
         }
-        // Note: Can't easily refresh the FutureBuilder,
-        // this is a limitation of this approach.
+        // --- UPDATE: This limitation is now fixed by using a Bloc! ---
+        // We can add a refresh to the UserProfileCubit here if needed.
+        else {
+          context.read<UserProfileCubit>().loadUserProfile(user.userId);
+        }
       },
       child: ListView(
         padding: const EdgeInsets.all(AppTheme.defaultPadding),

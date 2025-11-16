@@ -11,6 +11,13 @@ sealed class AuthState with _$AuthState {
   /// State emitted upon successful login.
   const factory AuthState.loginSuccess() = _LoginSuccess;
 
+  /// State emitted upon successful step 1 of registration (reCAPTCHA success).
+  const factory AuthState.registerStep1Success({
+    required String phoneNumber,
+    required String password,
+    required String recaptchaToken,
+  }) = _RegisterStep1Success;
+
   /// State emitted upon successful registration.
   /// We pass the phone number to the VerifySmsPage.
   const factory AuthState.registrationSuccess({

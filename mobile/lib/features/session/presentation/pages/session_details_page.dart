@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart'; // ADD THIS IMPORT
-import 'package:sahbifit/app/bloc/app_bloc.dart';
+import 'package:go_router/go_router.dart';
+// REMOVED: import 'package:sahbifit/app/bloc/app_bloc.dart';
 import 'package:sahbifit/core/config/app_theme.dart';
 import 'package:sahbifit/core/di/service_locator.dart';
 import 'package:sahbifit/core/utils/date_formatters.dart';
 import 'package:sahbifit/features/session/domain/entities/session.dart';
-import 'package:sahbifit/features/session/domain/entities/session_participant.dart'; // ADD THIS IMPORT
+import 'package:sahbifit/features/session/domain/entities/session_participant.dart';
 import 'package:sahbifit/features/session/domain/enums/session_type.dart';
 import 'package:sahbifit/features/session/presentation/cubit/session_details_cubit.dart';
 import 'package:sahbifit/features/session/presentation/widgets/reputation_gate_dialog.dart';
@@ -15,13 +15,15 @@ import 'package:sahbifit/features/user/domain/entities/user.dart';
 import 'package:sahbifit/shared/widgets/app_bars/custom_app_bar.dart';
 import 'package:sahbifit/shared/widgets/buttons/custom_buttons.dart';
 import 'package:sahbifit/shared/widgets/states/loading_states.dart';
+// --- ADDED PROFILE BLOC IMPORTS (ADJUST PATHS IF NEEDED) ---
+import 'package:sahbifit/features/user/presentation/bloc/profile_bloc.dart';
+// -----------------------------------------------------------
 
 class SessionDetailsPage extends StatefulWidget {
   final String sessionId;
-
   const SessionDetailsPage({
     super.key,
-    required this.sessionId, // REMOVED @PathParam
+    required this.sessionId,
   });
 
   @override
@@ -30,14 +32,11 @@ class SessionDetailsPage extends StatefulWidget {
 
 class _SessionDetailsPageState extends State<SessionDetailsPage> {
   late final SessionDetailsCubit _cubit;
-  late final User _currentUser;
-
+  // REMOVED: late final User _currentUser;
   @override
   void initState() {
     super.initState();
-    _currentUser = context.read<AppBloc>().state.mapOrNull(
-          authenticated: (s) => s.user,
-        )!; // Must be authenticated
+    // REMOVED: ProfileBloc logic from here
     _cubit = getIt<SessionDetailsCubit>()
       ..fetchSessionDetails(widget.sessionId);
   }
@@ -50,52 +49,77 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _cubit,
-      child: Scaffold(
-        body: BlocConsumer<SessionDetailsCubit, SessionDetailsState>(
-          listener: (context, state) {
-            state.maybeMap(
-              loaded: (s) {
-                if (s.errorMessage != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(s.errorMessage!),
-                        backgroundColor: AppTheme.primaryRed),
-                  );
-                }
-              },
-              orElse: () {},
-            );
-          },
-          builder: (context, state) {
-            // UPDATED from .map to .when
-            return state.when(
-              initial: () => const LoadingIndicator(),
-              loading: () => const LoadingIndicator(),
-              error: (message) => Center(
-                child: ErrorStateWidget(
-                  message: message,
-                  buttonText: 'Try Again',
-                  onRetry: () => _cubit.fetchSessionDetails(widget.sessionId),
+    // --- WRAPPED IN PROFILE BLOC BUILDER ---
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, profileState) {
+        return profileState.when(
+          initial: () => const Scaffold(
+              body: LoadingIndicator(message: 'Loading profile...')),
+          loading: () => const Scaffold(
+              body: LoadingIndicator(message: 'Loading profile...')),
+          error: (message) => Scaffold(
+            body: ErrorStateWidget(
+              message: message,
+              buttonText: 'Retry',
+              onRetry: () => context
+                  .read<ProfileBloc>()
+                  .add(const ProfileEvent.loadMyProfile()),
+            ),
+          ),
+          loaded: (currentUser) {
+            // --- PROFILE IS LOADED, NOW BUILD SESSION DETAILS PAGE ---
+            return BlocProvider.value(
+              value: _cubit,
+              child: Scaffold(
+                body: BlocConsumer<SessionDetailsCubit, SessionDetailsState>(
+                  listener: (context, state) {
+                    state.maybeMap(
+                      loaded: (s) {
+                        if (s.errorMessage != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(s.errorMessage!),
+                                backgroundColor: AppTheme.primaryRed),
+                          );
+                        }
+                      },
+                      orElse: () {},
+                    );
+                  },
+                  builder: (context, state) {
+                    return state.when(
+                      initial: () => const LoadingIndicator(),
+                      loading: () => const LoadingIndicator(),
+                      error: (message) => Center(
+                        child: ErrorStateWidget(
+                          message: message,
+                          buttonText: 'Try Again',
+                          onRetry: () =>
+                              _cubit.fetchSessionDetails(widget.sessionId),
+                        ),
+                      ),
+                      loaded: (session, participants, isJoined, isJoinLoading,
+                          errorMessage) {
+                        return _buildLoadedBody(
+                          context,
+                          session,
+                          participants,
+                          isJoined,
+                          isJoinLoading,
+                          errorMessage,
+                          currentUser, // <-- Pass current user
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
-              loaded: (session, participants, isJoined, isJoinLoading,
-                  errorMessage) {
-                return _buildLoadedBody(
-                  context,
-                  session,
-                  participants,
-                  isJoined,
-                  isJoinLoading,
-                  errorMessage,
-                );
-              },
             );
           },
-        ),
-      ),
+        );
+      },
     );
+    // ----------------------------------------
   }
 
   // UPDATED function signature
@@ -106,9 +130,10 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
     bool isJoined,
     bool isJoinLoading,
     String? errorMessage,
+    User currentUser, // <-- Added
   ) {
-    // final session = state.session; // This line is no longer needed
-    final isCreator = session.creator.userId == _currentUser.userId;
+    final isCreator = session.creator.userId == currentUser.userId;
+    // <-- Use passed user
 
     return CustomScrollView(
       slivers: [
@@ -139,7 +164,7 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
                   icon: Icons.people_rounded,
                   title: 'Participants',
                   subtitle:
-                      '${participants.length} / ${session.maxParticipants} joined', // UPDATED
+                      '${participants.length} / ${session.maxParticipants} joined',
                 ),
                 const SizedBox(height: AppTheme.elementSpacing),
                 ListTile(
@@ -151,13 +176,13 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
                       style: context.textTheme.titleMedium),
                   subtitle: const Text('View Profile'),
                   onTap: () =>
-                      context.push('/user/${session.creator.userId}'), // UPDATED
+                      context.push('/user/${session.creator.userId}'),
                 ),
                 const Divider(),
                 const SizedBox(height: AppTheme.elementSpacing),
                 Text('Who\'s Going', style: context.textTheme.headlineSmall),
                 const SizedBox(height: AppTheme.elementSpacing),
-                SessionParticipantList(participants: participants), // UPDATED
+                SessionParticipantList(participants: participants),
               ],
             ),
           ),
@@ -171,7 +196,8 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
             isJoined,
             isJoinLoading,
             isCreator,
-          ), // UPDATED
+            currentUser, // <-- Pass current user
+          ),
         ),
       ],
     );
@@ -213,13 +239,13 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
     bool isJoined,
     bool isJoinLoading,
     bool isCreator,
+    User currentUser, // <-- Added
   ) {
-    final bool isFull = participants.length >= session.maxParticipants; // UPDATED
-
+    final bool isFull = participants.length >= session.maxParticipants;
     // Feature 3: Reputation Gate Logic
-    // This assumes AppBloc's user entity has this info.
     final bool hasAttendedGroupSession =
-        _currentUser.groupSessionCount > 0; // Example logic
+        currentUser.groupSessionCount > 0;
+    // <-- Use passed user
     final bool isOneOnOne = session.sessionType == SessionType.oneOnOne;
     final bool isGated = isOneOnOne && !hasAttendedGroupSession;
 
@@ -227,7 +253,6 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
     final bool canChat = DateTime.now()
             .isAfter(session.startTime.subtract(const Duration(hours: 1))) &&
         DateTime.now().isBefore(session.endTime.add(const Duration(hours: 1)));
-
     return Container(
       padding: const EdgeInsets.all(AppTheme.defaultPadding),
       decoration: BoxDecoration(
@@ -246,15 +271,15 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
           if (isCreator)
             PrimaryButton(
               text: 'Mark Attendance',
-              onPressed: () => context
-                  .push('/session/${session.sessionId}/attendance'), // UPDATED
+              onPressed: () =>
+                  // MODIFIED: Navigation no longer passes the 'extra' argument
+                  context.push('/session/${session.sessionId}/attendance'),
             )
-          else if (isJoined) // UPDATED
+          else if (isJoined)
             PrimaryButton(
               text: canChat ? 'Open Chat' : 'Chat (Locked)',
               onPressed: canChat
-                  ? () => context
-                      .push('/session/${session.sessionId}/chat') // UPDATED
+                  ? () => context.push('/session/${session.sessionId}/chat')
                   : null,
             )
           else if (isFull)
@@ -264,8 +289,10 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
             )
           else
             PrimaryButton(
-              text: isGated ? 'Join (Requires 1 Group Session)' : 'Join Session',
-              isLoading: isJoinLoading, // UPDATED
+              text: isGated
+                  ? 'Join (Requires 1 Group Session)'
+                  : 'Join Session',
+              isLoading: isJoinLoading,
               onPressed: isGated
                   ? () => showReputationGateDialog(context)
                   : () => _cubit.joinSession(session.sessionId),

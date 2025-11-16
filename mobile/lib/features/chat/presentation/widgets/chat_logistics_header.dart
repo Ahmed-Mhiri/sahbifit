@@ -19,7 +19,7 @@ class ChatLogisticsHeader extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Chat is active 1 hour before and 24 hours after the session.',
+              'Chat is active 1 hour before and 1 hour after the session.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppTheme.disabledGray,
                     fontWeight: FontWeight.w500,

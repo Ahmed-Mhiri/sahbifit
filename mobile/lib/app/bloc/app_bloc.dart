@@ -2,9 +2,10 @@ import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sahbifit/core/services/secure_storage_service.dart';
-import 'package:sahbifit/features/user/domain/usecases/get_my_profile.dart';
-import 'package:sahbifit/core/usecases/usecase.dart';
-import 'package:sahbifit/features/user/domain/entities/user.dart';
+// REMOVED: import 'package:sahbifit/features/user/domain/usecases/get_my_profile.dart';
+// REMOVED: import 'package:sahbifit/core/usecases/usecase.dart';
+// REMOVED: import 'package:sahbifit/features/user/domain/entities/user.dart';
+
 part 'app_bloc.freezed.dart';
 part 'app_event.dart';
 part 'app_state.dart';
@@ -12,9 +13,9 @@ part 'app_state.dart';
 @injectable
 class AppBloc extends Bloc<AppEvent, AppState> {
   final SecureStorageService _storageService;
-  final GetMyProfile _getMyProfile; // <-- ADDED
+  // REMOVED: final GetMyProfile _getMyProfile;
 
-  AppBloc(this._storageService, this._getMyProfile) // <-- UPDATED CONSTRUCTOR
+  AppBloc(this._storageService) // <-- UPDATED CONSTRUCTOR
       : super(const AppState.initial()) {
     on<_CheckAuthStatus>(_onCheckAuthStatus);
     on<_LogoutRequested>(_onLogoutRequested);
@@ -32,15 +33,15 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     try {
       final token = await _storageService.readToken();
       if (token != null) {
-        // --- THIS IS THE NEW LOGIC ---
-        final user = await _getMyProfile(NoParams());
-        emit(AppState.authenticated(user));
-        // -----------------------------
+        // --- THIS IS THE MODIFIED LOGIC ---
+        emit(const AppState.authenticated());
+        // ----------------------------------
       } else {
         emit(const AppState.unauthenticated());
       }
     } catch (e) {
-      // If getting profile fails, log them out
+      // If reading token fails, treat as unauthenticated
+      print('Error reading token: $e');
       emit(const AppState.unauthenticated());
     }
   }

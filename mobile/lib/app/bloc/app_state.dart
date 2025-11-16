@@ -7,7 +7,7 @@ sealed class AppState with _$AppState {
 
   /// The state when a user is successfully authenticated (token exists).
   // AFTER
-  const factory AppState.authenticated(User user) = _Authenticated;
+  const factory AppState.authenticated() = _Authenticated; // <-- MODIFIED
 
   /// The state when no user is authenticated (no token).
   const factory AppState.unauthenticated() = _Unauthenticated;
