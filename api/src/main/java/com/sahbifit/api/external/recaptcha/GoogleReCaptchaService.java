@@ -27,6 +27,16 @@ public class GoogleReCaptchaService implements ReCaptchaService {
 
     @Override
     public void validate(String token) {
+        
+        // --- START: LOCAL TESTING MOCK ---
+        // We are bypassing the reCAPTCHA check for local development.
+        logger.warn("====================================================");
+        logger.warn(" LOCAL TESTING: reCAPTCHA validation is BYPASSED.");
+        logger.warn("====================================================");
+        return; // Automatically pass validation
+        // --- END: LOCAL TESTING MOCK ---
+
+        /* --- PRODUCTION CODE (DISABLED) ---
         // Google expects a POST request with 'x-www-form-urlencoded' data
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("secret", reCaptchaConfig.getSecretKey());
@@ -65,5 +75,6 @@ public class GoogleReCaptchaService implements ReCaptchaService {
         //    e.g., if (!"register".equals(response.getAction())) { ... }
 
         logger.info("reCAPTCHA validation successful (Score: {}).", response.getScore());
+        */
     }
 }

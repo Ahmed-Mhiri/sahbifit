@@ -128,7 +128,7 @@ public class SessionService {
         }
 
         // Gate 3 (Session Full?)
-        int participantCount = sessionParticipantRepository.countBySessionId(sessionId);
+        int participantCount = sessionParticipantRepository.countBySession_SessionId(sessionId);
         if (participantCount >= session.getMaxParticipants()) {
             throw new IllegalStateException("This session is already full.");
         }

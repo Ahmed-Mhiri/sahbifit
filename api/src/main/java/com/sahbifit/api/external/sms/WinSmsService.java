@@ -28,6 +28,19 @@ public class WinSmsService implements SmsService {
     @Override
     public void sendVerificationSms(String phoneNumber, String otp) {
         
+        // --- START: LOCAL TESTING MOCK ---
+        // Instead of sending an SMS, we log the OTP to the console.
+        // You can read this log by running 'docker-compose logs -f api'
+        logger.info("====================================================");
+        logger.info(" LOCAL TESTING: SMS Verification");
+        logger.info(" Phone Number: {}", phoneNumber);
+        logger.info(" OTP Code: {}", otp);
+        logger.info("====================================================");
+        return; // Skip the rest of the method
+        // --- END: LOCAL TESTING MOCK ---
+
+
+        /* --- PRODUCTION CODE (DISABLED) ---
         // 🚨 IMPORTANT: WinSMS expects '216' as prefix.
         // Your validation stores the number without prefix.
         String fullPhoneNumber = "216" + phoneNumber;
@@ -60,5 +73,6 @@ public class WinSmsService implements SmsService {
             // Catches all errors (e.g., java.io.UnsupportedEncodingException or RestClientException)
             logger.error("Error connecting to WinSMS API: {}", e.getMessage(), e);
         }
+        */
     }
 }

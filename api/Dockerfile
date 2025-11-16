@@ -1,37 +1,28 @@
-# --- Stage 1: Build ---
-# Use the official Maven image to build the app
-FROM maven:3.8.5-openjdk-17 AS builder
+# Stage 1: Build the application
+# Use a Maven image that includes Java 25 (Eclipse Temurin)
+FROM maven:3.9-eclipse-temurin-25 AS build
 
 # Set the working directory
 WORKDIR /app
 
-# Copy the Maven project files
+# Copy the pom.xml and download dependencies
 COPY pom.xml .
-COPY .mvn .mvn
-COPY mvnw .
-COPY mvnw.cmd .
+RUN mvn dependency:go-offline
 
-# Download dependencies (this layer is cached)
-RUN mvn dependency:go-offline -B
-
-# Copy the rest of the source code
-COPY src src
-
-# Build the application
+# Copy the rest of the source code and build the application
+COPY src ./src
 RUN mvn package -DskipTests
 
-# --- Stage 2: Run ---
-# Use a lightweight JRE image to run the app
-FROM eclipse-temurin:17-jre-alpine
+# Stage 2: Create the final, lightweight image
+# Use a slim JRE (Java Runtime Environment) image for Java 25
+FROM eclipse-temurin:25-jre-alpine
 
-# Set the working directory
 WORKDIR /app
 
-# Copy the built .jar file from the 'builder' stage
-# Make sure to change 'api-0.0.1-SNAPSHOT.jar' if your artifactId/version is different!
-COPY --from=builder /app/target/api-0.0.1-SNAPSHOT.jar app.jar
+# Copy the built JAR file from the 'build' stage
+COPY --from=build /app/target/*.jar app.jar
 
-# Expose the port the app runs on
+# Expose the port your application runs on
 EXPOSE 8080
 
 # Command to run the application

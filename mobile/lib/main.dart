@@ -6,9 +6,21 @@ import 'package:sahbifit/app/view/app_view.dart';
 import 'package:sahbifit/features/verification/presentation/cubit/verification_cubit.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sahbifit/core/config/app_router.dart'; // <-- 1. IMPORT NEW ROUTER
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // <-- ADDED IMPORT
+import 'package:flutter/foundation.dart'; // <-- 1. IMPORT FOUNDATION
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // --- 2. UPDATED: Load environment based on build mode ---
+  // This loads .env.prod for release builds and .env for debug builds
+  if (kReleaseMode) {
+    await dotenv.load(fileName: "dotenv.prod");
+  } else {
+    await dotenv.load(fileName: "dotenv");
+  }
+  // --- END OF UPDATE ---
+
   await Firebase.initializeApp();
   await configureDependencies();
 

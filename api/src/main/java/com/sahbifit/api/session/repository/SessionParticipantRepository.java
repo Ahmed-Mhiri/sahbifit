@@ -22,7 +22,7 @@ public interface SessionParticipantRepository extends JpaRepository<SessionParti
      * Counts the number of participants in a given session.
      * Required by SessionService.joinSession() Gate 3.
      */
-    int countBySessionId(UUID sessionId);
+    int countBySession_SessionId(UUID sessionId);
     
     // existsById(SessionParticipantId id) is provided by JpaRepository
     // and used in SessionService.joinSession() Gate 4.

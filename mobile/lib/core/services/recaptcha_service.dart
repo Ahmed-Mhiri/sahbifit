@@ -3,16 +3,15 @@ import 'package:injectable/injectable.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha_action.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha_client.dart';
-// 1. CONSOLIDATED IMPORT:
-// This single import, as shown in the guide's examples, should provide
-// Recaptcha, RecaptchaClient, and RecaptchaAction.
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // <-- ADDED IMPORT
 
 @lazySingleton
 class ReCaptchaService {
-  // IMPORTANT: Replace with your actual reCAPTCHA Enterprise Site Keys
-  static const String _androidSiteKey = 'YOUR_ANDROID_RECAPTCHA_SITE_KEY';
-  static const String _iosSiteKey = 'YOUR_IOS_RECAPTCHA_SITE_KEY';
-  
+  static final String _androidSiteKey =
+      dotenv.env['RECAPTCHA_ANDROID_SITE_KEY'] ?? 'MISSING_ANDROID_KEY';
+  static final String _iosSiteKey =
+      dotenv.env['RECAPTCHA_IOS_SITE_KEY'] ?? 'MISSING_IOS_KEY';
+
   late RecaptchaClient _client;
   bool _isInitialized = false;
 
@@ -34,12 +33,9 @@ class ReCaptchaService {
         return;
       }
 
-      // 2. FIXED CLASS NAME:
-      // The guide uses `Recaptcha.fetchClient`, not `RecaptchaEnterpriseFlutter.fetchClient`.
       _client = await Recaptcha.fetchClient(siteKey);
       _isInitialized = true;
       debugPrint("reCAPTCHA Enterprise initialized for ${defaultTargetPlatform}");
-      
     } catch (e) {
       debugPrint("Error initializing reCAPTCHA Enterprise: $e");
       throw Exception("Failed to initialize reCAPTCHA Enterprise: $e");
@@ -57,12 +53,9 @@ class ReCaptchaService {
     }
 
     try {
-      // 3. ERROR FIXED BY IMPORT:
-      // The "method 'RecaptchaAction' isn't defined" error was a cascade
-      // from the bad import. With the correct import (Fix #1),
-      // Dart now recognizes `RecaptchaAction(action)` as a class constructor.
       final String token = await _client.execute(RecaptchaAction.custom(action));
-      debugPrint("reCAPTCHA Enterprise token for action '$action': ${token.substring(0, 50)}...");
+      debugPrint(
+          "reCAPTCHA Enterprise token for action '$action': ${token.substring(0, 50)}...");
       return token;
     } catch (e) {
       debugPrint("Error executing reCAPTCHA Enterprise action '$action': $e");

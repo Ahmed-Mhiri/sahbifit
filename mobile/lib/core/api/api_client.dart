@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sahbifit/core/api/interceptors.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // <-- ADDED IMPORT
 
 @lazySingleton
 class ApiClient {
@@ -9,9 +10,9 @@ class ApiClient {
   ApiClient(AuthInterceptor authInterceptor)
       : dio = Dio(
           BaseOptions(
-            // IMPORTANT: Change YOUR_IP to your computer's IP address
-            // (e.g., 192.168.1.5) or 'localhost' if using web.
-            baseUrl: 'http://YOUR_IP:8080/api', 
+            // --- MODIFIED LINE ---
+            baseUrl: dotenv.env['API_BASE_URL'] ?? 'http://localhost:8080/api',
+            // --- END MODIFIED LINE ---
             connectTimeout: const Duration(seconds: 10),
             receiveTimeout: const Duration(seconds: 10),
             headers: {
