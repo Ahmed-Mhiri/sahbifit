@@ -2,14 +2,18 @@ package com.sahbifit.api.security;
 
 import java.util.Arrays;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; // <- Ensures @PreAuthorize works
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+// --- THIS IS THE NEW IMPORT ---
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+// --- END OF NEW IMPORT ---
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,7 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // <- This annotation enables method-level security
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -31,14 +35,24 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
+            // --- THIS IS THE FIX (Step 1) ---
+            .csrf(AbstractHttpConfigurer::disable)
+            // --- END OF FIX ---
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
+                
+                // Explicitly permit all pre-flight OPTIONS requests
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                 // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
+
+                // --- ADD THESE LINES TO ALLOW PUBLIC ACCESS (Step 2) ---
+                .requestMatchers(HttpMethod.GET, "/api/gyms").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/tags").permitAll()
+                // --- END OF FIX ---
                 
                 // All other requests require authentication
-                // Specific rules are now defined in controllers with @PreAuthorize
                 .anyRequest().authenticated() 
             );
 
@@ -49,14 +63,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList(
-            "http://localhost:3000",
-            "http://localhost:5173",
-            "https://your-production-domain.com"
-        ));
+        
+        configuration.addAllowedOriginPattern("*"); 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
+        
+        // This line remains commented out, which is correct.
+        // configuration.setAllowCredentials(true);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

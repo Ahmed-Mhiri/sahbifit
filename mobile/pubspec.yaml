@@ -70,6 +70,9 @@ dev_dependencies:
   injectable_generator: ^2.9.1
   # auto_route_generator: ^10.2.6 # <--- REMOVED
 
+  # --- ADDED FOR ICON ---
+  flutter_launcher_icons: ^0.13.1
+
 flutter:
   uses-material-design: true
   assets:
@@ -97,6 +100,16 @@ flutter:
           weight: 800
         - asset: assets/fonts/Poppins/Poppins-Black.ttf
           weight: 900
+
+# --- ADDED THIS SECTION FOR THE ICON ---
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo/logo.png"
+  # You can uncomment and customize these if needed
+  # adaptive_icon_background: "#FFFFFF"
+  # adaptive_icon_foreground: "assets/logo/logo_foreground.png" 
+# --- END OF ICON SECTION ---
 
 #
 # The dependency_overrides block has been REMOVED.

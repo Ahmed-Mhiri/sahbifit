@@ -5,31 +5,18 @@ targets:
       json_serializable:
         generate_for:
           - "lib/**/models/**.dart"
-          
+
       # --- injectable_generator configuration (THIS IS THE FIX) ---
       injectable_generator:injectable_builder:
-        # We only want this builder to run on our main DI file.
-        # It will find all other @injectable classes by reading the imports.
-        generate_for:
-          - "lib/core/di/service_locator.dart"
-          
-      injectable_generator:injectable_config_builder:
-        # This builder also only needs to run on the main DI file.
-        generate_for:
-          - "lib/core/di/service_locator.dart"
+        options:
+          # This forces the generator to scan your entire /lib folder
+          # for annotations. It's much more reliable.
+          auto_register: true
+
+      # We don't need the 'injectable_config_builder' section
+      # because the builder above handles everything.
 
       # --- auto_route_generator configuration (No changes needed) ---
       auto_route_generator:auto_route_generator:
         generate_for:
           - "lib/core/config/app_router.dart"
-
-# You can add this part to also speed up auto_route,
-# telling it to only look at the file that defines the routes.
-# If you leave this out, it will still work, but this is more efficient.
-#
-# P.S. - You can remove the auto_route_generator:auto_route_generator
-# builder above if you add this one.
-#
-#      auto_route_generator:auto_router_generator:
-#        generate_for:
-#          - "lib/core/config/app_router.dart"

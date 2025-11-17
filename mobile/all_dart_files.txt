@@ -33,6 +33,334 @@ void main(List<String> args) async {
 }
 
 ==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\.dart_tool\dartpad\web_plugin_registrant.dart
+==================================================
+// Flutter web plugin registrant file.
+//
+// Generated file. Do not edit.
+//
+
+// @dart = 2.13
+// ignore_for_file: type=lint
+
+import 'package:camera_web/camera_web.dart';
+import 'package:cloud_firestore_web/cloud_firestore_web.dart';
+import 'package:firebase_core_web/firebase_core_web.dart';
+import 'package:firebase_messaging_web/firebase_messaging_web.dart';
+import 'package:flutter_secure_storage_web/flutter_secure_storage_web.dart';
+import 'package:image_picker_for_web/image_picker_for_web.dart';
+import 'package:video_player_web/video_player_web.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+
+void registerPlugins([final Registrar? pluginRegistrar]) {
+  final Registrar registrar = pluginRegistrar ?? webPluginRegistrar;
+  CameraPlugin.registerWith(registrar);
+  FirebaseFirestoreWeb.registerWith(registrar);
+  FirebaseCoreWeb.registerWith(registrar);
+  FirebaseMessagingWeb.registerWith(registrar);
+  FlutterSecureStorageWeb.registerWith(registrar);
+  ImagePickerPlugin.registerWith(registrar);
+  VideoPlayerPlugin.registerWith(registrar);
+  registrar.registerMessageHandler();
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\.dart_tool\flutter_build\dart_plugin_registrant.dart
+==================================================
+//
+// Generated file. Do not edit.
+// This file is generated from template in file `flutter_tools/lib/src/flutter_plugins.dart`.
+//
+
+// @dart = 3.10
+
+import 'dart:io'; // flutter_ignore: dart_io_import.
+import 'package:camera_android_camerax/camera_android_camerax.dart' as camera_android_camerax;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart' as flutter_local_notifications;
+import 'package:image_picker_android/image_picker_android.dart' as image_picker_android;
+import 'package:path_provider_android/path_provider_android.dart' as path_provider_android;
+import 'package:sqflite_android/sqflite_android.dart' as sqflite_android;
+import 'package:video_player_android/video_player_android.dart' as video_player_android;
+import 'package:camera_avfoundation/camera_avfoundation.dart' as camera_avfoundation;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart' as flutter_local_notifications;
+import 'package:image_picker_ios/image_picker_ios.dart' as image_picker_ios;
+import 'package:path_provider_foundation/path_provider_foundation.dart' as path_provider_foundation;
+import 'package:sqflite_darwin/sqflite_darwin.dart' as sqflite_darwin;
+import 'package:video_player_avfoundation/video_player_avfoundation.dart' as video_player_avfoundation;
+import 'package:file_selector_linux/file_selector_linux.dart' as file_selector_linux;
+import 'package:flutter_local_notifications_linux/flutter_local_notifications_linux.dart' as flutter_local_notifications_linux;
+import 'package:image_picker_linux/image_picker_linux.dart' as image_picker_linux;
+import 'package:path_provider_linux/path_provider_linux.dart' as path_provider_linux;
+import 'package:file_selector_macos/file_selector_macos.dart' as file_selector_macos;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart' as flutter_local_notifications;
+import 'package:image_picker_macos/image_picker_macos.dart' as image_picker_macos;
+import 'package:path_provider_foundation/path_provider_foundation.dart' as path_provider_foundation;
+import 'package:sqflite_darwin/sqflite_darwin.dart' as sqflite_darwin;
+import 'package:video_player_avfoundation/video_player_avfoundation.dart' as video_player_avfoundation;
+import 'package:file_selector_windows/file_selector_windows.dart' as file_selector_windows;
+import 'package:flutter_local_notifications_windows/flutter_local_notifications_windows.dart' as flutter_local_notifications_windows;
+import 'package:flutter_secure_storage_windows/flutter_secure_storage_windows.dart' as flutter_secure_storage_windows;
+import 'package:image_picker_windows/image_picker_windows.dart' as image_picker_windows;
+import 'package:path_provider_windows/path_provider_windows.dart' as path_provider_windows;
+
+@pragma('vm:entry-point')
+class _PluginRegistrant {
+
+  @pragma('vm:entry-point')
+  static void register() {
+    if (Platform.isAndroid) {
+      try {
+        camera_android_camerax.AndroidCameraCameraX.registerWith();
+      } catch (err) {
+        print(
+          '`camera_android_camerax` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        flutter_local_notifications.AndroidFlutterLocalNotificationsPlugin.registerWith();
+      } catch (err) {
+        print(
+          '`flutter_local_notifications` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        image_picker_android.ImagePickerAndroid.registerWith();
+      } catch (err) {
+        print(
+          '`image_picker_android` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        path_provider_android.PathProviderAndroid.registerWith();
+      } catch (err) {
+        print(
+          '`path_provider_android` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        sqflite_android.SqfliteAndroid.registerWith();
+      } catch (err) {
+        print(
+          '`sqflite_android` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        video_player_android.AndroidVideoPlayer.registerWith();
+      } catch (err) {
+        print(
+          '`video_player_android` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+    } else if (Platform.isIOS) {
+      try {
+        camera_avfoundation.AVFoundationCamera.registerWith();
+      } catch (err) {
+        print(
+          '`camera_avfoundation` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        flutter_local_notifications.IOSFlutterLocalNotificationsPlugin.registerWith();
+      } catch (err) {
+        print(
+          '`flutter_local_notifications` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        image_picker_ios.ImagePickerIOS.registerWith();
+      } catch (err) {
+        print(
+          '`image_picker_ios` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        path_provider_foundation.PathProviderFoundation.registerWith();
+      } catch (err) {
+        print(
+          '`path_provider_foundation` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        sqflite_darwin.SqfliteDarwin.registerWith();
+      } catch (err) {
+        print(
+          '`sqflite_darwin` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        video_player_avfoundation.AVFoundationVideoPlayer.registerWith();
+      } catch (err) {
+        print(
+          '`video_player_avfoundation` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+    } else if (Platform.isLinux) {
+      try {
+        file_selector_linux.FileSelectorLinux.registerWith();
+      } catch (err) {
+        print(
+          '`file_selector_linux` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        flutter_local_notifications_linux.LinuxFlutterLocalNotificationsPlugin.registerWith();
+      } catch (err) {
+        print(
+          '`flutter_local_notifications_linux` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        image_picker_linux.ImagePickerLinux.registerWith();
+      } catch (err) {
+        print(
+          '`image_picker_linux` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        path_provider_linux.PathProviderLinux.registerWith();
+      } catch (err) {
+        print(
+          '`path_provider_linux` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+    } else if (Platform.isMacOS) {
+      try {
+        file_selector_macos.FileSelectorMacOS.registerWith();
+      } catch (err) {
+        print(
+          '`file_selector_macos` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        flutter_local_notifications.MacOSFlutterLocalNotificationsPlugin.registerWith();
+      } catch (err) {
+        print(
+          '`flutter_local_notifications` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        image_picker_macos.ImagePickerMacOS.registerWith();
+      } catch (err) {
+        print(
+          '`image_picker_macos` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        path_provider_foundation.PathProviderFoundation.registerWith();
+      } catch (err) {
+        print(
+          '`path_provider_foundation` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        sqflite_darwin.SqfliteDarwin.registerWith();
+      } catch (err) {
+        print(
+          '`sqflite_darwin` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        video_player_avfoundation.AVFoundationVideoPlayer.registerWith();
+      } catch (err) {
+        print(
+          '`video_player_avfoundation` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+    } else if (Platform.isWindows) {
+      try {
+        file_selector_windows.FileSelectorWindows.registerWith();
+      } catch (err) {
+        print(
+          '`file_selector_windows` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        flutter_local_notifications_windows.FlutterLocalNotificationsWindows.registerWith();
+      } catch (err) {
+        print(
+          '`flutter_local_notifications_windows` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        flutter_secure_storage_windows.FlutterSecureStorageWindows.registerWith();
+      } catch (err) {
+        print(
+          '`flutter_secure_storage_windows` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        image_picker_windows.ImagePickerWindows.registerWith();
+      } catch (err) {
+        print(
+          '`image_picker_windows` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        path_provider_windows.PathProviderWindows.registerWith();
+      } catch (err) {
+        print(
+          '`path_provider_windows` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+    }
+  }
+}
+
+==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\.dart_tool\widget_preview_scaffold\lib\main.dart
 ==================================================
 // Copyright 2014 The Flutter Authors. All rights reserved.
@@ -3202,13 +3530,30 @@ import 'package:sahbifit/features/verification/presentation/cubit/verification_c
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sahbifit/core/config/app_router.dart'; // <-- 1. IMPORT NEW ROUTER
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // <-- ADDED IMPORT
+import 'package:flutter/foundation.dart'; // <-- 1. IMPORT FOUNDATION
+
+// --- SOLUTION: ADD THIS IMPORT ---
+import 'firebase_options.dart';
+// --- END OF SOLUTION ---
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: ".env"); // <-- ADDED THIS LINE
+  // --- 2. UPDATED: Load environment based on build mode ---
+  // This loads .env.prod for release builds and .env for debug builds
+  if (kReleaseMode) {
+    await dotenv.load(fileName: "dotenv.prod");
+  } else {
+    await dotenv.load(fileName: "dotenv");
+  }
+  // --- END OF UPDATE ---
 
-  await Firebase.initializeApp();
+  // --- SOLUTION: USE THE IMPORTED OPTIONS ---
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  // --- END OF SOLUTION ---
+
   await configureDependencies();
 
   // 2. Create the AppBloc *first*
@@ -3241,20 +3586,17 @@ import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sahbifit/core/services/secure_storage_service.dart';
-// REMOVED: import 'package:sahbifit/features/user/domain/usecases/get_my_profile.dart';
-// REMOVED: import 'package:sahbifit/core/usecases/usecase.dart';
-// REMOVED: import 'package:sahbifit/features/user/domain/entities/user.dart';
 
 part 'app_bloc.freezed.dart';
 part 'app_event.dart';
 part 'app_state.dart';
 
-@injectable
+@injectable // This annotation is enough
 class AppBloc extends Bloc<AppEvent, AppState> {
   final SecureStorageService _storageService;
-  // REMOVED: final GetMyProfile _getMyProfile;
 
-  AppBloc(this._storageService) // <-- UPDATED CONSTRUCTOR
+  // We remove @factoryMethod. @injectable on the class handles this.
+  AppBloc(this._storageService)
       : super(const AppState.initial()) {
     on<_CheckAuthStatus>(_onCheckAuthStatus);
     on<_LogoutRequested>(_onLogoutRequested);
@@ -3264,9 +3606,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   /// Reads the token from secure storage and emits [Authenticated] or
   /// [Unauthenticated] accordingly.
   Future<void> _onCheckAuthStatus(
-    _CheckAuthStatus event,
-    Emitter<AppState> emit,
-  ) async {
+      _CheckAuthStatus event,
+      Emitter<AppState> emit,
+      ) async {
     // You could emit a loading state here if needed
     // emit(const AppState.loading());
     try {
@@ -3288,9 +3630,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   /// Handles the [LogoutRequested] event.
   /// Deletes the token from storage and emits [Unauthenticated].
   Future<void> _onLogoutRequested(
-    _LogoutRequested event,
-    Emitter<AppState> emit,
-  ) async {
+      _LogoutRequested event,
+      Emitter<AppState> emit,
+      ) async {
     try {
       await _storageService.deleteToken();
     } catch (e) {
@@ -4736,8 +5078,131 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\di\service_locator.config.
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:cloud_firestore/cloud_firestore.dart' as _i974;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
+
+import '../../app/bloc/app_bloc.dart' as _i912;
+import '../../features/auth/data/datasources/auth_remote_datasource.dart'
+    as _i161;
+import '../../features/auth/data/repositories/auth_repository_impl.dart'
+    as _i153;
+import '../../features/auth/domain/repositories/auth_repository.dart' as _i787;
+import '../../features/auth/domain/usecases/login_user.dart' as _i778;
+import '../../features/auth/domain/usecases/register_user.dart' as _i198;
+import '../../features/auth/domain/usecases/resend_otp.dart' as _i152;
+import '../../features/auth/domain/usecases/verify_sms.dart' as _i699;
+import '../../features/auth/presentation/bloc/auth_bloc.dart' as _i797;
+import '../../features/chat/data/datasources/chat_remote_datasource.dart'
+    as _i159;
+import '../../features/chat/data/repositories/chat_repository_impl.dart'
+    as _i504;
+import '../../features/chat/domain/repositories/chat_repository.dart' as _i420;
+import '../../features/chat/domain/usecases/get_chat_stream.dart' as _i583;
+import '../../features/chat/domain/usecases/send_message.dart' as _i76;
+import '../../features/chat/presentation/cubit/chat_cubit.dart' as _i305;
+import '../../features/file/data/datasources/file_remote_datasource.dart'
+    as _i128;
+import '../../features/file/data/repositories/file_repository_impl.dart'
+    as _i997;
+import '../../features/file/domain/repositories/file_repository.dart' as _i49;
+import '../../features/file/domain/usecases/upload_profile_photo.dart' as _i213;
+import '../../features/gym/data/datasources/gym_remote_datasource.dart'
+    as _i602;
+import '../../features/gym/data/repositories/gym_repository_impl.dart' as _i689;
+import '../../features/gym/domain/repositories/gym_repository.dart' as _i225;
+import '../../features/gym/domain/usecases/get_approved_gyms.dart' as _i338;
+import '../../features/gym/domain/usecases/submit_gym.dart' as _i82;
+import '../../features/gym/presentation/cubit/gym_list_cubit.dart' as _i423;
+import '../../features/gym/presentation/cubit/submit_gym_cubit.dart' as _i741;
+import '../../features/rating/data/datasources/rating_remote_datasource.dart'
+    as _i193;
+import '../../features/rating/data/repositories/rating_repository_impl.dart'
+    as _i874;
+import '../../features/rating/domain/repositories/rating_repository.dart'
+    as _i1027;
+import '../../features/rating/domain/usecases/create_rating.dart' as _i694;
+import '../../features/rating/domain/usecases/get_pending_ratings.dart'
+    as _i396;
+import '../../features/rating/domain/usecases/get_ratings_for_user.dart'
+    as _i809;
+import '../../features/rating/presentation/bloc/pending_rating_bloc.dart'
+    as _i157;
+import '../../features/report/data/datasources/report_remote_datasource.dart'
+    as _i548;
+import '../../features/report/data/repositories/report_repository_impl.dart'
+    as _i420;
+import '../../features/report/domain/repositories/report_repository.dart'
+    as _i23;
+import '../../features/report/domain/usecases/create_report.dart' as _i775;
+import '../../features/report/presentation/cubit/report_cubit.dart' as _i182;
+import '../../features/session/data/datasources/session_remote_datasource.dart'
+    as _i478;
+import '../../features/session/data/datasources/session_remote_datasource_impl.dart'
+    as _i446;
+import '../../features/session/data/repositories/session_repository_impl.dart'
+    as _i1021;
+import '../../features/session/domain/repositories/session_repository.dart'
+    as _i738;
+import '../../features/session/domain/usecases/create_session.dart' as _i831;
+import '../../features/session/domain/usecases/get_active_sessions.dart'
+    as _i51;
+import '../../features/session/domain/usecases/get_participants_stream.dart'
+    as _i861;
+import '../../features/session/domain/usecases/get_session_by_id.dart' as _i830;
+import '../../features/session/domain/usecases/join_session.dart' as _i170;
+import '../../features/session/domain/usecases/mark_attendance.dart' as _i690;
+import '../../features/session/presentation/cubit/create_session_cubit.dart'
+    as _i947;
+import '../../features/session/presentation/cubit/mark_attendance_cubit.dart'
+    as _i718;
+import '../../features/session/presentation/cubit/session_details_cubit.dart'
+    as _i466;
+import '../../features/session/presentation/cubit/session_feed_cubit.dart'
+    as _i285;
+import '../../features/tag/data/datasources/tag_remote_datasource.dart'
+    as _i501;
+import '../../features/tag/data/repositories/tag_repository_impl.dart' as _i454;
+import '../../features/tag/domain/repositories/tag_repository.dart' as _i701;
+import '../../features/tag/domain/usecases/get_tags_by_type.dart' as _i521;
+import '../../features/tag/presentation/cubit/tags_cubit.dart' as _i519;
+import '../../features/user/data/datasources/user_remote_datasource.dart'
+    as _i708;
+import '../../features/user/data/repositories/user_repository_impl.dart'
+    as _i664;
+import '../../features/user/domain/repositories/user_repository.dart' as _i237;
+import '../../features/user/domain/usecases/block_user.dart' as _i696;
+import '../../features/user/domain/usecases/get_my_blocked_users.dart' as _i222;
+import '../../features/user/domain/usecases/get_my_profile.dart' as _i667;
+import '../../features/user/domain/usecases/get_user_profile.dart' as _i497;
+import '../../features/user/domain/usecases/unblock_user.dart' as _i444;
+import '../../features/user/domain/usecases/update_fcm_token.dart' as _i652;
+import '../../features/user/domain/usecases/update_profile_visibility.dart'
+    as _i544;
+import '../../features/user/presentation/bloc/profile_bloc.dart' as _i829;
+import '../../features/user/presentation/cubit/blocked_users_cubit.dart'
+    as _i37;
+import '../../features/user/presentation/cubit/user_profile_cubit.dart'
+    as _i470;
+import '../../features/verification/data/datasources/verification_remote_datasource.dart'
+    as _i552;
+import '../../features/verification/data/repositories/verification_repository_impl.dart'
+    as _i306;
+import '../../features/verification/domain/repositories/verification_repository.dart'
+    as _i1070;
+import '../../features/verification/domain/usecases/get_verification_status.dart'
+    as _i482;
+import '../../features/verification/domain/usecases/submit_verification_video.dart'
+    as _i573;
+import '../../features/verification/presentation/cubit/verification_cubit.dart'
+    as _i643;
+import '../api/api_client.dart' as _i277;
+import '../api/interceptors.dart' as _i367;
+import '../services/push_notification_service.dart' as _i63;
+import '../services/recaptcha_service.dart' as _i247;
+import '../services/secure_storage_service.dart' as _i535;
+import 'firebase_module.dart' as _i616;
 
 // initializes the registration of main-scope dependencies inside of GetIt
 _i174.GetIt $initGetIt(
@@ -4745,9 +5210,258 @@ _i174.GetIt $initGetIt(
   String? environment,
   _i526.EnvironmentFilter? environmentFilter,
 }) {
-  _i526.GetItHelper(getIt, environment, environmentFilter);
+  final gh = _i526.GetItHelper(getIt, environment, environmentFilter);
+  final firebaseModule = _$FirebaseModule();
+  final storageModule = _$StorageModule();
+  gh.lazySingleton<_i974.FirebaseFirestore>(() => firebaseModule.firestore);
+  gh.lazySingleton<_i247.ReCaptchaService>(() => _i247.ReCaptchaService());
+  gh.lazySingleton<_i558.FlutterSecureStorage>(() => storageModule.storage);
+  gh.lazySingleton<_i535.SecureStorageService>(
+    () => _i535.SecureStorageService(gh<_i558.FlutterSecureStorage>()),
+  );
+  gh.lazySingleton<_i367.AuthInterceptor>(
+    () => _i367.AuthInterceptor(gh<_i535.SecureStorageService>()),
+  );
+  gh.factory<_i912.AppBloc>(
+    () => _i912.AppBloc(gh<_i535.SecureStorageService>()),
+  );
+  gh.lazySingleton<_i277.ApiClient>(
+    () => _i277.ApiClient(gh<_i367.AuthInterceptor>()),
+  );
+  gh.factory<_i159.ChatRemoteDatasource>(
+    () => _i159.ChatRemoteDatasourceImpl(gh<_i974.FirebaseFirestore>()),
+  );
+  gh.factory<_i501.TagRemoteDatasource>(
+    () => _i501.TagRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
+  gh.factory<_i708.UserRemoteDatasource>(
+    () => _i708.UserRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
+  gh.factory<_i548.ReportRemoteDatasource>(
+    () => _i548.ReportRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
+  gh.factory<_i478.SessionRemoteDatasource>(
+    () => _i446.SessionRemoteDatasourceImpl(
+      gh<_i277.ApiClient>(),
+      gh<_i974.FirebaseFirestore>(),
+    ),
+  );
+  gh.factory<_i23.ReportRepository>(
+    () => _i420.ReportRepositoryImpl(gh<_i548.ReportRemoteDatasource>()),
+  );
+  gh.factory<_i775.CreateReport>(
+    () => _i775.CreateReport(gh<_i23.ReportRepository>()),
+  );
+  gh.factory<_i237.UserRepository>(
+    () => _i664.UserRepositoryImpl(gh<_i708.UserRemoteDatasource>()),
+  );
+  gh.factory<_i602.GymRemoteDatasource>(
+    () => _i602.GymRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
+  gh.factory<_i128.FileRemoteDatasource>(
+    () => _i128.FileRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
+  gh.factory<_i552.VerificationRemoteDatasource>(
+    () => _i552.VerificationRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
+  gh.factory<_i225.GymRepository>(
+    () => _i689.GymRepositoryImpl(gh<_i602.GymRemoteDatasource>()),
+  );
+  gh.factory<_i420.ChatRepository>(
+    () => _i504.ChatRepositoryImpl(gh<_i159.ChatRemoteDatasource>()),
+  );
+  gh.factory<_i701.TagRepository>(
+    () => _i454.TagRepositoryImpl(gh<_i501.TagRemoteDatasource>()),
+  );
+  gh.factory<_i521.GetTagsByType>(
+    () => _i521.GetTagsByType(gh<_i701.TagRepository>()),
+  );
+  gh.factory<_i696.BlockUser>(
+    () => _i696.BlockUser(gh<_i237.UserRepository>()),
+  );
+  gh.factory<_i222.GetMyBlockedUsers>(
+    () => _i222.GetMyBlockedUsers(gh<_i237.UserRepository>()),
+  );
+  gh.factory<_i667.GetMyProfile>(
+    () => _i667.GetMyProfile(gh<_i237.UserRepository>()),
+  );
+  gh.factory<_i497.GetUserProfile>(
+    () => _i497.GetUserProfile(gh<_i237.UserRepository>()),
+  );
+  gh.factory<_i444.UnblockUser>(
+    () => _i444.UnblockUser(gh<_i237.UserRepository>()),
+  );
+  gh.factory<_i652.UpdateFcmToken>(
+    () => _i652.UpdateFcmToken(gh<_i237.UserRepository>()),
+  );
+  gh.factory<_i544.UpdateProfileVisibility>(
+    () => _i544.UpdateProfileVisibility(gh<_i237.UserRepository>()),
+  );
+  gh.factory<_i193.RatingRemoteDatasource>(
+    () => _i193.RatingRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
+  gh.factory<_i738.SessionRepository>(
+    () => _i1021.SessionRepositoryImpl(gh<_i478.SessionRemoteDatasource>()),
+  );
+  gh.factory<_i161.AuthRemoteDatasource>(
+    () => _i161.AuthRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
+  gh.factory<_i182.ReportCubit>(
+    () => _i182.ReportCubit(gh<_i775.CreateReport>()),
+  );
+  gh.lazySingleton<_i63.PushNotificationService>(
+    () => _i63.PushNotificationService(gh<_i237.UserRepository>()),
+  );
+  gh.factory<_i338.GetApprovedGyms>(
+    () => _i338.GetApprovedGyms(gh<_i225.GymRepository>()),
+  );
+  gh.factory<_i82.SubmitGym>(() => _i82.SubmitGym(gh<_i225.GymRepository>()));
+  gh.factory<_i741.SubmitGymCubit>(
+    () => _i741.SubmitGymCubit(gh<_i82.SubmitGym>()),
+  );
+  gh.factory<_i829.ProfileBloc>(
+    () => _i829.ProfileBloc(
+      gh<_i667.GetMyProfile>(),
+      gh<_i544.UpdateProfileVisibility>(),
+    ),
+  );
+  gh.factory<_i49.FileRepository>(
+    () => _i997.FileRepositoryImpl(gh<_i128.FileRemoteDatasource>()),
+  );
+  gh.factory<_i423.GymListCubit>(
+    () => _i423.GymListCubit(gh<_i338.GetApprovedGyms>()),
+  );
+  gh.factory<_i583.GetChatStream>(
+    () => _i583.GetChatStream(gh<_i420.ChatRepository>()),
+  );
+  gh.factory<_i76.SendMessage>(
+    () => _i76.SendMessage(gh<_i420.ChatRepository>()),
+  );
+  gh.factory<_i213.UploadProfilePhoto>(
+    () => _i213.UploadProfilePhoto(gh<_i49.FileRepository>()),
+  );
+  gh.factory<_i1027.RatingRepository>(
+    () => _i874.RatingRepositoryImpl(gh<_i193.RatingRemoteDatasource>()),
+  );
+  gh.factory<_i305.ChatCubit>(
+    () => _i305.ChatCubit(gh<_i583.GetChatStream>(), gh<_i76.SendMessage>()),
+  );
+  gh.factory<_i37.BlockedUsersCubit>(
+    () => _i37.BlockedUsersCubit(
+      gh<_i222.GetMyBlockedUsers>(),
+      gh<_i444.UnblockUser>(),
+    ),
+  );
+  gh.factory<_i519.TagsCubit>(() => _i519.TagsCubit(gh<_i521.GetTagsByType>()));
+  gh.factory<_i831.CreateSession>(
+    () => _i831.CreateSession(gh<_i738.SessionRepository>()),
+  );
+  gh.factory<_i51.GetActiveSessions>(
+    () => _i51.GetActiveSessions(gh<_i738.SessionRepository>()),
+  );
+  gh.factory<_i861.GetParticipantsStream>(
+    () => _i861.GetParticipantsStream(gh<_i738.SessionRepository>()),
+  );
+  gh.factory<_i830.GetSessionById>(
+    () => _i830.GetSessionById(gh<_i738.SessionRepository>()),
+  );
+  gh.factory<_i170.JoinSession>(
+    () => _i170.JoinSession(gh<_i738.SessionRepository>()),
+  );
+  gh.factory<_i690.MarkAttendance>(
+    () => _i690.MarkAttendance(gh<_i738.SessionRepository>()),
+  );
+  gh.factory<_i1070.VerificationRepository>(
+    () => _i306.VerificationRepositoryImpl(
+      gh<_i552.VerificationRemoteDatasource>(),
+    ),
+  );
+  gh.factory<_i718.MarkAttendanceCubit>(
+    () => _i718.MarkAttendanceCubit(
+      gh<_i830.GetSessionById>(),
+      gh<_i690.MarkAttendance>(),
+      gh<_i861.GetParticipantsStream>(),
+    ),
+  );
+  gh.factory<_i470.UserProfileCubit>(
+    () => _i470.UserProfileCubit(gh<_i497.GetUserProfile>()),
+  );
+  gh.factory<_i947.CreateSessionCubit>(
+    () => _i947.CreateSessionCubit(gh<_i831.CreateSession>()),
+  );
+  gh.factory<_i787.AuthRepository>(
+    () => _i153.AuthRepositoryImpl(
+      gh<_i161.AuthRemoteDatasource>(),
+      gh<_i535.SecureStorageService>(),
+    ),
+  );
+  gh.factory<_i482.GetVerificationStatus>(
+    () => _i482.GetVerificationStatus(gh<_i1070.VerificationRepository>()),
+  );
+  gh.factory<_i573.SubmitVerificationVideo>(
+    () => _i573.SubmitVerificationVideo(gh<_i1070.VerificationRepository>()),
+  );
+  gh.factory<_i466.SessionDetailsCubit>(
+    () => _i466.SessionDetailsCubit(
+      gh<_i830.GetSessionById>(),
+      gh<_i170.JoinSession>(),
+      gh<_i861.GetParticipantsStream>(),
+      gh<_i829.ProfileBloc>(),
+    ),
+  );
+  gh.factory<_i643.VerificationCubit>(
+    () => _i643.VerificationCubit(
+      gh<_i482.GetVerificationStatus>(),
+      gh<_i573.SubmitVerificationVideo>(),
+    ),
+  );
+  gh.factory<_i694.CreateRating>(
+    () => _i694.CreateRating(gh<_i1027.RatingRepository>()),
+  );
+  gh.factory<_i396.GetPendingRatings>(
+    () => _i396.GetPendingRatings(gh<_i1027.RatingRepository>()),
+  );
+  gh.factory<_i809.GetRatingsForUser>(
+    () => _i809.GetRatingsForUser(gh<_i1027.RatingRepository>()),
+  );
+  gh.factory<_i285.SessionFeedCubit>(
+    () => _i285.SessionFeedCubit(gh<_i51.GetActiveSessions>()),
+  );
+  gh.factory<_i778.LoginUser>(
+    () => _i778.LoginUser(gh<_i787.AuthRepository>()),
+  );
+  gh.factory<_i198.RegisterUser>(
+    () => _i198.RegisterUser(gh<_i787.AuthRepository>()),
+  );
+  gh.factory<_i152.ResendOtp>(
+    () => _i152.ResendOtp(gh<_i787.AuthRepository>()),
+  );
+  gh.factory<_i699.VerifySms>(
+    () => _i699.VerifySms(gh<_i787.AuthRepository>()),
+  );
+  gh.factory<_i157.PendingRatingBloc>(
+    () => _i157.PendingRatingBloc(
+      gh<_i396.GetPendingRatings>(),
+      gh<_i694.CreateRating>(),
+    ),
+  );
+  gh.factory<_i797.AuthBloc>(
+    () => _i797.AuthBloc(
+      gh<_i778.LoginUser>(),
+      gh<_i198.RegisterUser>(),
+      gh<_i699.VerifySms>(),
+      gh<_i152.ResendOtp>(),
+      gh<_i912.AppBloc>(),
+      gh<_i213.UploadProfilePhoto>(),
+      gh<_i247.ReCaptchaService>(),
+    ),
+  );
   return getIt;
 }
+
+class _$FirebaseModule extends _i616.FirebaseModule {}
+
+class _$StorageModule extends _i535.StorageModule {}
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\di\service_locator.dart
@@ -4755,24 +5469,21 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\di\service_locator.dart
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 
-// This import is for the file that build_runner GENERARES.
-// If you have an error here, run build_runner.
 import 'service_locator.config.dart';
 
-// This is the global service locator instance
+// These imports are CRITICAL for the generator to find your classes
+// The "unused import" warnings are normal and can be ignored
+import '../../app/bloc/app_bloc.dart';
+import '../../core/services/secure_storage_service.dart';
+
 final getIt = GetIt.instance;
 
 @InjectableInit(
-  initializerName: r'$initGetIt', // The function name in the .config.dart file
-  preferRelativeImports: true,    // Good practice for generated files
-  asExtension: false,             // Keeps it as a top-level function
+  initializerName: r'$initGetIt',
+  preferRelativeImports: true,
+  asExtension: false,
 )
-/// Configures all application dependencies.
-///
-/// Run this in `main.dart` before `runApp()`.
 Future<void> configureDependencies() async {
-  // This $initGetIt function is generated by build_runner
-  // and will register all your @injectable, @lazySingleton, etc. classes.
   await $initGetIt(getIt);
 }
 
@@ -5042,12 +5753,12 @@ class PushNotificationService {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\services\recaptcha_service.dart
 ==================================================
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart'; // <-- 1. ADD THIS IMPORT
 import 'package:injectable/injectable.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha_action.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha_client.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // <-- ADDED IMPORT
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 @lazySingleton
 class ReCaptchaService {
@@ -5060,10 +5771,18 @@ class ReCaptchaService {
   bool _isInitialized = false;
 
   Future<void> init() async {
+    // --- START: MODIFICATION ---
+    // Don't initialize the client in debug mode if we're just mocking
+    if (kDebugMode) {
+      _isInitialized = true;
+      debugPrint("reCAPTCHA is in MOCK MODE for local dev.");
+      return;
+    }
+    // --- END: MODIFICATION ---
+
     try {
       if (_isInitialized) return;
 
-      // Determine the correct site key based on platform
       final String siteKey;
       if (kIsWeb) {
         debugPrint("reCAPTCHA Enterprise for web is not supported by this package");
@@ -5079,7 +5798,7 @@ class ReCaptchaService {
 
       _client = await Recaptcha.fetchClient(siteKey);
       _isInitialized = true;
-      debugPrint("reCAPTCHA Enterprise initialized for ${defaultTargetPlatform}");
+      debugPrint("reCAPTCHA Enterprise initialized for $defaultTargetPlatform");
     } catch (e) {
       debugPrint("Error initializing reCAPTCHA Enterprise: $e");
       throw Exception("Failed to initialize reCAPTCHA Enterprise: $e");
@@ -5088,6 +5807,14 @@ class ReCaptchaService {
 
   /// Gets a reCAPTCHA Enterprise token for a specific action
   Future<String> getToken(String action) async {
+    // --- START: MODIFICATION ---
+    // If in debug mode, return a mock token immediately.
+    if (kDebugMode) {
+      debugPrint("--- RETURNING MOCK TOKEN FOR LOCAL DEV ---");
+      return "mock-token-for-local-dev";
+    }
+    // --- END: MODIFICATION ---
+
     if (!_isInitialized) {
       debugPrint("reCAPTCHA not initialized, attempting to init now...");
       await init();
@@ -5115,8 +5842,6 @@ class ReCaptchaService {
   /// Clean up resources when done
   Future<void> dispose() async {
     if (_isInitialized) {
-      // Note: The guide doesn't show a dispose method, but you can keep this
-      // if the package supports it, or remove it if not needed
       _isInitialized = false;
     }
   }
@@ -5130,13 +5855,14 @@ FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\lib\core\services\secure_storage_se
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injectable/injectable.dart';
 
-@lazySingleton
+@lazySingleton // This annotation is enough
 class SecureStorageService {
   final FlutterSecureStorage _storage;
 
   // Use const for keys
   static const String _keyToken = 'jwt_token';
 
+  // We remove @factoryMethod. @lazySingleton on the class handles this.
   SecureStorageService(this._storage);
 
   Future<void> writeToken(String token) async {
@@ -5145,14 +5871,13 @@ class SecureStorageService {
 
   Future<String?> readToken() async {
     return await _storage.read(key: _keyToken);
-}
+  }
 
   Future<void> deleteToken() async {
     await _storage.delete(key: _keyToken);
   }
 }
 
-// We need to tell GetIt how to create FlutterSecureStorage
 @module
 abstract class StorageModule {
   @lazySingleton
@@ -32532,5 +33257,39 @@ class ErrorStateWidget extends StatelessWidget {
       ),
     );
   }
+}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\mobile\test\widget_test.dart
+==================================================
+// This is a basic Flutter widget test.
+//
+// To perform an interaction with a widget in your test, use the WidgetTester
+// utility in the flutter_test package. For example, you can send tap and scroll
+// gestures. You can also use WidgetTester to find child widgets in the widget
+// tree, read text, and verify that the values of widget properties are correct.
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:sahbifit/main.dart';
+
+void main() {
+  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    // Build our app and trigger a frame.
+    await tester.pumpWidget(const MyApp());
+
+    // Verify that our counter starts at 0.
+    expect(find.text('0'), findsOneWidget);
+    expect(find.text('1'), findsNothing);
+
+    // Tap the '+' icon and trigger a frame.
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pump();
+
+    // Verify that our counter has incremented.
+    expect(find.text('0'), findsNothing);
+    expect(find.text('1'), findsOneWidget);
+  });
 }
 

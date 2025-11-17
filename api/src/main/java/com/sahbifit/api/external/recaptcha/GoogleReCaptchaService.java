@@ -21,28 +21,30 @@ public class GoogleReCaptchaService implements ReCaptchaService {
     @Autowired
     public GoogleReCaptchaService(ReCaptchaConfig reCaptchaConfig, RestTemplate restTemplate) {
         this.reCaptchaConfig = reCaptchaConfig;
-        // We are reusing the RestTemplate bean created in WinSmsConfig!
         this.restTemplate = restTemplate; 
     }
 
     @Override
     public void validate(String token) {
         
-        // --- START: LOCAL TESTING MOCK ---
-        // We are bypassing the reCAPTCHA check for local development.
-        logger.warn("====================================================");
-        logger.warn(" LOCAL TESTING: reCAPTCHA validation is BYPASSED.");
-        logger.warn("====================================================");
-        return; // Automatically pass validation
-        // --- END: LOCAL TESTING MOCK ---
+        // --- START: MODIFIED LOCAL TESTING MOCK ---
+        // This MUST match the token in your Flutter app
+        if ("mock-token-for-local-dev".equals(token)) {
+            logger.warn("====================================================");
+            logger.warn(" LOCAL TESTING: reCAPTCHA validation is BYPASSED.");
+            logger.warn("====================================================");
+            return; // Automatically pass validation
+        }
+        // --- END: MODIFIED LOCAL TESTING MOCK ---
 
-        /* --- PRODUCTION CODE (DISABLED) ---
+        // --- PRODUCTION CODE (UN-COMMENTED) ---
+        // When in production, the token will not be the mock token,
+        // so this code will execute.
+        
         // Google expects a POST request with 'x-www-form-urlencoded' data
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("secret", reCaptchaConfig.getSecretKey());
         body.add("response", token);
-        // Optionally, you can also send the user's IP:
-        // body.add("remoteip", userIp);
 
         ReCaptchaResponse response;
         try {
@@ -53,7 +55,6 @@ public class GoogleReCaptchaService implements ReCaptchaService {
             );
         } catch (Exception e) {
             logger.error("Error communicating with Google reCAPTCHA API: {}", e.getMessage());
-            // We throw an exception to stop the registration
             throw new RuntimeException("reCAPTCHA service unavailable.");
         }
 
@@ -70,11 +71,6 @@ public class GoogleReCaptchaService implements ReCaptchaService {
             throw new RuntimeException("Validation failed (low score).");
         }
         
-        // 3. (Optional) You can also check the 'action' 
-        //    to ensure the token comes from your registration page.
-        //    e.g., if (!"register".equals(response.getAction())) { ... }
-
         logger.info("reCAPTCHA validation successful (Score: {}).", response.getScore());
-        */
     }
 }

@@ -9,6 +9,10 @@ import 'package:sahbifit/core/config/app_router.dart'; // <-- 1. IMPORT NEW ROUT
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // <-- ADDED IMPORT
 import 'package:flutter/foundation.dart'; // <-- 1. IMPORT FOUNDATION
 
+// --- SOLUTION: ADD THIS IMPORT ---
+import 'firebase_options.dart';
+// --- END OF SOLUTION ---
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -21,7 +25,12 @@ Future<void> main() async {
   }
   // --- END OF UPDATE ---
 
-  await Firebase.initializeApp();
+  // --- SOLUTION: USE THE IMPORTED OPTIONS ---
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  // --- END OF SOLUTION ---
+
   await configureDependencies();
 
   // 2. Create the AppBloc *first*

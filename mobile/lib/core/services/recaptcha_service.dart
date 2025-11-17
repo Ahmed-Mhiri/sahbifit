@@ -1,9 +1,9 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart'; // <-- 1. ADD THIS IMPORT
 import 'package:injectable/injectable.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha_action.dart';
 import 'package:recaptcha_enterprise_flutter/recaptcha_client.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // <-- ADDED IMPORT
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 @lazySingleton
 class ReCaptchaService {
@@ -16,10 +16,18 @@ class ReCaptchaService {
   bool _isInitialized = false;
 
   Future<void> init() async {
+    // --- START: MODIFICATION ---
+    // Don't initialize the client in debug mode if we're just mocking
+    if (kDebugMode) {
+      _isInitialized = true;
+      debugPrint("reCAPTCHA is in MOCK MODE for local dev.");
+      return;
+    }
+    // --- END: MODIFICATION ---
+
     try {
       if (_isInitialized) return;
 
-      // Determine the correct site key based on platform
       final String siteKey;
       if (kIsWeb) {
         debugPrint("reCAPTCHA Enterprise for web is not supported by this package");
@@ -35,7 +43,7 @@ class ReCaptchaService {
 
       _client = await Recaptcha.fetchClient(siteKey);
       _isInitialized = true;
-      debugPrint("reCAPTCHA Enterprise initialized for ${defaultTargetPlatform}");
+      debugPrint("reCAPTCHA Enterprise initialized for $defaultTargetPlatform");
     } catch (e) {
       debugPrint("Error initializing reCAPTCHA Enterprise: $e");
       throw Exception("Failed to initialize reCAPTCHA Enterprise: $e");
@@ -44,6 +52,14 @@ class ReCaptchaService {
 
   /// Gets a reCAPTCHA Enterprise token for a specific action
   Future<String> getToken(String action) async {
+    // --- START: MODIFICATION ---
+    // If in debug mode, return a mock token immediately.
+    if (kDebugMode) {
+      debugPrint("--- RETURNING MOCK TOKEN FOR LOCAL DEV ---");
+      return "mock-token-for-local-dev";
+    }
+    // --- END: MODIFICATION ---
+
     if (!_isInitialized) {
       debugPrint("reCAPTCHA not initialized, attempting to init now...");
       await init();
@@ -71,8 +87,6 @@ class ReCaptchaService {
   /// Clean up resources when done
   Future<void> dispose() async {
     if (_isInitialized) {
-      // Note: The guide doesn't show a dispose method, but you can keep this
-      // if the package supports it, or remove it if not needed
       _isInitialized = false;
     }
   }
