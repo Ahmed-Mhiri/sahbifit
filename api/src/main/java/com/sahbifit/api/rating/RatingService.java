@@ -1,4 +1,3 @@
-// Path: src/main/java/com/sahbifit/api/rating/RatingService.java
 package com.sahbifit.api.rating;
 
 import java.util.List;
@@ -9,8 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.sahbifit.api.exception.ResourceNotFoundException;
 import com.sahbifit.api.rating.dto.CreateRatingDto;
+import com.sahbifit.api.rating.dto.RatingDto; // <-- ADDED
 import com.sahbifit.api.rating.dto.PendingRatingDto;
 import com.sahbifit.api.rating.model.Rating;
+import com.sahbifit.api.rating.RatingMapper; // <-- ADDED
 import com.sahbifit.api.rating.repository.RatingRepository;
 import com.sahbifit.api.session.model.Session;
 import com.sahbifit.api.session.model.SessionParticipantId;
@@ -35,7 +36,7 @@ public class RatingService {
      * (MVP 5.1) Creates a new rating of one user for another
      * after a shared session.
      */
-    public Rating createRating(CreateRatingDto dto, String raterPhoneNumber) {
+    public RatingDto createRating(CreateRatingDto dto, String raterPhoneNumber) { // <-- CHANGED
         // 1. Find user and session
         User raterUser = userRepository.findByPhoneNumber(raterPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Rater (User) not found"));
@@ -83,19 +84,20 @@ public class RatingService {
         newRating.setRatingValue(dto.ratingValue());
         newRating.setComment(dto.comment()); // Can be null
 
-        return ratingRepository.save(newRating);
+        return RatingMapper.toDto(ratingRepository.save(newRating)); // <-- CHANGED
     }
 
     /**
      * (Optional) Retrieves all received ratings for a user.
      */
     @Transactional(readOnly = true)
-    public List<Rating> getRatingsForUser(UUID userId) {
+    public List<RatingDto> getRatingsForUser(UUID userId) { // <-- CHANGED
         // Ensure user exists before retrieving ratings
         if (!userRepository.existsById(userId)) {
             throw new ResourceNotFoundException("User not found");
         }
-        return ratingRepository.findByRatingForUserId(userId);
+        List<Rating> ratings = ratingRepository.findByRatingForUserId(userId); // <-- CHANGED
+        return RatingMapper.toDtoList(ratings); // <-- CHANGED
     }
 
     /**

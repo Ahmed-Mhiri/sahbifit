@@ -19,8 +19,10 @@ class CreateSession implements UseCase<Session, CreateSessionParams> {
       gymId: params.gymId,
       sessionType: params.sessionType,
       title: params.title,
-      startTime: params.startTime.toIso8601String(), // Convert DateTime to String
-      endTime: params.endTime.toIso8601String(),     // Convert DateTime to String
+      // --- FIX: Convert to UTC before sending ---
+      startTime: params.startTime.toUtc().toIso8601String(), 
+      endTime: params.endTime.toUtc().toIso8601String(),
+      // ----------------------------------------
       maxParticipants: params.maxParticipants,
     );
     return _repository.createSession(requestModel);

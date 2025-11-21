@@ -11,12 +11,10 @@ import 'package:sahbifit/features/verification/domain/enums/verified_gender_enum
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
-
 @freezed
 abstract class UserModel with _$UserModel {
   const UserModel._();
 
-  
   const factory UserModel({
     required String userId,
     required String firstName,
@@ -28,6 +26,8 @@ abstract class UserModel with _$UserModel {
     required UserStatus status,
     required int groupSessionCount,
     required int noShowCount,
+    // Default to 0 if backend sends null for older users
+    @Default(0) int lateCancelCount, // <--- ADDED
     GymModel? primaryGym,
     @Default([]) List<BadgeModel> userBadges,
   }) = _UserModel;
@@ -47,6 +47,7 @@ abstract class UserModel with _$UserModel {
       status: status,
       groupSessionCount: groupSessionCount,
       noShowCount: noShowCount,
+      lateCancelCount: lateCancelCount, // <--- ADDED
       primaryGym: primaryGym?.toEntity(),
       userBadges: userBadges.map((badge) => badge.toEntity()).toList(),
     );

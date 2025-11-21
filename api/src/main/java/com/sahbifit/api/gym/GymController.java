@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sahbifit.api.gym.dto.AdminGymDto;
+import com.sahbifit.api.gym.dto.GymDto;
 import com.sahbifit.api.gym.dto.GymSubmissionDto;
-import com.sahbifit.api.gym.model.Gym;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,8 +35,9 @@ public class GymController {
      * (Mobile App) Get all approved gyms.
      */
     @GetMapping("/gyms")
-    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
-    public ResponseEntity<List<Gym>> getApprovedGyms() {
+    // --- CHANGE HERE ---
+    // @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')") // This was removed in the original plan
+    public ResponseEntity<List<GymDto>> getApprovedGyms() {
         return ResponseEntity.ok(gymService.getApprovedGyms());
     }
 
@@ -45,8 +46,8 @@ public class GymController {
      */
     @PostMapping("/gyms/submit")
     @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
-    public ResponseEntity<Gym> submitGym(@RequestBody GymSubmissionDto dto, Principal principal) {
-        Gym submittedGym = gymService.submitGym(dto, principal.getName());
+    public ResponseEntity<GymDto> submitGym(@RequestBody GymSubmissionDto dto, Principal principal) {
+        GymDto submittedGym = gymService.submitGym(dto, principal.getName());
         return new ResponseEntity<>(submittedGym, HttpStatus.CREATED);
     }
 
@@ -58,8 +59,8 @@ public class GymController {
      */
     @PostMapping("/admin/gyms")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Gym> adminCreateGym(@RequestBody AdminGymDto dto) {
-        Gym createdGym = gymService.adminCreateGym(dto);
+    public ResponseEntity<GymDto> adminCreateGym(@RequestBody AdminGymDto dto) {
+        GymDto createdGym = gymService.adminCreateGym(dto);
         return new ResponseEntity<>(createdGym, HttpStatus.CREATED);
     }
 
@@ -69,8 +70,8 @@ public class GymController {
      */
     @PutMapping("/admin/gyms/{gymId}/approve")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Gym> adminApproveGym(@PathVariable UUID gymId) {
-        Gym approvedGym = gymService.adminApproveGym(gymId);
+    public ResponseEntity<GymDto> adminApproveGym(@PathVariable UUID gymId) {
+        GymDto approvedGym = gymService.adminApproveGym(gymId);
         return ResponseEntity.ok(approvedGym);
     }
 
@@ -80,7 +81,7 @@ public class GymController {
      */
     @GetMapping("/admin/gyms")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Gym>> adminGetAllGyms() {
+    public ResponseEntity<List<GymDto>> adminGetAllGyms() {
         return ResponseEntity.ok(gymService.adminGetAllGyms());
     }
 
@@ -90,7 +91,7 @@ public class GymController {
      */
     @GetMapping("/admin/gyms/pending")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Gym>> adminGetPendingGyms() {
+    public ResponseEntity<List<GymDto>> adminGetPendingGyms() {
         return ResponseEntity.ok(gymService.getPendingGyms());
     }
 
@@ -100,8 +101,8 @@ public class GymController {
      */
     @PutMapping("/admin/gyms/{gymId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Gym> adminUpdateGym(@PathVariable UUID gymId, @RequestBody AdminGymDto dto) {
-        Gym updatedGym = gymService.adminUpdateGym(gymId, dto);
+    public ResponseEntity<GymDto> adminUpdateGym(@PathVariable UUID gymId, @RequestBody AdminGymDto dto) {
+        GymDto updatedGym = gymService.adminUpdateGym(gymId, dto);
         return ResponseEntity.ok(updatedGym);
     }
 

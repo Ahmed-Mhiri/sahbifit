@@ -1,9 +1,19 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sahbifit/app/bloc/app_bloc.dart';
+import 'package:sahbifit/core/di/service_locator.dart';
 
-// --- Import all your Page files ---
+// --- Bloc/Cubit Imports ---
+import 'package:sahbifit/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:sahbifit/features/gym/presentation/cubit/gym_list_cubit.dart';
+import 'package:sahbifit/features/tag/presentation/cubit/tags_cubit.dart';
+
+// --- Shared Widgets ---
+import '../../shared/widgets/scaffold_with_navbar.dart';
+
+// --- Page Imports ---
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/verify_sms_page.dart';
@@ -11,105 +21,138 @@ import '../../features/session/presentation/pages/session_feed_page.dart';
 import '../../features/session/presentation/pages/session_details_page.dart';
 import '../../features/session/presentation/pages/create_session_page.dart';
 import '../../features/session/presentation/pages/mark_attendance_page.dart';
+import '../../features/session/presentation/pages/my_sessions_page.dart';
 import '../../features/chat/presentation/pages/chat_page.dart';
 import '../../features/user/presentation/pages/profile_page.dart';
 import '../../features/user/presentation/pages/settings_page.dart';
+import '../../features/user/presentation/pages/blocked_users_page.dart';
 import '../../features/verification/presentation/pages/submit_verification_page.dart';
 import '../../features/rating/presentation/pages/pending_ratings_page.dart';
 import '../../features/report/presentation/pages/report_user_page.dart';
 import '../../features/gym/presentation/pages/submit_gym_page.dart';
-// --- REMOVED THIS IMPORT ---
-// import '../../features/session/domain/entities/session.dart';
 
-/// A wrapper class to hold the GoRouter instance.
-/// This allows us to pass the AppBloc to the redirect logic.
+// --- New Imports (Chat List & Manage Activity) ---
+import '../../features/chat/presentation/pages/chat_list_page.dart';
+import '../../features/user/presentation/pages/manage_activity_page.dart';
+
 class AppRouter {
   final AppBloc appBloc;
   late final GoRouter router;
 
   AppRouter(this.appBloc) {
     router = GoRouter(
-      // 1. Listen to the AppBloc stream for auth changes
       refreshListenable: GoRouterRefreshStream(appBloc.stream),
-
-      // 2. Set the initial route
       initialLocation: '/login',
-
-      // 3. Define the auth redirect logic
       redirect: (BuildContext context, GoRouterState state) {
         final appState = appBloc.state;
         final location = state.matchedLocation;
+        final authRoutes = ['/login', '/register', '/verify-sms'];
 
-        // Define auth-only routes
-        final authRoutes = [
-          '/login',
-          '/register',
-          '/verify-sms',
-        ];
-
-        // Use appState.mapOrNull to handle all states publicly
         return appState.mapOrNull(
-          // If initial, don't redirect. The AppView builder will show a loading screen.
           initial: (_) => null,
-
-          // Handle unauthenticated users
           unauthenticated: (_) {
-            if (authRoutes.contains(location)) {
-              return null; // Allow user to stay on auth pages
-            }
-            return '/login'; // Redirect all other routes to login
+            if (authRoutes.contains(location)) return null;
+            return '/login';
           },
-
-          // Handle authenticated users
           authenticated: (_) {
-            if (authRoutes.contains(location)) {
-              return '/home'; // If on an auth page, redirect to home
-            }
-            return null; // Allow navigation to any other page
+            if (authRoutes.contains(location)) return '/home';
+            return null;
           },
         );
       },
-
-      // 4. Define all your app routes
       routes: [
-        // --- Auth Flow ---
+        // --- Auth Routes ---
         GoRoute(
           path: '/login',
           builder: (context, state) => const LoginPage(),
         ),
         GoRoute(
           path: '/register',
-          builder: (context, state) => const RegisterPage(),
+          builder: (context, state) {
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider(create: (context) => getIt<AuthBloc>()),
+                BlocProvider(create: (context) => getIt<GymListCubit>()),
+                BlocProvider(create: (context) => getIt<TagsCubit>()),
+              ],
+              child: const RegisterPage(),
+            );
+          },
         ),
         GoRoute(
           path: '/verify-sms',
           builder: (context, state) {
-            // Get arguments passed via `extra`
             final phoneNumber = state.extra as String;
             return VerifySmsPage(phoneNumber: phoneNumber);
           },
         ),
 
-        // --- Main App (Authenticated) ---
-        GoRoute(
-          path: '/home',
-          builder: (context, state) => const SessionFeedPage(),
+        // --- Shell Route (Bottom Navbar) ---
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) {
+            return ScaffoldWithNavBar(navigationShell: navigationShell);
+          },
+          branches: [
+            // 1. Home / Feed
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/home',
+                  builder: (context, state) => const SessionFeedPage(),
+                ),
+              ],
+            ),
+            // 2. My Sessions (Calendar)
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/my-sessions',
+                  builder: (context, state) => const MySessionsPage(),
+                ),
+              ],
+            ),
+            // 3. Chat List (NEW)
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/chats',
+                  builder: (context, state) => const ChatListPage(),
+                ),
+              ],
+            ),
+            // 4. Manage / Activity (NEW - Ratings & Attendance)
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/manage',
+                  builder: (context, state) => const ManageActivityPage(),
+                ),
+              ],
+            ),
+            // 5. Profile
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/profile',
+                  builder: (context, state) => const ProfilePage(userId: null),
+                ),
+              ],
+            ),
+          ],
         ),
+
+        // --- Overlay Pages ---
         GoRoute(
           path: '/create-session',
           builder: (context, state) => const CreateSessionPage(),
         ),
-
-        // --- Nested Session Routes ---
         GoRoute(
           path: '/session/:sessionId',
           builder: (context, state) {
-            // Get path parameters
             final sessionId = state.pathParameters['sessionId']!;
             return SessionDetailsPage(sessionId: sessionId);
           },
           routes: [
-            // Path becomes: /session/:sessionId/chat
             GoRoute(
               path: 'chat',
               builder: (context, state) {
@@ -117,26 +160,17 @@ class AppRouter {
                 return ChatPage(sessionId: sessionId);
               },
             ),
-            // Path becomes: /session/:sessionId/attendance
             GoRoute(
               path: 'attendance',
               builder: (context, state) {
-                // --- THIS BLOCK IS MODIFIED ---
-                // Get the sessionId from the URL path parameters
                 final sessionId = state.pathParameters['sessionId']!;
                 return MarkAttendancePage(sessionId: sessionId);
               },
             ),
           ],
         ),
-
-        // --- User & Profile ---
         GoRoute(
-          path: '/profile', // My profile
-          builder: (context, state) => const ProfilePage(userId: null),
-        ),
-        GoRoute(
-          path: '/user/:userId', // Other user's profile
+          path: '/user/:userId',
           builder: (context, state) {
             final userId = state.pathParameters['userId']!;
             return ProfilePage(userId: userId);
@@ -146,8 +180,10 @@ class AppRouter {
           path: '/settings',
           builder: (context, state) => const SettingsPage(),
         ),
-
-        // --- Trust & Safety ---
+        GoRoute(
+          path: '/pending-ratings',
+          builder: (context, state) => const PendingRatingsPage(),
+        ),
         GoRoute(
           path: '/submit-verification',
           builder: (context, state) => const SubmitVerificationPage(),
@@ -155,7 +191,6 @@ class AppRouter {
         GoRoute(
           path: '/report-user',
           builder: (context, state) {
-            // Arguments can be passed via `extra` as a Map or custom class
             final args = state.extra as Map<String, dynamic>;
             return ReportUserPage(
               reportedUserId: args['reportedUserId'] as String,
@@ -163,23 +198,19 @@ class AppRouter {
             );
           },
         ),
-
-        // --- Other Features ---
-        GoRoute(
-          path: '/pending-ratings',
-          builder: (context, state) => const PendingRatingsPage(),
-        ),
         GoRoute(
           path: '/submit-gym',
           builder: (context, state) => const SubmitGymPage(),
+        ),
+        GoRoute(
+          path: '/blocked-users',
+          builder: (context, state) => const BlockedUsersPage(),
         ),
       ],
     );
   }
 }
 
-/// A simple [ChangeNotifier] that listens to a [Stream]
-/// and notifies listeners on new events.
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();
@@ -187,9 +218,7 @@ class GoRouterRefreshStream extends ChangeNotifier {
           (dynamic _) => notifyListeners(),
         );
   }
-
   late final StreamSubscription<dynamic> _subscription;
-
   @override
   void dispose() {
     _subscription.cancel();

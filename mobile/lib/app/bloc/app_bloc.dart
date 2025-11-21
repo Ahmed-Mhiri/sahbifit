@@ -7,11 +7,10 @@ part 'app_bloc.freezed.dart';
 part 'app_event.dart';
 part 'app_state.dart';
 
-@injectable // This annotation is enough
+@lazySingleton
 class AppBloc extends Bloc<AppEvent, AppState> {
   final SecureStorageService _storageService;
 
-  // We remove @factoryMethod. @injectable on the class handles this.
   AppBloc(this._storageService)
       : super(const AppState.initial()) {
     on<_CheckAuthStatus>(_onCheckAuthStatus);
@@ -25,14 +24,10 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       _CheckAuthStatus event,
       Emitter<AppState> emit,
       ) async {
-    // You could emit a loading state here if needed
-    // emit(const AppState.loading());
     try {
       final token = await _storageService.readToken();
       if (token != null) {
-        // --- THIS IS THE MODIFIED LOGIC ---
         emit(const AppState.authenticated());
-        // ----------------------------------
       } else {
         emit(const AppState.unauthenticated());
       }
@@ -50,11 +45,13 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       Emitter<AppState> emit,
       ) async {
     try {
+      // This deletes the key causing the issue
       await _storageService.deleteToken();
     } catch (e) {
       // Handle potential storage error, though we still want to log out
       print('Error deleting token: $e');
     }
+    // This forces the router to redirect to /login
     emit(const AppState.unauthenticated());
   }
 }

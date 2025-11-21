@@ -1,5 +1,3 @@
-// --- ADDED ---
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:sahbifit/core/api/api_client.dart';
@@ -9,18 +7,14 @@ import 'package:sahbifit/features/session/data/datasources/session_remote_dataso
 import 'package:sahbifit/features/session/data/models/create_session_model.dart';
 import 'package:sahbifit/features/session/data/models/mark_attendance_model.dart';
 import 'package:sahbifit/features/session/data/models/session_model.dart';
-// --- ADDED ---
 import 'package:sahbifit/features/session/data/models/session_participant_model.dart';
 import 'package:sahbifit/features/verification/domain/enums/verified_gender_enum.dart';
 
 @Injectable(as: SessionRemoteDatasource)
 class SessionRemoteDatasourceImpl implements SessionRemoteDatasource {
   final ApiClient _apiClient;
-  // --- ADDED ---
-  final FirebaseFirestore _firestore;
 
-  // --- MODIFIED CONSTRUCTOR ---
-  SessionRemoteDatasourceImpl(this._apiClient, this._firestore);
+  SessionRemoteDatasourceImpl(this._apiClient);
 
   @override
   Future<List<SessionModel>> getActiveSessions(
@@ -35,6 +29,22 @@ class SessionRemoteDatasourceImpl implements SessionRemoteDatasource {
         ApiEndpoints.sessions,
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
+      return (response.data as List)
+          .map((json) => SessionModel.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<List<SessionModel>> getMySessions() async {
+    try {
+      // Appends '/my' to the base sessions endpoint
+      final response = await _apiClient.dio.get(
+        '${ApiEndpoints.sessions}/my', 
+      );
+
       return (response.data as List)
           .map((json) => SessionModel.fromJson(json))
           .toList();
@@ -93,20 +103,30 @@ class SessionRemoteDatasourceImpl implements SessionRemoteDatasource {
     }
   }
 
-  // --- ADDED ---
   @override
-  Stream<List<SessionParticipantModel>> getParticipantsStream(
-      String sessionId) {
-    // No try-catch needed here; the stream itself will propagate errors.
-    return _firestore
-        .collection('sessions')
-        .doc(sessionId)
-        .collection('participants')
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => SessionParticipantModel.fromJson(doc.data()))
+  Future<List<SessionParticipantModel>> getSessionParticipants(
+      String sessionId) async {
+    try {
+      final response = await _apiClient.dio.get(
+        '${ApiEndpoints.sessions}/$sessionId/participants',
+      );
+      return (response.data as List)
+          .map((json) => SessionParticipantModel.fromJson(json))
           .toList();
-    });
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
+  }
+
+    @override
+  Future<void> leaveSession(String sessionId) async {
+    try {
+      // Matches backend endpoint: POST /api/sessions/{sessionId}/leave
+      await _apiClient.dio.post(
+        '${ApiEndpoints.sessions}/$sessionId/leave',
+      );
+    } on DioException catch (e) {
+      throw ServerException.fromDio(e);
+    }
   }
 }

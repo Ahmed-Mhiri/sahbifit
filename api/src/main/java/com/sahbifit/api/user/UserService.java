@@ -1,9 +1,9 @@
 package com.sahbifit.api.user;
 
 import java.time.OffsetDateTime;
-import java.util.List; // <-- ADDED
+import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors; // <-- ADDED
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +16,10 @@ import com.sahbifit.api.badge.model.UserBadgeId;
 import com.sahbifit.api.badge.repository.BadgeRepository;
 import com.sahbifit.api.badge.repository.UserBadgeRepository;
 import com.sahbifit.api.exception.ResourceNotFoundException;
-import com.sahbifit.api.user.dto.PublicUserProfileDto; // <-- ADDED
+import com.sahbifit.api.user.dto.PublicUserProfileDto;
 import com.sahbifit.api.user.dto.UpdateFcmTokenDto;
 import com.sahbifit.api.user.dto.UpdateVisibilityDto;
+import com.sahbifit.api.user.dto.UserProfileDto;
 import com.sahbifit.api.user.model.ProfileVisibility;
 import com.sahbifit.api.user.model.User;
 import com.sahbifit.api.user.model.UserBlock;
@@ -42,12 +43,13 @@ public class UserService {
 
     // Defines the limit for "No-Shows"
     private static final int NO_SHOW_LIMIT = 3;
+    
+    // Defines limit for Late Cancellations (Cancel < 1h before)
+    // 6 cancels = Badge (treated as half a no-show ratio compared to 3)
+    private static final int LATE_CANCEL_LIMIT = 6; 
+    
     private static final String UNRELIABLE_BADGE_NAME = "UNRELIABLE";
 
-    /**
-     * Increases the counter for completed group sessions of a user.
-     * (MVP 3.5 Logic)
-     */
     @Transactional
     public void incrementGroupSessionCount(UUID userId) {
         User user = userRepository.findById(userId)
@@ -61,67 +63,80 @@ public class UserService {
     }
 
     /**
-     * Increases the "No-Show" counter for a user and applies a block if necessary.
-     * (MVP 5.4 & 5.5 Logic)
+     * Increases the "No-Show" counter.
      */
     @Transactional
     public void incrementNoShowCount(UUID userId) {
-        // 1. Find user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
-        // 2. Increase counter
         int newNoShowCount = user.getNoShowCount() + 1;
         user.setNoShowCount(newNoShowCount);
 
-        // 3. Block check (MVP 5.5)
+        // Check Threshold
         if (newNoShowCount >= NO_SHOW_LIMIT) {
-            // Block user
-            user.setStatus(UserStatus.suspended);
-            user.setSuspendedUntil(OffsetDateTime.now().plusDays(3)); // 3-day block
-            
-            // Reset counter after applying the block
-            user.setNoShowCount(0); 
-
-            log.warn("User {} suspended for 3 days due to {} no-shows.", userId, newNoShowCount);
-            
-            // --- NEW LOGIC ---
-            // 4. Award the "Unreliable" badge
-            try {
-                awardUnreliableBadge(user);
-            } catch (Exception e) {
-                log.error("Failed to award UNRELIABLE badge to user {}: {}", userId, e.getMessage());
-                // Don't fail the transaction, just log the error
-            }
-            // --- END NEW LOGIC ---
-
+            applyUnreliablePenalty(user, "no-shows", newNoShowCount);
         } else {
             log.info("User {} 'no-show' count incremented to {}.", userId, newNoShowCount);
         }
-
-        // 5. Save user
         userRepository.save(user);
     }
 
     /**
-     * Awards the "UNRELIABLE" badge to a user
+     * Increases the "Late Cancel" counter.
+     * Called when a user cancels less than 1 hour before session start.
      */
+    @Transactional
+    public void incrementLateCancelCount(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+
+        int newCancelCount = user.getLateCancelCount() + 1;
+        user.setLateCancelCount(newCancelCount);
+
+        // Check Threshold (6 cancels)
+        if (newCancelCount >= LATE_CANCEL_LIMIT) {
+            applyUnreliablePenalty(user, "late cancellations", newCancelCount);
+        } else {
+            log.info("User {} 'late cancel' count incremented to {}.", userId, newCancelCount);
+        }
+        userRepository.save(user);
+    }
+
+    /**
+     * Helper to apply suspension and badge logic.
+     */
+    private void applyUnreliablePenalty(User user, String reasonType, int count) {
+        // Block user
+        user.setStatus(UserStatus.suspended);
+        user.setSuspendedUntil(OffsetDateTime.now().plusDays(3)); // 3-day block
+        
+        // Reset the specific counters (optional: resetting both might be fairer, 
+        // but here we just reset the one that triggered it to avoid confusion)
+        if (reasonType.equals("no-shows")) user.setNoShowCount(0);
+        if (reasonType.equals("late cancellations")) user.setLateCancelCount(0);
+
+        log.warn("User {} suspended for 3 days due to {} {}.", user.getUserId(), count, reasonType);
+        
+        try {
+            awardUnreliableBadge(user);
+        } catch (Exception e) {
+            log.error("Failed to award UNRELIABLE badge to user {}: {}", user.getUserId(), e.getMessage());
+        }
+    }
+
     private void awardUnreliableBadge(User user) {
-        // Find the master "Unreliable" badge
         Badge unreliableBadge = badgeRepository.findByBadgeName(UNRELIABLE_BADGE_NAME)
                 .orElseThrow(() -> new RuntimeException(UNRELIABLE_BADGE_NAME + " badge not found in database."));
 
-        // Create the composite key
         UserBadgeId userBadgeId = new UserBadgeId();
         userBadgeId.setUserId(user.getUserId());
         userBadgeId.setBadgeId(unreliableBadge.getBadgeId());
 
-        // Check if user already has this badge
         if (userBadgeRepository.existsById(userBadgeId)) {
-            return; // Already has it, do nothing
+            return; 
         }
 
-        // Assign the badge
         UserBadge newUserBadge = new UserBadge();
         newUserBadge.setId(userBadgeId);
         newUserBadge.setUser(user);
@@ -131,26 +146,18 @@ public class UserService {
         log.info("Awarded {} badge to user {}", UNRELIABLE_BADGE_NAME, user.getUserId());
     }
 
-    /**
-     * Allows a user to block another user.
-     * (MVP 4.2 Logic)
-     */
     @Transactional
     public void blockUser(String blockerPhoneNumber, UUID blockedUserId) {
-        // 1. Find blocker user
         User blockerUser = userRepository.findByPhoneNumber(blockerPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", blockerPhoneNumber));
 
-        // 2. Find user to be blocked
         User blockedUser = userRepository.findById(blockedUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "userId", blockedUserId));
 
-        // 3. Prevent self-blocking
         if (blockerUser.getUserId().equals(blockedUser.getUserId())) {
             throw new IllegalArgumentException("A user cannot block themselves.");
         }
 
-        // 4. Check if already blocked
         boolean alreadyBlocked = userBlockRepository.existsByBlockerUserIdAndBlockedUserId(
                 blockerUser.getUserId(), blockedUser.getUserId());
 
@@ -158,7 +165,6 @@ public class UserService {
             return;
         }
 
-        // 5. Create UserBlock entity
         UserBlockId blockId = new UserBlockId();
         blockId.setBlockerUserId(blockerUser.getUserId());
         blockId.setBlockedUserId(blockedUser.getUserId());
@@ -168,7 +174,6 @@ public class UserService {
         newBlock.setBlocker(blockerUser);
         newBlock.setBlocked(blockedUser);
 
-        // 6. Save block
         userBlockRepository.save(newBlock);
     }
 
@@ -187,7 +192,6 @@ public class UserService {
         User user = userRepository.findByPhoneNumber(userPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
 
-        // Validation: You cannot set visibility to "same_gender" if you are not gender-verified.
         if (dto.visibility() == ProfileVisibility.same_gender && 
             user.getVerifiedGender() == VerifiedGender.not_verified) {
             
@@ -199,49 +203,57 @@ public class UserService {
         log.info("Updated profile visibility for user {} to {}", user.getUserId(), dto.visibility());
     }
 
-    // --- ADDED METHOD (for GET /me/blocked) ---
-    /**
-     * Retrieves a list of all users blocked by the specified user.
-     * @param userPhoneNumber The phone number of the user who is viewing their block list.
-     * @return A list of safe PublicUserProfileDto objects.
-     */
     @Transactional(readOnly = true)
     public List<PublicUserProfileDto> getBlockedUsers(String userPhoneNumber) {
-        // 1. Find the user who is asking
         User blockerUser = userRepository.findByPhoneNumber(userPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
 
-        // 2. Find all UserBlock records where this user is the blocker
-        List<UserBlock> blocks = userBlockRepository.findAllByBlockerUserId(blockerUser.getUserId());
+        // --- FIX STARTS HERE ---
+        // Use the new repository method passing the User entity
+        List<UserBlock> blocks = userBlockRepository.findAllByBlocker(blockerUser);
+        // --- FIX ENDS HERE ---
 
-        // 3. Map the results to the safe DTO
-        // We get the "blocked" user from each UserBlock entity and convert it
         return blocks.stream()
                 .map(UserBlock::getBlocked)
                 .map(PublicUserProfileDto::fromUser)
                 .collect(Collectors.toList());
     }
 
-    // --- ADDED METHOD (for DELETE /me/blocked/{userId}) ---
-    /**
-     * Allows a user to unblock another user.
-     * @param blockerPhoneNumber The phone number of the user initiating the unblock.
-     * @param blockedUserIdToUnblock The UUID of the user to be unblocked.
-     */
     @Transactional
     public void unblockUser(String blockerPhoneNumber, UUID blockedUserIdToUnblock) {
-        // 1. Find the user who is initiating
         User blockerUser = userRepository.findByPhoneNumber(blockerPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", blockerPhoneNumber));
 
-        // 2. Delete the block record
-        // This is safe because it will only delete a record where the
-        // authenticated user is the *blocker*.
         userBlockRepository.deleteByBlockerUserIdAndBlockedUserId(
             blockerUser.getUserId(),
             blockedUserIdToUnblock
         );
         
         log.info("User {} unblocked user {}", blockerUser.getUserId(), blockedUserIdToUnblock);
+    }
+
+    @Transactional(readOnly = true)
+    public UserProfileDto getMyProfile(String phoneNumber) {
+        User user = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", phoneNumber));
+        
+        return UserMapper.toProfileDto(user);
+    }
+
+    @Transactional(readOnly = true)
+    public UserProfileDto getUserProfile(UUID targetUserId, String requesterPhoneNumber) { // <-- UPDATED SIGNATURE
+        User requester = userRepository.findByPhoneNumber(requesterPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", requesterPhoneNumber));
+
+        // 1. Check "The Nuclear Wall" (Block check)
+        if (userBlockRepository.hasBlockRelationship(requester.getUserId(), targetUserId)) {
+            // We throw Not Found so the blocker/blocked user appears to not exist at all.
+            throw new ResourceNotFoundException("User", "userId", targetUserId);
+        }
+
+        User targetUser = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", targetUserId));
+        
+        return UserMapper.toProfileDto(targetUser);
     }
 }

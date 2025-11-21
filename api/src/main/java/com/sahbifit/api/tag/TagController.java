@@ -3,6 +3,7 @@ package com.sahbifit.api.tag;
 
 import com.sahbifit.api.tag.model.Tag;
 import com.sahbifit.api.tag.model.TagType;
+import com.sahbifit.api.tag.dto.TagDto; // <-- ADDED
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,10 +21,11 @@ public class TagController {
     private final TagService tagService;
 
     @GetMapping
-    public ResponseEntity<List<Tag>> getTags(
+    // --- METHOD MODIFIED ---
+    public ResponseEntity<List<TagDto>> getTags( // <-- CHANGE
         @RequestParam(name = "type") TagType type
     ) {
-        List<Tag> tags = tagService.getTagsByType(type);
+        List<TagDto> tags = tagService.getTagsByType(type); // <-- CHANGE
         return ResponseEntity.ok(tags);
     }
 }

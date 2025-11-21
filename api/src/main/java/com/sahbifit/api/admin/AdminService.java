@@ -15,6 +15,8 @@ import com.sahbifit.api.exception.ResourceNotFoundException;
 import com.sahbifit.api.external.push.PushNotificationService;
 import com.sahbifit.api.external.storage.StorageService;
 import com.sahbifit.api.report.model.Report;
+import com.sahbifit.api.report.ReportMapper; // <-- ADDED
+import com.sahbifit.api.report.dto.ReportDto;
 import com.sahbifit.api.report.model.ReportStatus;
 import com.sahbifit.api.report.repository.ReportRepository;
 import com.sahbifit.api.user.model.ProfileVisibility;
@@ -93,7 +95,7 @@ public class AdminService {
         if (oldVideoKey != null) {
             try {
                 storageService.deleteFile(oldVideoKey);
-                log.info("Verification video deleted for user: {}", userId);
+                log.info("Verification video deleted for user: {}", userId); // <-- CORRECTED
             } catch (IOException e) {
                 log.error("Error deleting verification video for user {}: {}", userId, e.getMessage());
                 // Don't throw exception - the user is still approved, just log the error
@@ -175,7 +177,8 @@ public class AdminService {
     /**
      * (For Appsmith) Retrieves the queue of reported users.
      */
-    public List<Report> getPendingReports() {
-        return reportRepository.findByStatusOrderByPriorityDesc(ReportStatus.pending);
+    public List<ReportDto> getPendingReports() { // <-- CHANGED
+        List<Report> reports = reportRepository.findByStatusOrderByPriorityDesc(ReportStatus.pending);
+        return ReportMapper.toDtoList(reports); // <-- CHANGED & CORRECTED
     }
 }

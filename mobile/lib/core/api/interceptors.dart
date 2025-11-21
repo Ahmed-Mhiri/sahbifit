@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
-import 'package:sahbifit/app/bloc/app_bloc.dart'; // <-- 1. Import AppBloc
-import 'package:sahbifit/core/di/service_locator.dart'; // <-- 2. Import getIt
+import 'package:sahbifit/app/bloc/app_bloc.dart';
+import 'package:sahbifit/core/di/service_locator.dart';
 import 'package:sahbifit/core/services/secure_storage_service.dart';
 
 @lazySingleton
@@ -28,10 +28,10 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    if (err.response?.statusCode == 401) {
-      print('--- 401 Unauthorized: Dispatching LogoutRequested ---');
+    // Check for both 401 (Unauthorized) and 403 (Forbidden)
+    if (err.response?.statusCode == 401 || err.response?.statusCode == 403) {
+      print('--- ${err.response?.statusCode} Auth Error: Dispatching LogoutRequested ---');
 
-      // 3. THIS IS THE CHANGE
       // Use getIt to find the globally registered AppBloc
       // and add the logout event. The AppBloc will handle
       // deleting the token and updating the app's state.

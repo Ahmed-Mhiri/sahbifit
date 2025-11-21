@@ -15,7 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserModel {
 
- String get userId; String get firstName; String? get profilePhotoUrl; VerificationStatus get verificationStatus; VerifiedGender get verifiedGender; ProfileVisibility get profileVisibility; UserRole get role; UserStatus get status; int get groupSessionCount; int get noShowCount; GymModel? get primaryGym; List<BadgeModel> get userBadges;
+ String get userId; String get firstName; String? get profilePhotoUrl; VerificationStatus get verificationStatus; VerifiedGender get verifiedGender; ProfileVisibility get profileVisibility; UserRole get role; UserStatus get status; int get groupSessionCount; int get noShowCount;// Default to 0 if backend sends null for older users
+ int get lateCancelCount;// <--- ADDED
+ GymModel? get primaryGym; List<BadgeModel> get userBadges;
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +30,16 @@ $UserModelCopyWith<UserModel> get copyWith => _$UserModelCopyWithImpl<UserModel>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserModel&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.profilePhotoUrl, profilePhotoUrl) || other.profilePhotoUrl == profilePhotoUrl)&&(identical(other.verificationStatus, verificationStatus) || other.verificationStatus == verificationStatus)&&(identical(other.verifiedGender, verifiedGender) || other.verifiedGender == verifiedGender)&&(identical(other.profileVisibility, profileVisibility) || other.profileVisibility == profileVisibility)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.groupSessionCount, groupSessionCount) || other.groupSessionCount == groupSessionCount)&&(identical(other.noShowCount, noShowCount) || other.noShowCount == noShowCount)&&(identical(other.primaryGym, primaryGym) || other.primaryGym == primaryGym)&&const DeepCollectionEquality().equals(other.userBadges, userBadges));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserModel&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.profilePhotoUrl, profilePhotoUrl) || other.profilePhotoUrl == profilePhotoUrl)&&(identical(other.verificationStatus, verificationStatus) || other.verificationStatus == verificationStatus)&&(identical(other.verifiedGender, verifiedGender) || other.verifiedGender == verifiedGender)&&(identical(other.profileVisibility, profileVisibility) || other.profileVisibility == profileVisibility)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.groupSessionCount, groupSessionCount) || other.groupSessionCount == groupSessionCount)&&(identical(other.noShowCount, noShowCount) || other.noShowCount == noShowCount)&&(identical(other.lateCancelCount, lateCancelCount) || other.lateCancelCount == lateCancelCount)&&(identical(other.primaryGym, primaryGym) || other.primaryGym == primaryGym)&&const DeepCollectionEquality().equals(other.userBadges, userBadges));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userId,firstName,profilePhotoUrl,verificationStatus,verifiedGender,profileVisibility,role,status,groupSessionCount,noShowCount,primaryGym,const DeepCollectionEquality().hash(userBadges));
+int get hashCode => Object.hash(runtimeType,userId,firstName,profilePhotoUrl,verificationStatus,verifiedGender,profileVisibility,role,status,groupSessionCount,noShowCount,lateCancelCount,primaryGym,const DeepCollectionEquality().hash(userBadges));
 
 @override
 String toString() {
-  return 'UserModel(userId: $userId, firstName: $firstName, profilePhotoUrl: $profilePhotoUrl, verificationStatus: $verificationStatus, verifiedGender: $verifiedGender, profileVisibility: $profileVisibility, role: $role, status: $status, groupSessionCount: $groupSessionCount, noShowCount: $noShowCount, primaryGym: $primaryGym, userBadges: $userBadges)';
+  return 'UserModel(userId: $userId, firstName: $firstName, profilePhotoUrl: $profilePhotoUrl, verificationStatus: $verificationStatus, verifiedGender: $verifiedGender, profileVisibility: $profileVisibility, role: $role, status: $status, groupSessionCount: $groupSessionCount, noShowCount: $noShowCount, lateCancelCount: $lateCancelCount, primaryGym: $primaryGym, userBadges: $userBadges)';
 }
 
 
@@ -48,7 +50,7 @@ abstract mixin class $UserModelCopyWith<$Res>  {
   factory $UserModelCopyWith(UserModel value, $Res Function(UserModel) _then) = _$UserModelCopyWithImpl;
 @useResult
 $Res call({
- String userId, String firstName, String? profilePhotoUrl, VerificationStatus verificationStatus, VerifiedGender verifiedGender, ProfileVisibility profileVisibility, UserRole role, UserStatus status, int groupSessionCount, int noShowCount, GymModel? primaryGym, List<BadgeModel> userBadges
+ String userId, String firstName, String? profilePhotoUrl, VerificationStatus verificationStatus, VerifiedGender verifiedGender, ProfileVisibility profileVisibility, UserRole role, UserStatus status, int groupSessionCount, int noShowCount, int lateCancelCount, GymModel? primaryGym, List<BadgeModel> userBadges
 });
 
 
@@ -65,7 +67,7 @@ class _$UserModelCopyWithImpl<$Res>
 
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? firstName = null,Object? profilePhotoUrl = freezed,Object? verificationStatus = null,Object? verifiedGender = null,Object? profileVisibility = null,Object? role = null,Object? status = null,Object? groupSessionCount = null,Object? noShowCount = null,Object? primaryGym = freezed,Object? userBadges = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? firstName = null,Object? profilePhotoUrl = freezed,Object? verificationStatus = null,Object? verifiedGender = null,Object? profileVisibility = null,Object? role = null,Object? status = null,Object? groupSessionCount = null,Object? noShowCount = null,Object? lateCancelCount = null,Object? primaryGym = freezed,Object? userBadges = null,}) {
   return _then(_self.copyWith(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
@@ -77,6 +79,7 @@ as ProfileVisibility,role: null == role ? _self.role : role // ignore: cast_null
 as UserRole,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as UserStatus,groupSessionCount: null == groupSessionCount ? _self.groupSessionCount : groupSessionCount // ignore: cast_nullable_to_non_nullable
 as int,noShowCount: null == noShowCount ? _self.noShowCount : noShowCount // ignore: cast_nullable_to_non_nullable
+as int,lateCancelCount: null == lateCancelCount ? _self.lateCancelCount : lateCancelCount // ignore: cast_nullable_to_non_nullable
 as int,primaryGym: freezed == primaryGym ? _self.primaryGym : primaryGym // ignore: cast_nullable_to_non_nullable
 as GymModel?,userBadges: null == userBadges ? _self.userBadges : userBadges // ignore: cast_nullable_to_non_nullable
 as List<BadgeModel>,
@@ -176,10 +179,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String userId,  String firstName,  String? profilePhotoUrl,  VerificationStatus verificationStatus,  VerifiedGender verifiedGender,  ProfileVisibility profileVisibility,  UserRole role,  UserStatus status,  int groupSessionCount,  int noShowCount,  GymModel? primaryGym,  List<BadgeModel> userBadges)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String userId,  String firstName,  String? profilePhotoUrl,  VerificationStatus verificationStatus,  VerifiedGender verifiedGender,  ProfileVisibility profileVisibility,  UserRole role,  UserStatus status,  int groupSessionCount,  int noShowCount,  int lateCancelCount,  GymModel? primaryGym,  List<BadgeModel> userBadges)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
-return $default(_that.userId,_that.firstName,_that.profilePhotoUrl,_that.verificationStatus,_that.verifiedGender,_that.profileVisibility,_that.role,_that.status,_that.groupSessionCount,_that.noShowCount,_that.primaryGym,_that.userBadges);case _:
+return $default(_that.userId,_that.firstName,_that.profilePhotoUrl,_that.verificationStatus,_that.verifiedGender,_that.profileVisibility,_that.role,_that.status,_that.groupSessionCount,_that.noShowCount,_that.lateCancelCount,_that.primaryGym,_that.userBadges);case _:
   return orElse();
 
 }
@@ -197,10 +200,10 @@ return $default(_that.userId,_that.firstName,_that.profilePhotoUrl,_that.verific
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String userId,  String firstName,  String? profilePhotoUrl,  VerificationStatus verificationStatus,  VerifiedGender verifiedGender,  ProfileVisibility profileVisibility,  UserRole role,  UserStatus status,  int groupSessionCount,  int noShowCount,  GymModel? primaryGym,  List<BadgeModel> userBadges)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String userId,  String firstName,  String? profilePhotoUrl,  VerificationStatus verificationStatus,  VerifiedGender verifiedGender,  ProfileVisibility profileVisibility,  UserRole role,  UserStatus status,  int groupSessionCount,  int noShowCount,  int lateCancelCount,  GymModel? primaryGym,  List<BadgeModel> userBadges)  $default,) {final _that = this;
 switch (_that) {
 case _UserModel():
-return $default(_that.userId,_that.firstName,_that.profilePhotoUrl,_that.verificationStatus,_that.verifiedGender,_that.profileVisibility,_that.role,_that.status,_that.groupSessionCount,_that.noShowCount,_that.primaryGym,_that.userBadges);case _:
+return $default(_that.userId,_that.firstName,_that.profilePhotoUrl,_that.verificationStatus,_that.verifiedGender,_that.profileVisibility,_that.role,_that.status,_that.groupSessionCount,_that.noShowCount,_that.lateCancelCount,_that.primaryGym,_that.userBadges);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -217,10 +220,10 @@ return $default(_that.userId,_that.firstName,_that.profilePhotoUrl,_that.verific
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String userId,  String firstName,  String? profilePhotoUrl,  VerificationStatus verificationStatus,  VerifiedGender verifiedGender,  ProfileVisibility profileVisibility,  UserRole role,  UserStatus status,  int groupSessionCount,  int noShowCount,  GymModel? primaryGym,  List<BadgeModel> userBadges)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String userId,  String firstName,  String? profilePhotoUrl,  VerificationStatus verificationStatus,  VerifiedGender verifiedGender,  ProfileVisibility profileVisibility,  UserRole role,  UserStatus status,  int groupSessionCount,  int noShowCount,  int lateCancelCount,  GymModel? primaryGym,  List<BadgeModel> userBadges)?  $default,) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
-return $default(_that.userId,_that.firstName,_that.profilePhotoUrl,_that.verificationStatus,_that.verifiedGender,_that.profileVisibility,_that.role,_that.status,_that.groupSessionCount,_that.noShowCount,_that.primaryGym,_that.userBadges);case _:
+return $default(_that.userId,_that.firstName,_that.profilePhotoUrl,_that.verificationStatus,_that.verifiedGender,_that.profileVisibility,_that.role,_that.status,_that.groupSessionCount,_that.noShowCount,_that.lateCancelCount,_that.primaryGym,_that.userBadges);case _:
   return null;
 
 }
@@ -232,7 +235,7 @@ return $default(_that.userId,_that.firstName,_that.profilePhotoUrl,_that.verific
 @JsonSerializable()
 
 class _UserModel extends UserModel {
-  const _UserModel({required this.userId, required this.firstName, this.profilePhotoUrl, required this.verificationStatus, required this.verifiedGender, required this.profileVisibility, required this.role, required this.status, required this.groupSessionCount, required this.noShowCount, this.primaryGym, final  List<BadgeModel> userBadges = const []}): _userBadges = userBadges,super._();
+  const _UserModel({required this.userId, required this.firstName, this.profilePhotoUrl, required this.verificationStatus, required this.verifiedGender, required this.profileVisibility, required this.role, required this.status, required this.groupSessionCount, required this.noShowCount, this.lateCancelCount = 0, this.primaryGym, final  List<BadgeModel> userBadges = const []}): _userBadges = userBadges,super._();
   factory _UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
 
 @override final  String userId;
@@ -245,6 +248,9 @@ class _UserModel extends UserModel {
 @override final  UserStatus status;
 @override final  int groupSessionCount;
 @override final  int noShowCount;
+// Default to 0 if backend sends null for older users
+@override@JsonKey() final  int lateCancelCount;
+// <--- ADDED
 @override final  GymModel? primaryGym;
  final  List<BadgeModel> _userBadges;
 @override@JsonKey() List<BadgeModel> get userBadges {
@@ -267,16 +273,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserModel&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.profilePhotoUrl, profilePhotoUrl) || other.profilePhotoUrl == profilePhotoUrl)&&(identical(other.verificationStatus, verificationStatus) || other.verificationStatus == verificationStatus)&&(identical(other.verifiedGender, verifiedGender) || other.verifiedGender == verifiedGender)&&(identical(other.profileVisibility, profileVisibility) || other.profileVisibility == profileVisibility)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.groupSessionCount, groupSessionCount) || other.groupSessionCount == groupSessionCount)&&(identical(other.noShowCount, noShowCount) || other.noShowCount == noShowCount)&&(identical(other.primaryGym, primaryGym) || other.primaryGym == primaryGym)&&const DeepCollectionEquality().equals(other._userBadges, _userBadges));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserModel&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.profilePhotoUrl, profilePhotoUrl) || other.profilePhotoUrl == profilePhotoUrl)&&(identical(other.verificationStatus, verificationStatus) || other.verificationStatus == verificationStatus)&&(identical(other.verifiedGender, verifiedGender) || other.verifiedGender == verifiedGender)&&(identical(other.profileVisibility, profileVisibility) || other.profileVisibility == profileVisibility)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.groupSessionCount, groupSessionCount) || other.groupSessionCount == groupSessionCount)&&(identical(other.noShowCount, noShowCount) || other.noShowCount == noShowCount)&&(identical(other.lateCancelCount, lateCancelCount) || other.lateCancelCount == lateCancelCount)&&(identical(other.primaryGym, primaryGym) || other.primaryGym == primaryGym)&&const DeepCollectionEquality().equals(other._userBadges, _userBadges));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userId,firstName,profilePhotoUrl,verificationStatus,verifiedGender,profileVisibility,role,status,groupSessionCount,noShowCount,primaryGym,const DeepCollectionEquality().hash(_userBadges));
+int get hashCode => Object.hash(runtimeType,userId,firstName,profilePhotoUrl,verificationStatus,verifiedGender,profileVisibility,role,status,groupSessionCount,noShowCount,lateCancelCount,primaryGym,const DeepCollectionEquality().hash(_userBadges));
 
 @override
 String toString() {
-  return 'UserModel(userId: $userId, firstName: $firstName, profilePhotoUrl: $profilePhotoUrl, verificationStatus: $verificationStatus, verifiedGender: $verifiedGender, profileVisibility: $profileVisibility, role: $role, status: $status, groupSessionCount: $groupSessionCount, noShowCount: $noShowCount, primaryGym: $primaryGym, userBadges: $userBadges)';
+  return 'UserModel(userId: $userId, firstName: $firstName, profilePhotoUrl: $profilePhotoUrl, verificationStatus: $verificationStatus, verifiedGender: $verifiedGender, profileVisibility: $profileVisibility, role: $role, status: $status, groupSessionCount: $groupSessionCount, noShowCount: $noShowCount, lateCancelCount: $lateCancelCount, primaryGym: $primaryGym, userBadges: $userBadges)';
 }
 
 
@@ -287,7 +293,7 @@ abstract mixin class _$UserModelCopyWith<$Res> implements $UserModelCopyWith<$Re
   factory _$UserModelCopyWith(_UserModel value, $Res Function(_UserModel) _then) = __$UserModelCopyWithImpl;
 @override @useResult
 $Res call({
- String userId, String firstName, String? profilePhotoUrl, VerificationStatus verificationStatus, VerifiedGender verifiedGender, ProfileVisibility profileVisibility, UserRole role, UserStatus status, int groupSessionCount, int noShowCount, GymModel? primaryGym, List<BadgeModel> userBadges
+ String userId, String firstName, String? profilePhotoUrl, VerificationStatus verificationStatus, VerifiedGender verifiedGender, ProfileVisibility profileVisibility, UserRole role, UserStatus status, int groupSessionCount, int noShowCount, int lateCancelCount, GymModel? primaryGym, List<BadgeModel> userBadges
 });
 
 
@@ -304,7 +310,7 @@ class __$UserModelCopyWithImpl<$Res>
 
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? firstName = null,Object? profilePhotoUrl = freezed,Object? verificationStatus = null,Object? verifiedGender = null,Object? profileVisibility = null,Object? role = null,Object? status = null,Object? groupSessionCount = null,Object? noShowCount = null,Object? primaryGym = freezed,Object? userBadges = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? firstName = null,Object? profilePhotoUrl = freezed,Object? verificationStatus = null,Object? verifiedGender = null,Object? profileVisibility = null,Object? role = null,Object? status = null,Object? groupSessionCount = null,Object? noShowCount = null,Object? lateCancelCount = null,Object? primaryGym = freezed,Object? userBadges = null,}) {
   return _then(_UserModel(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
@@ -316,6 +322,7 @@ as ProfileVisibility,role: null == role ? _self.role : role // ignore: cast_null
 as UserRole,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as UserStatus,groupSessionCount: null == groupSessionCount ? _self.groupSessionCount : groupSessionCount // ignore: cast_nullable_to_non_nullable
 as int,noShowCount: null == noShowCount ? _self.noShowCount : noShowCount // ignore: cast_nullable_to_non_nullable
+as int,lateCancelCount: null == lateCancelCount ? _self.lateCancelCount : lateCancelCount // ignore: cast_nullable_to_non_nullable
 as int,primaryGym: freezed == primaryGym ? _self.primaryGym : primaryGym // ignore: cast_nullable_to_non_nullable
 as GymModel?,userBadges: null == userBadges ? _self._userBadges : userBadges // ignore: cast_nullable_to_non_nullable
 as List<BadgeModel>,

@@ -125,12 +125,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( Session session,  List<SessionParticipant> participants,  bool isJoined,  bool isJoinLoading,  String? errorMessage)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( Session session,  List<SessionParticipant> participants,  bool isJoined,  bool isJoinLoading,  bool isLeaveLoading,  String? errorMessage)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.session,_that.participants,_that.isJoined,_that.isJoinLoading,_that.errorMessage);case _Error() when error != null:
+return loaded(_that.session,_that.participants,_that.isJoined,_that.isJoinLoading,_that.isLeaveLoading,_that.errorMessage);case _Error() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -149,12 +149,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( Session session,  List<SessionParticipant> participants,  bool isJoined,  bool isJoinLoading,  String? errorMessage)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( Session session,  List<SessionParticipant> participants,  bool isJoined,  bool isJoinLoading,  bool isLeaveLoading,  String? errorMessage)  loaded,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Loading():
 return loading();case _Loaded():
-return loaded(_that.session,_that.participants,_that.isJoined,_that.isJoinLoading,_that.errorMessage);case _Error():
+return loaded(_that.session,_that.participants,_that.isJoined,_that.isJoinLoading,_that.isLeaveLoading,_that.errorMessage);case _Error():
 return error(_that.message);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -169,12 +169,12 @@ return error(_that.message);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( Session session,  List<SessionParticipant> participants,  bool isJoined,  bool isJoinLoading,  String? errorMessage)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( Session session,  List<SessionParticipant> participants,  bool isJoined,  bool isJoinLoading,  bool isLeaveLoading,  String? errorMessage)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.session,_that.participants,_that.isJoined,_that.isJoinLoading,_that.errorMessage);case _Error() when error != null:
+return loaded(_that.session,_that.participants,_that.isJoined,_that.isJoinLoading,_that.isLeaveLoading,_that.errorMessage);case _Error() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -251,7 +251,7 @@ String toString() {
 
 
 class _Loaded implements SessionDetailsState {
-  const _Loaded({required this.session, required final  List<SessionParticipant> participants, required this.isJoined, this.isJoinLoading = false, this.errorMessage}): _participants = participants;
+  const _Loaded({required this.session, required final  List<SessionParticipant> participants, required this.isJoined, this.isJoinLoading = false, this.isLeaveLoading = false, this.errorMessage}): _participants = participants;
   
 
  final  Session session;
@@ -264,6 +264,8 @@ class _Loaded implements SessionDetailsState {
 
  final  bool isJoined;
 @JsonKey() final  bool isJoinLoading;
+@JsonKey() final  bool isLeaveLoading;
+// <--- ADDED
  final  String? errorMessage;
 
 /// Create a copy of SessionDetailsState
@@ -276,16 +278,16 @@ _$LoadedCopyWith<_Loaded> get copyWith => __$LoadedCopyWithImpl<_Loaded>(this, _
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&(identical(other.session, session) || other.session == session)&&const DeepCollectionEquality().equals(other._participants, _participants)&&(identical(other.isJoined, isJoined) || other.isJoined == isJoined)&&(identical(other.isJoinLoading, isJoinLoading) || other.isJoinLoading == isJoinLoading)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&(identical(other.session, session) || other.session == session)&&const DeepCollectionEquality().equals(other._participants, _participants)&&(identical(other.isJoined, isJoined) || other.isJoined == isJoined)&&(identical(other.isJoinLoading, isJoinLoading) || other.isJoinLoading == isJoinLoading)&&(identical(other.isLeaveLoading, isLeaveLoading) || other.isLeaveLoading == isLeaveLoading)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,session,const DeepCollectionEquality().hash(_participants),isJoined,isJoinLoading,errorMessage);
+int get hashCode => Object.hash(runtimeType,session,const DeepCollectionEquality().hash(_participants),isJoined,isJoinLoading,isLeaveLoading,errorMessage);
 
 @override
 String toString() {
-  return 'SessionDetailsState.loaded(session: $session, participants: $participants, isJoined: $isJoined, isJoinLoading: $isJoinLoading, errorMessage: $errorMessage)';
+  return 'SessionDetailsState.loaded(session: $session, participants: $participants, isJoined: $isJoined, isJoinLoading: $isJoinLoading, isLeaveLoading: $isLeaveLoading, errorMessage: $errorMessage)';
 }
 
 
@@ -296,7 +298,7 @@ abstract mixin class _$LoadedCopyWith<$Res> implements $SessionDetailsStateCopyW
   factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) = __$LoadedCopyWithImpl;
 @useResult
 $Res call({
- Session session, List<SessionParticipant> participants, bool isJoined, bool isJoinLoading, String? errorMessage
+ Session session, List<SessionParticipant> participants, bool isJoined, bool isJoinLoading, bool isLeaveLoading, String? errorMessage
 });
 
 
@@ -313,12 +315,13 @@ class __$LoadedCopyWithImpl<$Res>
 
 /// Create a copy of SessionDetailsState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? session = null,Object? participants = null,Object? isJoined = null,Object? isJoinLoading = null,Object? errorMessage = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? session = null,Object? participants = null,Object? isJoined = null,Object? isJoinLoading = null,Object? isLeaveLoading = null,Object? errorMessage = freezed,}) {
   return _then(_Loaded(
 session: null == session ? _self.session : session // ignore: cast_nullable_to_non_nullable
 as Session,participants: null == participants ? _self._participants : participants // ignore: cast_nullable_to_non_nullable
 as List<SessionParticipant>,isJoined: null == isJoined ? _self.isJoined : isJoined // ignore: cast_nullable_to_non_nullable
 as bool,isJoinLoading: null == isJoinLoading ? _self.isJoinLoading : isJoinLoading // ignore: cast_nullable_to_non_nullable
+as bool,isLeaveLoading: null == isLeaveLoading ? _self.isLeaveLoading : isLeaveLoading // ignore: cast_nullable_to_non_nullable
 as bool,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,
   ));

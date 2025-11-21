@@ -6,26 +6,26 @@ import 'package:sahbifit/features/session/presentation/widgets/probation_locked_
 import 'package:sahbifit/features/user/domain/enums/user_role.dart';
 import 'package:sahbifit/shared/widgets/cards/custom_cards.dart';
 
-/// This widget is a wrapper that maps the domain [Session] entity
-/// to the shared [SessionCard] widget, handling lock state and navigation.
 class SessionCardWrapper extends StatelessWidget {
   final Session session;
   final bool isLocked;
+  final bool isPast; // <--- 1. Add this
 
   const SessionCardWrapper({
     super.key,
     required this.session,
     required this.isLocked,
+    this.isPast = false, // <--- 2. Default to false
   });
 
   @override
   Widget build(BuildContext context) {
-    // Check if the creator is an Ambassador (placeholder logic)
-    // In a real app, this would check session.creator.badges
+    // Check if the creator is an Ambassador
     final bool isAmbassadorSession =
-        session.creator.role == UserRole.admin; // Assuming admin == ambassador for now
+        session.creator.role == UserRole.admin; 
 
-    final card = SessionCard(
+    // 3. Create the base card
+    Widget card = SessionCard(
       title: session.title,
       subtitle: 'Hosted by ${session.creator.firstName}',
       time: formatReadableTime(session.startTime.toIso8601String()),
@@ -33,14 +33,30 @@ class SessionCardWrapper extends StatelessWidget {
       participants: session.participantCount,
       maxParticipants: session.maxParticipants,
       isLocked: isLocked,
-      isVerified: isAmbassadorSession, // Show "Verified" for ambassador sessions
+      isVerified: isAmbassadorSession,
       onTap: () {
+        // Allow clicking past sessions to see details, but maybe not join?
+        // For now, we keep navigation enabled.
         context.push('/session/${session.sessionId}');
-
       },
     );
 
-    if (isLocked) {
+    // 4. Apply "Past" Visuals (Grayscale + Dimmed)
+    if (isPast) {
+      card = ColorFiltered(
+        colorFilter: const ColorFilter.mode(
+          Colors.grey, 
+          BlendMode.saturation, // Removes color (grayscale)
+        ),
+        child: Opacity(
+          opacity: 0.7, // Makes it slightly faded
+          child: card,
+        ),
+      );
+    }
+
+    // 5. Handle Locking (Only if NOT past, assuming history shouldn't be locked)
+    if (isLocked && !isPast) {
       return GestureDetector(
         onTap: () => showProbationLockedDialog(context),
         child: card,

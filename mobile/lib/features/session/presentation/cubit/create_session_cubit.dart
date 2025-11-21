@@ -30,7 +30,15 @@ class CreateSessionCubit extends Cubit<CreateSessionState> {
   }
 
   void sessionTypeChanged(SessionType type) {
-    emit(state.copyWith(sessionType: type, status: CreateSessionStatus.initial, errorMessage: null));
+    // FIX: Automatically set participants based on type
+    final int newMaxParticipants = type == SessionType.oneOnOne ? 2 : 3;
+    
+    emit(state.copyWith(
+      sessionType: type, 
+      maxParticipants: newMaxParticipants, // Force update
+      status: CreateSessionStatus.initial, 
+      errorMessage: null
+    ));
   }
 
   void startTimeChanged(DateTime time) {

@@ -73,10 +73,36 @@ class SessionRepositoryImpl implements SessionRepository {
 
   // --- ADDED ---
   @override
-  Stream<List<SessionParticipant>> getParticipantsStream(String sessionId) {
-    // Map the stream from Model to Entity
-    return _remoteDatasource.getParticipantsStream(sessionId).map((models) {
-      return models.map((model) => model.toEntity()).toList();
-    });
+  // Note: Ensure the return type is Future<List<SessionParticipant>> matches the interface
+  Future<List<SessionParticipant>> getSessionParticipants(String sessionId) async {
+    try {
+      // 1. Get models from Remote Data Source
+      final models = await _remoteDatasource.getSessionParticipants(sessionId);
+      
+      // 2. Map to Entity, passing the sessionId manually
+      return models.map((model) => model.toEntity(sessionId)).toList();
+      
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+
+  @override
+  Future<List<Session>> getMySessions() async {
+    try {
+      final sessionModels = await _remoteDatasource.getMySessions();
+      return sessionModels.map((model) => model.toEntity()).toList();
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    }
+  }
+
+  @override
+  Future<void> leaveSession(String sessionId) async {
+    try {
+      await _remoteDatasource.leaveSession(sessionId);
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message);
+    }
   }
 }

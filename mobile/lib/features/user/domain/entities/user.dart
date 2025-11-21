@@ -7,7 +7,6 @@ import 'package:sahbifit/features/user/domain/enums/user_status.dart';
 import 'package:sahbifit/features/verification/domain/enums/verification_status_enum.dart';
 import 'package:sahbifit/features/verification/domain/enums/verified_gender_enum.dart';
 
-// Matches User.java
 class User extends Equatable {
   final String userId;
   final String firstName;
@@ -19,6 +18,7 @@ class User extends Equatable {
   final UserStatus status;
   final int groupSessionCount;
   final int noShowCount;
+  final int lateCancelCount; // <--- ADDED
   final Gym? primaryGym;
   final List<Badge> userBadges;
 
@@ -33,6 +33,7 @@ class User extends Equatable {
     required this.status,
     required this.groupSessionCount,
     required this.noShowCount,
+    required this.lateCancelCount, // <--- ADDED
     this.primaryGym,
     required this.userBadges,
   });
@@ -49,6 +50,7 @@ class User extends Equatable {
         status,
         groupSessionCount,
         noShowCount,
+        lateCancelCount, // <--- ADDED
         primaryGym,
         userBadges,
       ];

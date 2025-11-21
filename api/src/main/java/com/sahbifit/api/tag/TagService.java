@@ -3,6 +3,7 @@ package com.sahbifit.api.tag;
 
 import com.sahbifit.api.tag.model.Tag;
 import com.sahbifit.api.tag.model.TagType;
+import com.sahbifit.api.tag.dto.TagDto; // <-- ADDED
 import com.sahbifit.api.tag.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,9 @@ public class TagService {
 
     private final TagRepository tagRepository;
 
-    public List<Tag> getTagsByType(TagType type) {
-        return tagRepository.findByTagType(type);
+    // --- METHOD MODIFIED ---
+    public List<TagDto> getTagsByType(TagType type) { // <-- CHANGE
+        List<Tag> tags = tagRepository.findByTagType(type);
+        return TagMapper.toDtoList(tags); // <-- CHANGE
     }
 }

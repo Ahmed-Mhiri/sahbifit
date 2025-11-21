@@ -83,11 +83,14 @@ import '../../features/session/domain/usecases/get_participants_stream.dart'
     as _i861;
 import '../../features/session/domain/usecases/get_session_by_id.dart' as _i830;
 import '../../features/session/domain/usecases/join_session.dart' as _i170;
+import '../../features/session/domain/usecases/leave_session.dart' as _i968;
 import '../../features/session/domain/usecases/mark_attendance.dart' as _i690;
 import '../../features/session/presentation/cubit/create_session_cubit.dart'
     as _i947;
 import '../../features/session/presentation/cubit/mark_attendance_cubit.dart'
     as _i718;
+import '../../features/session/presentation/cubit/my_sessions_cubit.dart'
+    as _i924;
 import '../../features/session/presentation/cubit/session_details_cubit.dart'
     as _i466;
 import '../../features/session/presentation/cubit/session_feed_cubit.dart'
@@ -150,11 +153,11 @@ _i174.GetIt $initGetIt(
   gh.lazySingleton<_i535.SecureStorageService>(
     () => _i535.SecureStorageService(gh<_i558.FlutterSecureStorage>()),
   );
+  gh.lazySingleton<_i912.AppBloc>(
+    () => _i912.AppBloc(gh<_i535.SecureStorageService>()),
+  );
   gh.lazySingleton<_i367.AuthInterceptor>(
     () => _i367.AuthInterceptor(gh<_i535.SecureStorageService>()),
-  );
-  gh.factory<_i912.AppBloc>(
-    () => _i912.AppBloc(gh<_i535.SecureStorageService>()),
   );
   gh.lazySingleton<_i277.ApiClient>(
     () => _i277.ApiClient(gh<_i367.AuthInterceptor>()),
@@ -165,17 +168,14 @@ _i174.GetIt $initGetIt(
   gh.factory<_i501.TagRemoteDatasource>(
     () => _i501.TagRemoteDatasourceImpl(gh<_i277.ApiClient>()),
   );
+  gh.factory<_i478.SessionRemoteDatasource>(
+    () => _i446.SessionRemoteDatasourceImpl(gh<_i277.ApiClient>()),
+  );
   gh.factory<_i708.UserRemoteDatasource>(
     () => _i708.UserRemoteDatasourceImpl(gh<_i277.ApiClient>()),
   );
   gh.factory<_i548.ReportRemoteDatasource>(
     () => _i548.ReportRemoteDatasourceImpl(gh<_i277.ApiClient>()),
-  );
-  gh.factory<_i478.SessionRemoteDatasource>(
-    () => _i446.SessionRemoteDatasourceImpl(
-      gh<_i277.ApiClient>(),
-      gh<_i974.FirebaseFirestore>(),
-    ),
   );
   gh.factory<_i23.ReportRepository>(
     () => _i420.ReportRepositoryImpl(gh<_i548.ReportRemoteDatasource>()),
@@ -250,6 +250,10 @@ _i174.GetIt $initGetIt(
   gh.factory<_i741.SubmitGymCubit>(
     () => _i741.SubmitGymCubit(gh<_i82.SubmitGym>()),
   );
+  gh.factory<_i924.MySessionsCubit>(
+    () =>
+        _i924.MySessionsCubit(sessionRepository: gh<_i738.SessionRepository>()),
+  );
   gh.factory<_i829.ProfileBloc>(
     () => _i829.ProfileBloc(
       gh<_i667.GetMyProfile>(),
@@ -290,14 +294,17 @@ _i174.GetIt $initGetIt(
   gh.factory<_i51.GetActiveSessions>(
     () => _i51.GetActiveSessions(gh<_i738.SessionRepository>()),
   );
-  gh.factory<_i861.GetParticipantsStream>(
-    () => _i861.GetParticipantsStream(gh<_i738.SessionRepository>()),
+  gh.factory<_i861.GetSessionParticipants>(
+    () => _i861.GetSessionParticipants(gh<_i738.SessionRepository>()),
   );
   gh.factory<_i830.GetSessionById>(
     () => _i830.GetSessionById(gh<_i738.SessionRepository>()),
   );
   gh.factory<_i170.JoinSession>(
     () => _i170.JoinSession(gh<_i738.SessionRepository>()),
+  );
+  gh.factory<_i968.LeaveSession>(
+    () => _i968.LeaveSession(gh<_i738.SessionRepository>()),
   );
   gh.factory<_i690.MarkAttendance>(
     () => _i690.MarkAttendance(gh<_i738.SessionRepository>()),
@@ -307,11 +314,19 @@ _i174.GetIt $initGetIt(
       gh<_i552.VerificationRemoteDatasource>(),
     ),
   );
+  gh.factory<_i466.SessionDetailsCubit>(
+    () => _i466.SessionDetailsCubit(
+      gh<_i830.GetSessionById>(),
+      gh<_i170.JoinSession>(),
+      gh<_i861.GetSessionParticipants>(),
+      gh<_i968.LeaveSession>(),
+    ),
+  );
   gh.factory<_i718.MarkAttendanceCubit>(
     () => _i718.MarkAttendanceCubit(
       gh<_i830.GetSessionById>(),
       gh<_i690.MarkAttendance>(),
-      gh<_i861.GetParticipantsStream>(),
+      gh<_i861.GetSessionParticipants>(),
     ),
   );
   gh.factory<_i470.UserProfileCubit>(
@@ -331,14 +346,6 @@ _i174.GetIt $initGetIt(
   );
   gh.factory<_i573.SubmitVerificationVideo>(
     () => _i573.SubmitVerificationVideo(gh<_i1070.VerificationRepository>()),
-  );
-  gh.factory<_i466.SessionDetailsCubit>(
-    () => _i466.SessionDetailsCubit(
-      gh<_i830.GetSessionById>(),
-      gh<_i170.JoinSession>(),
-      gh<_i861.GetParticipantsStream>(),
-      gh<_i829.ProfileBloc>(),
-    ),
   );
   gh.factory<_i643.VerificationCubit>(
     () => _i643.VerificationCubit(

@@ -47,6 +47,8 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
 
+                .requestMatchers("/error").permitAll()
+
                 // --- ADD THESE LINES TO ALLOW PUBLIC ACCESS (Step 2) ---
                 .requestMatchers(HttpMethod.GET, "/api/gyms").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/tags").permitAll()

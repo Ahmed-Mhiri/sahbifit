@@ -51,32 +51,25 @@ class SettingsPage extends StatelessWidget {
           currentVisibility: user.profileVisibility,
           verifiedGender: user.verifiedGender,
           onChanged: (newVisibility) {
-            context
-                .read<ProfileBloc>()
-                .add(ProfileEvent.visibilityChanged(newVisibility: newVisibility));
+            context.read<ProfileBloc>().add(
+                ProfileEvent.visibilityChanged(newVisibility: newVisibility));
           },
         ),
         const Divider(),
 
-        // --- App Features ---
-        ListTile(
-          leading: const Icon(Icons.rate_review_outlined),
-          title: const Text('Pending Ratings'),
-          trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-          onTap: () {
-            context.push('/pending-ratings');
-          },
-        ),
+        // --- General ---
+        // Removed "Pending Ratings" - Now located in the "Manage" tab [cite: 1736-1737]
+
         ListTile(
           leading: const Icon(Icons.add_business_outlined),
           title: const Text('Submit a New Gym'),
+          subtitle: const Text('Help us grow the map'),
           trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
           onTap: () {
             context.push('/submit-gym');
           },
         ),
         
-        // --- UPDATED THIS TILE ---
         ListTile(
           leading: const Icon(Icons.block),
           title: const Text('Blocked Users'),
@@ -108,7 +101,6 @@ class SettingsPage extends StatelessWidget {
         confirmText: 'Log Out',
         cancelText: 'Cancel',
         onConfirm: () {
-          // Use getIt to find the global AppBloc and dispatch the event
           getIt<AppBloc>().add(const AppEvent.logoutRequested());
         },
       ),

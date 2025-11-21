@@ -1,9 +1,9 @@
-// Pfad: src/main/java/com/sahbifit/api/session/SessionController.java
 package com.sahbifit.api.session;
 
 import com.sahbifit.api.session.dto.CreateSessionDto;
 import com.sahbifit.api.session.dto.MarkAttendanceDto;
-import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.session.dto.SessionFeedDto;
+import com.sahbifit.api.session.dto.SessionParticipantDto;
 import com.sahbifit.api.verification.model.VerifiedGender;
 
 import jakarta.validation.Valid;
@@ -24,52 +24,48 @@ public class SessionController {
 
     private final SessionService sessionService;
 
-    /**
-     * (Mobile App) Get the active session feed.
-     * Can be filtered by gender (e.g., /api/sessions?genderFilter=female)
-     */
     @GetMapping
     @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
-    public ResponseEntity<List<Session>> getActiveSessions(
+    public ResponseEntity<List<SessionFeedDto>> getActiveSessions(
             Principal principal,
             @RequestParam(required = false) VerifiedGender genderFilter) {
         
-        List<Session> sessions = sessionService.getActiveSessions(principal.getName(), genderFilter);
+        List<SessionFeedDto> sessions = sessionService.getActiveSessions(principal.getName(), genderFilter);
         return ResponseEntity.ok(sessions);
     }
 
-    /**
-     * (NEW ENDPOINT) (Mobile App) Get a single session by its ID.
-     */
     @GetMapping("/{sessionId}")
     @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
-    public ResponseEntity<Session> getSessionById(
+    public ResponseEntity<SessionFeedDto> getSessionById(
             @PathVariable UUID sessionId, 
             Principal principal) {
         
-        Session session = sessionService.getSessionById(sessionId, principal.getName());
+        SessionFeedDto session = sessionService.getSessionById(sessionId, principal.getName());
         return ResponseEntity.ok(session);
     }
 
-    /**
-     * (Mobile App) Create a new session.
-     */
     @PostMapping
     @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
-    public ResponseEntity<Session> createSession(@RequestBody CreateSessionDto dto, Principal principal) {
-        Session newSession = sessionService.createSession(dto, principal.getName());
+    public ResponseEntity<SessionFeedDto> createSession(@RequestBody CreateSessionDto dto, Principal principal) {
+        SessionFeedDto newSession = sessionService.createSession(dto, principal.getName());
         return new ResponseEntity<>(newSession, HttpStatus.CREATED);
     }
 
-    /**
-     * (Mobile App) Join a session.
-     */
     @PostMapping("/{sessionId}/join")
     @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
     public ResponseEntity<Void> joinSession(@PathVariable UUID sessionId, Principal principal) {
         sessionService.joinSession(sessionId, principal.getName());
         return ResponseEntity.ok().build();
     }
+
+    // --- NEW ENDPOINT FOR LEAVING/CANCELLING ---
+    @PostMapping("/{sessionId}/leave")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<Void> leaveSession(@PathVariable UUID sessionId, Principal principal) {
+        sessionService.leaveSession(sessionId, principal.getName());
+        return ResponseEntity.ok().build();
+    }
+    // ------------------------------------------
 
     @PutMapping("/attendance")
     public ResponseEntity<Void> markAttendance(
@@ -78,5 +74,18 @@ public class SessionController {
         
         sessionService.markAttendance(markAttendanceDto, principal.getName());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{sessionId}/participants")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR', 'ADMIN')")
+    public ResponseEntity<List<SessionParticipantDto>> getSessionParticipants(@PathVariable UUID sessionId) {
+        return ResponseEntity.ok(sessionService.getSessionParticipants(sessionId));
+    }
+
+    @GetMapping("/my")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<List<SessionFeedDto>> getMySessions(Principal principal) {
+        List<SessionFeedDto> sessions = sessionService.getMySessions(principal.getName());
+        return ResponseEntity.ok(sessions);
     }
 }

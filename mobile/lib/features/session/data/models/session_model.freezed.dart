@@ -15,10 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SessionModel {
 
- String get sessionId; String get title; SessionType get sessionType; SessionStatus get status; String get startTime;// Receive as ISO 8601 String
- String get endTime;// Receive as ISO 8601 String
- int get maxParticipants; int get participantCount; UserModel get creator;// Nested JSON object
- GymModel get gym;
+ String get sessionId; String get title; String get startTime; String get endTime; SessionType get sessionType; int get participantCount; int get maxParticipants;// âœ… Changed from UserModel to UserSummaryModel
+ UserSummaryModel get creator; GymModel get gym;// âœ… Fixed type from 'boolean' to 'bool' and added default
+ bool get isChatActive;
 /// Create a copy of SessionModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -31,16 +30,16 @@ $SessionModelCopyWith<SessionModel> get copyWith => _$SessionModelCopyWithImpl<S
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionModel&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.title, title) || other.title == title)&&(identical(other.sessionType, sessionType) || other.sessionType == sessionType)&&(identical(other.status, status) || other.status == status)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.maxParticipants, maxParticipants) || other.maxParticipants == maxParticipants)&&(identical(other.participantCount, participantCount) || other.participantCount == participantCount)&&(identical(other.creator, creator) || other.creator == creator)&&(identical(other.gym, gym) || other.gym == gym));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionModel&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.title, title) || other.title == title)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.sessionType, sessionType) || other.sessionType == sessionType)&&(identical(other.participantCount, participantCount) || other.participantCount == participantCount)&&(identical(other.maxParticipants, maxParticipants) || other.maxParticipants == maxParticipants)&&(identical(other.creator, creator) || other.creator == creator)&&(identical(other.gym, gym) || other.gym == gym)&&(identical(other.isChatActive, isChatActive) || other.isChatActive == isChatActive));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sessionId,title,sessionType,status,startTime,endTime,maxParticipants,participantCount,creator,gym);
+int get hashCode => Object.hash(runtimeType,sessionId,title,startTime,endTime,sessionType,participantCount,maxParticipants,creator,gym,isChatActive);
 
 @override
 String toString() {
-  return 'SessionModel(sessionId: $sessionId, title: $title, sessionType: $sessionType, status: $status, startTime: $startTime, endTime: $endTime, maxParticipants: $maxParticipants, participantCount: $participantCount, creator: $creator, gym: $gym)';
+  return 'SessionModel(sessionId: $sessionId, title: $title, startTime: $startTime, endTime: $endTime, sessionType: $sessionType, participantCount: $participantCount, maxParticipants: $maxParticipants, creator: $creator, gym: $gym, isChatActive: $isChatActive)';
 }
 
 
@@ -51,11 +50,11 @@ abstract mixin class $SessionModelCopyWith<$Res>  {
   factory $SessionModelCopyWith(SessionModel value, $Res Function(SessionModel) _then) = _$SessionModelCopyWithImpl;
 @useResult
 $Res call({
- String sessionId, String title, SessionType sessionType, SessionStatus status, String startTime, String endTime, int maxParticipants, int participantCount, UserModel creator, GymModel gym
+ String sessionId, String title, String startTime, String endTime, SessionType sessionType, int participantCount, int maxParticipants, UserSummaryModel creator, GymModel gym, bool isChatActive
 });
 
 
-$UserModelCopyWith<$Res> get creator;$GymModelCopyWith<$Res> get gym;
+$UserSummaryModelCopyWith<$Res> get creator;$GymModelCopyWith<$Res> get gym;
 
 }
 /// @nodoc
@@ -68,28 +67,28 @@ class _$SessionModelCopyWithImpl<$Res>
 
 /// Create a copy of SessionModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? sessionId = null,Object? title = null,Object? sessionType = null,Object? status = null,Object? startTime = null,Object? endTime = null,Object? maxParticipants = null,Object? participantCount = null,Object? creator = null,Object? gym = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? sessionId = null,Object? title = null,Object? startTime = null,Object? endTime = null,Object? sessionType = null,Object? participantCount = null,Object? maxParticipants = null,Object? creator = null,Object? gym = null,Object? isChatActive = null,}) {
   return _then(_self.copyWith(
 sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,sessionType: null == sessionType ? _self.sessionType : sessionType // ignore: cast_nullable_to_non_nullable
-as SessionType,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as SessionStatus,startTime: null == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
+as String,startTime: null == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
 as String,endTime: null == endTime ? _self.endTime : endTime // ignore: cast_nullable_to_non_nullable
-as String,maxParticipants: null == maxParticipants ? _self.maxParticipants : maxParticipants // ignore: cast_nullable_to_non_nullable
-as int,participantCount: null == participantCount ? _self.participantCount : participantCount // ignore: cast_nullable_to_non_nullable
+as String,sessionType: null == sessionType ? _self.sessionType : sessionType // ignore: cast_nullable_to_non_nullable
+as SessionType,participantCount: null == participantCount ? _self.participantCount : participantCount // ignore: cast_nullable_to_non_nullable
+as int,maxParticipants: null == maxParticipants ? _self.maxParticipants : maxParticipants // ignore: cast_nullable_to_non_nullable
 as int,creator: null == creator ? _self.creator : creator // ignore: cast_nullable_to_non_nullable
-as UserModel,gym: null == gym ? _self.gym : gym // ignore: cast_nullable_to_non_nullable
-as GymModel,
+as UserSummaryModel,gym: null == gym ? _self.gym : gym // ignore: cast_nullable_to_non_nullable
+as GymModel,isChatActive: null == isChatActive ? _self.isChatActive : isChatActive // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 /// Create a copy of SessionModel
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
-$UserModelCopyWith<$Res> get creator {
+$UserSummaryModelCopyWith<$Res> get creator {
   
-  return $UserModelCopyWith<$Res>(_self.creator, (value) {
+  return $UserSummaryModelCopyWith<$Res>(_self.creator, (value) {
     return _then(_self.copyWith(creator: value));
   });
 }/// Create a copy of SessionModel
@@ -183,10 +182,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String sessionId,  String title,  SessionType sessionType,  SessionStatus status,  String startTime,  String endTime,  int maxParticipants,  int participantCount,  UserModel creator,  GymModel gym)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String sessionId,  String title,  String startTime,  String endTime,  SessionType sessionType,  int participantCount,  int maxParticipants,  UserSummaryModel creator,  GymModel gym,  bool isChatActive)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SessionModel() when $default != null:
-return $default(_that.sessionId,_that.title,_that.sessionType,_that.status,_that.startTime,_that.endTime,_that.maxParticipants,_that.participantCount,_that.creator,_that.gym);case _:
+return $default(_that.sessionId,_that.title,_that.startTime,_that.endTime,_that.sessionType,_that.participantCount,_that.maxParticipants,_that.creator,_that.gym,_that.isChatActive);case _:
   return orElse();
 
 }
@@ -204,10 +203,10 @@ return $default(_that.sessionId,_that.title,_that.sessionType,_that.status,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String sessionId,  String title,  SessionType sessionType,  SessionStatus status,  String startTime,  String endTime,  int maxParticipants,  int participantCount,  UserModel creator,  GymModel gym)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String sessionId,  String title,  String startTime,  String endTime,  SessionType sessionType,  int participantCount,  int maxParticipants,  UserSummaryModel creator,  GymModel gym,  bool isChatActive)  $default,) {final _that = this;
 switch (_that) {
 case _SessionModel():
-return $default(_that.sessionId,_that.title,_that.sessionType,_that.status,_that.startTime,_that.endTime,_that.maxParticipants,_that.participantCount,_that.creator,_that.gym);case _:
+return $default(_that.sessionId,_that.title,_that.startTime,_that.endTime,_that.sessionType,_that.participantCount,_that.maxParticipants,_that.creator,_that.gym,_that.isChatActive);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -224,10 +223,10 @@ return $default(_that.sessionId,_that.title,_that.sessionType,_that.status,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String sessionId,  String title,  SessionType sessionType,  SessionStatus status,  String startTime,  String endTime,  int maxParticipants,  int participantCount,  UserModel creator,  GymModel gym)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String sessionId,  String title,  String startTime,  String endTime,  SessionType sessionType,  int participantCount,  int maxParticipants,  UserSummaryModel creator,  GymModel gym,  bool isChatActive)?  $default,) {final _that = this;
 switch (_that) {
 case _SessionModel() when $default != null:
-return $default(_that.sessionId,_that.title,_that.sessionType,_that.status,_that.startTime,_that.endTime,_that.maxParticipants,_that.participantCount,_that.creator,_that.gym);case _:
+return $default(_that.sessionId,_that.title,_that.startTime,_that.endTime,_that.sessionType,_that.participantCount,_that.maxParticipants,_that.creator,_that.gym,_that.isChatActive);case _:
   return null;
 
 }
@@ -239,22 +238,21 @@ return $default(_that.sessionId,_that.title,_that.sessionType,_that.status,_that
 @JsonSerializable()
 
 class _SessionModel extends SessionModel {
-  const _SessionModel({required this.sessionId, required this.title, required this.sessionType, required this.status, required this.startTime, required this.endTime, required this.maxParticipants, required this.participantCount, required this.creator, required this.gym}): super._();
+  const _SessionModel({required this.sessionId, required this.title, required this.startTime, required this.endTime, required this.sessionType, required this.participantCount, required this.maxParticipants, required this.creator, required this.gym, this.isChatActive = false}): super._();
   factory _SessionModel.fromJson(Map<String, dynamic> json) => _$SessionModelFromJson(json);
 
 @override final  String sessionId;
 @override final  String title;
-@override final  SessionType sessionType;
-@override final  SessionStatus status;
 @override final  String startTime;
-// Receive as ISO 8601 String
 @override final  String endTime;
-// Receive as ISO 8601 String
-@override final  int maxParticipants;
+@override final  SessionType sessionType;
 @override final  int participantCount;
-@override final  UserModel creator;
-// Nested JSON object
+@override final  int maxParticipants;
+// âœ… Changed from UserModel to UserSummaryModel
+@override final  UserSummaryModel creator;
 @override final  GymModel gym;
+// âœ… Fixed type from 'boolean' to 'bool' and added default
+@override@JsonKey() final  bool isChatActive;
 
 /// Create a copy of SessionModel
 /// with the given fields replaced by the non-null parameter values.
@@ -269,16 +267,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionModel&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.title, title) || other.title == title)&&(identical(other.sessionType, sessionType) || other.sessionType == sessionType)&&(identical(other.status, status) || other.status == status)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.maxParticipants, maxParticipants) || other.maxParticipants == maxParticipants)&&(identical(other.participantCount, participantCount) || other.participantCount == participantCount)&&(identical(other.creator, creator) || other.creator == creator)&&(identical(other.gym, gym) || other.gym == gym));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionModel&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.title, title) || other.title == title)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.sessionType, sessionType) || other.sessionType == sessionType)&&(identical(other.participantCount, participantCount) || other.participantCount == participantCount)&&(identical(other.maxParticipants, maxParticipants) || other.maxParticipants == maxParticipants)&&(identical(other.creator, creator) || other.creator == creator)&&(identical(other.gym, gym) || other.gym == gym)&&(identical(other.isChatActive, isChatActive) || other.isChatActive == isChatActive));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sessionId,title,sessionType,status,startTime,endTime,maxParticipants,participantCount,creator,gym);
+int get hashCode => Object.hash(runtimeType,sessionId,title,startTime,endTime,sessionType,participantCount,maxParticipants,creator,gym,isChatActive);
 
 @override
 String toString() {
-  return 'SessionModel(sessionId: $sessionId, title: $title, sessionType: $sessionType, status: $status, startTime: $startTime, endTime: $endTime, maxParticipants: $maxParticipants, participantCount: $participantCount, creator: $creator, gym: $gym)';
+  return 'SessionModel(sessionId: $sessionId, title: $title, startTime: $startTime, endTime: $endTime, sessionType: $sessionType, participantCount: $participantCount, maxParticipants: $maxParticipants, creator: $creator, gym: $gym, isChatActive: $isChatActive)';
 }
 
 
@@ -289,11 +287,11 @@ abstract mixin class _$SessionModelCopyWith<$Res> implements $SessionModelCopyWi
   factory _$SessionModelCopyWith(_SessionModel value, $Res Function(_SessionModel) _then) = __$SessionModelCopyWithImpl;
 @override @useResult
 $Res call({
- String sessionId, String title, SessionType sessionType, SessionStatus status, String startTime, String endTime, int maxParticipants, int participantCount, UserModel creator, GymModel gym
+ String sessionId, String title, String startTime, String endTime, SessionType sessionType, int participantCount, int maxParticipants, UserSummaryModel creator, GymModel gym, bool isChatActive
 });
 
 
-@override $UserModelCopyWith<$Res> get creator;@override $GymModelCopyWith<$Res> get gym;
+@override $UserSummaryModelCopyWith<$Res> get creator;@override $GymModelCopyWith<$Res> get gym;
 
 }
 /// @nodoc
@@ -306,19 +304,19 @@ class __$SessionModelCopyWithImpl<$Res>
 
 /// Create a copy of SessionModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? sessionId = null,Object? title = null,Object? sessionType = null,Object? status = null,Object? startTime = null,Object? endTime = null,Object? maxParticipants = null,Object? participantCount = null,Object? creator = null,Object? gym = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? sessionId = null,Object? title = null,Object? startTime = null,Object? endTime = null,Object? sessionType = null,Object? participantCount = null,Object? maxParticipants = null,Object? creator = null,Object? gym = null,Object? isChatActive = null,}) {
   return _then(_SessionModel(
 sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,sessionType: null == sessionType ? _self.sessionType : sessionType // ignore: cast_nullable_to_non_nullable
-as SessionType,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as SessionStatus,startTime: null == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
+as String,startTime: null == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
 as String,endTime: null == endTime ? _self.endTime : endTime // ignore: cast_nullable_to_non_nullable
-as String,maxParticipants: null == maxParticipants ? _self.maxParticipants : maxParticipants // ignore: cast_nullable_to_non_nullable
-as int,participantCount: null == participantCount ? _self.participantCount : participantCount // ignore: cast_nullable_to_non_nullable
+as String,sessionType: null == sessionType ? _self.sessionType : sessionType // ignore: cast_nullable_to_non_nullable
+as SessionType,participantCount: null == participantCount ? _self.participantCount : participantCount // ignore: cast_nullable_to_non_nullable
+as int,maxParticipants: null == maxParticipants ? _self.maxParticipants : maxParticipants // ignore: cast_nullable_to_non_nullable
 as int,creator: null == creator ? _self.creator : creator // ignore: cast_nullable_to_non_nullable
-as UserModel,gym: null == gym ? _self.gym : gym // ignore: cast_nullable_to_non_nullable
-as GymModel,
+as UserSummaryModel,gym: null == gym ? _self.gym : gym // ignore: cast_nullable_to_non_nullable
+as GymModel,isChatActive: null == isChatActive ? _self.isChatActive : isChatActive // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -326,9 +324,9 @@ as GymModel,
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
-$UserModelCopyWith<$Res> get creator {
+$UserSummaryModelCopyWith<$Res> get creator {
   
-  return $UserModelCopyWith<$Res>(_self.creator, (value) {
+  return $UserSummaryModelCopyWith<$Res>(_self.creator, (value) {
     return _then(_self.copyWith(creator: value));
   });
 }/// Create a copy of SessionModel

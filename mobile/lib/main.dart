@@ -5,52 +5,50 @@ import 'package:sahbifit/app/bloc/app_bloc.dart';
 import 'package:sahbifit/app/view/app_view.dart';
 import 'package:sahbifit/features/verification/presentation/cubit/verification_cubit.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:sahbifit/core/config/app_router.dart'; // <-- 1. IMPORT NEW ROUTER
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // <-- ADDED IMPORT
-import 'package:flutter/foundation.dart'; // <-- 1. IMPORT FOUNDATION
-
-// --- SOLUTION: ADD THIS IMPORT ---
+import 'package:sahbifit/core/config/app_router.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 import 'firebase_options.dart';
-// --- END OF SOLUTION ---
+import 'package:sahbifit/features/user/presentation/bloc/profile_bloc.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // --- 2. UPDATED: Load environment based on build mode ---
-  // This loads .env.prod for release builds and .env for debug builds
+  // Load environment based on build mode
   if (kReleaseMode) {
     await dotenv.load(fileName: "dotenv.prod");
   } else {
     await dotenv.load(fileName: "dotenv");
   }
-  // --- END OF UPDATE ---
 
-  // --- SOLUTION: USE THE IMPORTED OPTIONS ---
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // --- END OF SOLUTION ---
 
   await configureDependencies();
 
-  // 2. Create the AppBloc *first*
+  // Create the AppBloc first
   final appBloc = getIt<AppBloc>()
     ..add(const AppEvent.checkAuthStatus());
 
-  // 3. Create the AppRouter and pass the bloc to it
+  // Create the AppRouter and pass the bloc to it
   final appRouter = AppRouter(appBloc);
 
   runApp(
     MultiBlocProvider(
       providers: [
-        // 4. Provide the *same instance* of AppBloc
+        // Provide the same instance of AppBloc
         BlocProvider.value(value: appBloc),
         BlocProvider(
           create: (context) => getIt<VerificationCubit>()
             ..fetchStatus(),
         ),
+        // This makes ProfileBloc available globally (SessionFeedPage, ChatPage, etc.)
+        BlocProvider(
+          create: (context) => getIt<ProfileBloc>(),
+        ),
       ],
-      // 5. Pass the generated GoRouter instance to AppView
+      // Pass the generated GoRouter instance to AppView
       child: AppView(router: appRouter.router),
     ),
   );

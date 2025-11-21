@@ -23,6 +23,7 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
   status: $enumDecode(_$UserStatusEnumMap, json['status']),
   groupSessionCount: (json['groupSessionCount'] as num).toInt(),
   noShowCount: (json['noShowCount'] as num).toInt(),
+  lateCancelCount: (json['lateCancelCount'] as num?)?.toInt() ?? 0,
   primaryGym: json['primaryGym'] == null
       ? null
       : GymModel.fromJson(json['primaryGym'] as Map<String, dynamic>),
@@ -47,6 +48,7 @@ Map<String, dynamic> _$UserModelToJson(
   'status': _$UserStatusEnumMap[instance.status]!,
   'groupSessionCount': instance.groupSessionCount,
   'noShowCount': instance.noShowCount,
+  'lateCancelCount': instance.lateCancelCount,
   'primaryGym': instance.primaryGym,
   'userBadges': instance.userBadges,
 };

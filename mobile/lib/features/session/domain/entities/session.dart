@@ -12,9 +12,12 @@ class Session extends Equatable {
   final DateTime startTime;
   final DateTime endTime;
   final int maxParticipants;
-  final int participantCount; // From the @Formula
-  final User creator; // Nested User entity
-  final Gym gym;     // Nested Gym entity
+  final int participantCount;
+  final User creator; 
+  final Gym gym;
+  
+  // âœ… NEW FIELD
+  final bool isChatActive; 
 
   const Session({
     required this.sessionId,
@@ -27,6 +30,8 @@ class Session extends Equatable {
     required this.participantCount,
     required this.creator,
     required this.gym,
+    // âœ… Initialize with default false
+    this.isChatActive = false, 
   });
 
   @override
@@ -40,5 +45,6 @@ class Session extends Equatable {
         participantCount,
         creator,
         gym,
+        isChatActive, // âœ… Add to props for equality checks
       ];
 }

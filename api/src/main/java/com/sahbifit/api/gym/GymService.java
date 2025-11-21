@@ -1,4 +1,3 @@
-// Pfad: src/main/java/com/sahbifit/api/gym/GymService.java
 package com.sahbifit.api.gym;
 
 import java.util.List;
@@ -10,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.sahbifit.api.exception.ResourceNotFoundException;
 import com.sahbifit.api.gym.dto.AdminGymDto;
 import com.sahbifit.api.gym.dto.GymSubmissionDto;
+import com.sahbifit.api.gym.dto.GymDto;
 import com.sahbifit.api.gym.model.Gym;
 import com.sahbifit.api.gym.model.GymStatus;
 import com.sahbifit.api.gym.repository.GymRepository;
@@ -30,15 +30,17 @@ public class GymService {
      * (Method 1) For Users: Get all approved gyms to list in the app.
      */
     @Transactional(readOnly = true)
-    public List<Gym> getApprovedGyms() {
-        return gymRepository.findByStatus(GymStatus.approved);
+    public List<GymDto> getApprovedGyms() {
+        List<Gym> gyms = gymRepository.findByStatus(GymStatus.approved);
+        // --- CHANGED ---
+        return GymMapper.toDtoList(gyms); // Use the new mapper
     }
 
     /**
      * (Method 2) For Users: Submit a new gym for admin review.
      * (MVP 7.5)
      */
-    public Gym submitGym(GymSubmissionDto dto, String userPhoneNumber) {
+    public GymDto submitGym(GymSubmissionDto dto, String userPhoneNumber) {
         User user = userRepository.findByPhoneNumber(userPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -49,48 +51,48 @@ public class GymService {
         gym.setStatus(GymStatus.pending); // Set to pending for review
         gym.setSubmittedByUser(user);
 
-        return gymRepository.save(gym);
+        return GymMapper.toDto(gymRepository.save(gym));
     }
 
     /**
      * (Method 3) For Admins: Create a new, pre-approved gym.
      * (MVP 7.4)
      */
-    public Gym adminCreateGym(AdminGymDto dto) {
+    public GymDto adminCreateGym(AdminGymDto dto) {
         Gym gym = new Gym();
         gym.setName(dto.name());
         gym.setAddress(dto.address());
         gym.setStatus(GymStatus.approved); // Approved immediately
         // submittedByUser is null for admin-created gyms
 
-        return gymRepository.save(gym);
+        return GymMapper.toDto(gymRepository.save(gym));
     }
 
     /**
      * (Method 4) For Admins: Approve a user-submitted gym.
      * (MVP 7.5)
      */
-    public Gym adminApproveGym(UUID gymId) {
+    public GymDto adminApproveGym(UUID gymId) {
         Gym gym = gymRepository.findById(gymId)
                 .orElseThrow(() -> new ResourceNotFoundException("Gym not found with ID: " + gymId));
         
         gym.setStatus(GymStatus.approved);
         
-        return gymRepository.save(gym);
+        return GymMapper.toDto(gymRepository.save(gym));
     }
 
     /**
      * (Method 5) For Admins: Get ALL gyms (pending, approved, rejected).
      */
     @Transactional(readOnly = true)
-    public List<Gym> adminGetAllGyms() {
-        return gymRepository.findAll();
+    public List<GymDto> adminGetAllGyms() {
+        return GymMapper.toDtoList(gymRepository.findAll());
     }
 
     /**
      * (Method 6) For Admins: Update an existing gym.
      */
-    public Gym adminUpdateGym(UUID gymId, AdminGymDto dto) {
+    public GymDto adminUpdateGym(UUID gymId, AdminGymDto dto) {
         Gym gym = gymRepository.findById(gymId)
                 .orElseThrow(() -> new ResourceNotFoundException("Gym not found with ID: " + gymId));
         
@@ -98,7 +100,7 @@ public class GymService {
         gym.setAddress(dto.address());
         // Add any other fields from AdminGymDto here
         
-        return gymRepository.save(gym);
+        return GymMapper.toDto(gymRepository.save(gym));
     }
 
     /**
@@ -114,7 +116,7 @@ public class GymService {
      * (Method 8) For Admins: Get all gyms waiting for approval.
      */
     @Transactional(readOnly = true)
-    public List<Gym> getPendingGyms() {
-        return gymRepository.findByStatus(GymStatus.pending);
+    public List<GymDto> getPendingGyms() {
+        return GymMapper.toDtoList(gymRepository.findByStatus(GymStatus.pending));
     }
 }

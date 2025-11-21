@@ -23,43 +23,36 @@ part 'mark_attendance_state.dart';
 
 @injectable
 class MarkAttendanceCubit extends Cubit<MarkAttendanceState> {
-  // --- ADDED ---
   final GetSessionById _getSessionById;
   final MarkAttendance _markAttendance;
-  // --- REMOVED ---
-  // final FirebaseFirestore _firestore;
-  // --- ADDED ---
-  final GetParticipantsStream _getParticipantsStream;
+  // Update Type
+  final GetSessionParticipants _getSessionParticipants;
 
-  StreamSubscription? _participantsSubscription;
+  // Remove StreamSubscription? _participantsSubscription;
 
   MarkAttendanceCubit(
-    // --- ADDED ---
-    this._getSessionById,
-    this._markAttendance,
-    // --- REMOVED ---
-    // this._firestore,
-    // --- ADDED ---
-    this._getParticipantsStream,
-  ) : super(const MarkAttendanceState.initial());
+      this._getSessionById,
+      this._markAttendance,
+      this._getSessionParticipants, // Update Injection
+      ) : super(const MarkAttendanceState.initial());
 
-  Future<void> loadSession(String sessionId) async { // <-- CHANGED SIGNATURE
+  Future<void> loadSession(String sessionId) async {
     emit(const MarkAttendanceState.loading());
     try {
       // 1. Fetch base session data
-      final session =
-          await _getSessionById(GetSessionByIdParams(sessionId: sessionId));
+      final session = await _getSessionById(GetSessionByIdParams(sessionId: sessionId));
 
-      // 2. Listen for participants
-      _participantsSubscription?.cancel();
-      _participantsSubscription = _getParticipantsStream(
-        GetParticipantsStreamParams(sessionId: session.sessionId),
-      ).listen((participants) {
-        emit(MarkAttendanceState.loaded(
-          session: session, // <-- Use newly fetched session
-          participants: participants,
-        ));
-      });
+      // 2. Fetch participants (Once, not stream)
+      final participants = await _getSessionParticipants(
+        GetSessionParticipantsParams(sessionId: session.sessionId),
+      );
+
+      // 3. Emit loaded
+      emit(MarkAttendanceState.loaded(
+        session: session,
+        participants: participants,
+      ));
+
     } on ServerFailure catch (e) {
       emit(MarkAttendanceState.error(e.message));
     } catch (e) {
@@ -68,7 +61,6 @@ class MarkAttendanceCubit extends Cubit<MarkAttendanceState> {
   }
 
   Future<void> submitAttendance(String userId, ParticipantStatus status) async {
-    // ... (rest of the method is unchanged) ...
     final currentState = state;
     if (currentState is _Loaded) {
       emit(currentState.copyWith(isSubmitting: true));
@@ -78,22 +70,25 @@ class MarkAttendanceCubit extends Cubit<MarkAttendanceState> {
           userId: userId,
           status: status,
         ));
-        // The stream will refresh the list, so we just stop loading
-        emit(currentState.copyWith(isSubmitting: false));
+
+        // REFRESH DATA MANUALLY AFTER SUBMISSION
+        // Since we lost the stream, we must re-fetch to show updated status
+        final updatedParticipants = await _getSessionParticipants(
+            GetSessionParticipantsParams(sessionId: currentState.session.sessionId)
+        );
+
+        emit(currentState.copyWith(
+            isSubmitting: false,
+            participants: updatedParticipants // Update list
+        ));
+
       } on ServerFailure catch (e) {
-        // Show error on the loaded state
-        emit(
-            currentState.copyWith(isSubmitting: false, errorMessage: e.message));
-        // Clear error after a few seconds
+        emit(currentState.copyWith(isSubmitting: false, errorMessage: e.message));
         await Future.delayed(const Duration(seconds: 3));
         emit(currentState.copyWith(errorMessage: null));
       }
     }
   }
 
-  @override
-  Future<void> close() {
-    _participantsSubscription?.cancel();
-    return super.close();
-  }
+// Remove @override Future<void> close() since there is no subscription
 }

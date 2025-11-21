@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sahbifit.api.user.dto.PublicUserProfileDto; // <-- Added import
 import com.sahbifit.api.user.dto.UpdateFcmTokenDto;
 import com.sahbifit.api.user.dto.UpdateVisibilityDto;
+import com.sahbifit.api.user.dto.UserProfileDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -94,5 +95,25 @@ public class UserController {
         
         userService.unblockUser(principal.getName(), userId);
         return ResponseEntity.noContent().build(); // 204 No Content is standard for success
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR', 'ADMIN')")
+    public ResponseEntity<UserProfileDto> getCurrentUser(Principal principal) {
+        // principal.getName() is the phone number extracted from the JWT
+        UserProfileDto userProfile = userService.getMyProfile(principal.getName());
+        return ResponseEntity.ok(userProfile);
+    }
+
+    
+    @GetMapping("/{userId}")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR', 'ADMIN')")
+    public ResponseEntity<UserProfileDto> getUserProfile(
+            @PathVariable UUID userId,
+            Principal principal) { // <-- Add Principal
+        
+        // Pass the requester's phone number to perform the block check
+        UserProfileDto userProfile = userService.getUserProfile(userId, principal.getName());
+        return ResponseEntity.ok(userProfile);
     }
 }

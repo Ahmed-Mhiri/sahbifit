@@ -77,5 +77,17 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
     List<Session> findSessionsToDeactivate(
             @Param("deactivationTime") OffsetDateTime deactivationTime);
 
-    // --- END OF NEW METHODS ---
+    // --- ADD THIS METHOD ---
+    /**
+     * Finds all sessions where the specific user is a participant.
+     * Uses JOIN FETCH for creator and gym to ensure efficient DTO mapping.
+     * Ordered by Start Time descending (newest first).
+     */
+    @Query("SELECT DISTINCT s FROM Session s " +
+           "JOIN FETCH s.creator " +
+           "JOIN FETCH s.gym " +
+           "JOIN s.participants p " +
+           "WHERE p.user.userId = :userId " +
+           "ORDER BY s.startTime DESC")
+    List<Session> findSessionsByParticipantUserId(@Param("userId") UUID userId);
 }

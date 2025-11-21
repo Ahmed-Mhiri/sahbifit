@@ -99,7 +99,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "profile_visibility", nullable = false, columnDefinition = "profile_visibility")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @ColumnDefault("'all'") // Default to 'all'
+    @ColumnDefault("'all'")
     private ProfileVisibility profileVisibility = ProfileVisibility.all;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -127,6 +127,12 @@ public class User {
     @ColumnDefault("0")
     private Integer noShowCount = 0;
 
+    // --- NEW FIELD FOR CANCELLATION TRACKING ---
+    @Column(name = "late_cancel_count", nullable = false)
+    @ColumnDefault("0")
+    private Integer lateCancelCount = 0;
+    // -------------------------------------------
+
     @Column(name = "push_notification_token")
     private String pushNotificationToken;
 
@@ -138,7 +144,6 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
-    // NEW FIELD: Dedicated timestamp for verification submission
     @Column(name = "verification_submitted_at")
     private OffsetDateTime verificationSubmittedAt;
 

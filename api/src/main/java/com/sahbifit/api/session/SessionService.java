@@ -1,7 +1,9 @@
-// Path: src/main/java/com/sahbifit/api/session/SessionService.java
 package com.sahbifit.api.session;
 
+import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -15,6 +17,8 @@ import com.sahbifit.api.gym.model.Gym;
 import com.sahbifit.api.gym.repository.GymRepository;
 import com.sahbifit.api.session.dto.CreateSessionDto;
 import com.sahbifit.api.session.dto.MarkAttendanceDto;
+import com.sahbifit.api.session.dto.SessionFeedDto;
+import com.sahbifit.api.session.dto.SessionParticipantDto;
 import com.sahbifit.api.session.model.ParticipantStatus;
 import com.sahbifit.api.session.model.Session;
 import com.sahbifit.api.session.model.SessionParticipant;
@@ -27,6 +31,7 @@ import com.sahbifit.api.user.UserService;
 import com.sahbifit.api.user.model.ProfileVisibility;
 import com.sahbifit.api.user.model.User;
 import com.sahbifit.api.user.model.UserRole;
+import com.sahbifit.api.user.repository.UserBlockRepository;
 import com.sahbifit.api.user.repository.UserRepository;
 import com.sahbifit.api.verification.model.VerificationStatus;
 import com.sahbifit.api.verification.model.VerifiedGender;
@@ -46,28 +51,24 @@ public class SessionService {
     private final SessionParticipantRepository sessionParticipantRepository;
     private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
+    private final UserBlockRepository userBlockRepository;
 
-    /**
-     * (Method 1) Create a new session, applying all "Create" gates.
-     */
-    public Session createSession(CreateSessionDto dto, String userPhoneNumber) {
+    // Create Session Logic
+    public SessionFeedDto createSession(CreateSessionDto dto, String userPhoneNumber) {
         User user = userRepository.findByPhoneNumber(userPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
 
-        // Gate 1 (Verification)
         if (user.getVerificationStatus() != VerificationStatus.verified) {
             throw new IllegalStateException("You must be fully verified to create a session.");
         }
 
-        // Gate 2 (Reputation - "The 1-Session Gate" Strategy)
-        if (dto.sessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 1) { // <-- CHANGED FROM 3 to 1
-            throw new IllegalStateException("You must attend 1 group session before creating a 1-on-1 session."); // <-- UPDATED MESSAGE
+        if (dto.sessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 1) {
+            throw new IllegalStateException("You must attend 1 group session before creating a 1-on-1 session.");
         }
 
         Gym gym = gymRepository.findById(dto.gymId())
                 .orElseThrow(() -> new ResourceNotFoundException("Gym", "gymId", dto.gymId()));
 
-        // Create the session (don't save yet)
         Session session = new Session();
         session.setCreator(user);
         session.setGym(gym);
@@ -78,10 +79,8 @@ public class SessionService {
         session.setEndTime(dto.endTime());
         session.setMaxParticipants(dto.maxParticipants());
 
-        // Save the session (This is where the session.sessionId is generated)
         Session savedSession = sessionRepository.save(session);
 
-        // Add the creator as the first participant
         SessionParticipantId creatorId = new SessionParticipantId();
         creatorId.setSessionId(savedSession.getSessionId());
         creatorId.setUserId(user.getUserId());
@@ -93,21 +92,16 @@ public class SessionService {
         creatorEntry.setStatus(ParticipantStatus.joined);
         sessionParticipantRepository.save(creatorEntry);
 
-        // PUBLISH THE EVENT for the async listener
         try {
-            // We pass 'savedSession', which now has a non-null ID
             eventPublisher.publishEvent(new SessionCreatedEvent(this, savedSession));
         } catch (Exception e) {
             log.error("Failed to publish SessionCreatedEvent for session {}: {}", savedSession.getSessionId(), e.getMessage());
-            // Log error, but don't fail the transaction
         }
 
-        return savedSession;
+        return SessionMapper.toFeedDto(savedSession);
     }
 
-    /**
-     * (Method 2) Join an existing session, applying all "Join" gates.
-     */
+    // Join Session Logic (With Strict Separation & HashSet Optimization)
     public void joinSession(UUID sessionId, String userPhoneNumber) {
         User user = userRepository.findByPhoneNumber(userPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
@@ -115,25 +109,45 @@ public class SessionService {
         Session session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", sessionId));
 
-        // Gate 1 (Probationary Mode - MVP 2.6)
         if (user.getVerificationStatus() == VerificationStatus.pending_review) {
             if (session.getCreator().getRole() != UserRole.ambassador) {
                 throw new IllegalStateException("Verification pending. You can only join Ambassador sessions.");
             }
         }
 
-        // Gate 2 (Reputation - "The 1-Session Gate" Strategy)
-        if (session.getSessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 1) { // <-- CHANGED FROM 3 to 1
-            throw new IllegalStateException("You must attend 1 group session before joining a 1-on-1 session."); // <-- UPDATED MESSAGE
+        if (session.getSessionType() == SessionType.one_on_one && user.getGroupSessionCount() < 1) {
+            throw new IllegalStateException("You must attend 1 group session before joining a 1-on-1 session.");
         }
 
-        // Gate 3 (Session Full?)
+        // --- STRICT BLOCK LOGIC START ---
+        // 1. Fetch forbidden list and convert to HashSet for O(1) lookup speed
+        Set<UUID> forbiddenUserIds = new HashSet<>(userBlockRepository.findAllForbiddenUserIds(user.getUserId()));
+
+        // 2. Check if Creator is forbidden
+        if (forbiddenUserIds.contains(session.getCreator().getUserId())) {
+            // Pretend session doesn't exist to maintain invisibility
+            throw new ResourceNotFoundException("Session", "sessionId", sessionId); 
+        }
+
+        // 3. Check if ANY existing participant is forbidden (Strict Physical Separation)
+        // We iterate through the currently joined participants
+        boolean hasConflict = session.getParticipants().stream()
+                .anyMatch(p -> 
+                    p.getStatus() == ParticipantStatus.joined && // Only check active participants
+                    forbiddenUserIds.contains(p.getUser().getUserId())
+                );
+
+        if (hasConflict) {
+            // We return a generic error to prevent leaking WHO is the blocker
+            throw new IllegalStateException("You cannot join this session due to a privacy conflict with an existing participant.");
+        }
+        // --- STRICT BLOCK LOGIC END ---
+
         int participantCount = sessionParticipantRepository.countBySession_SessionId(sessionId);
         if (participantCount >= session.getMaxParticipants()) {
             throw new IllegalStateException("This session is already full.");
         }
 
-        // Gate 4 (Already Joined?)
         SessionParticipantId participantId = new SessionParticipantId();
         participantId.setSessionId(sessionId);
         participantId.setUserId(user.getUserId());
@@ -142,7 +156,6 @@ public class SessionService {
             throw new IllegalStateException("You have already joined this session.");
         }
 
-        // Success: Create and save the participant entry
         SessionParticipant newParticipant = new SessionParticipant();
         newParticipant.setId(participantId);
         newParticipant.setSession(session);
@@ -151,84 +164,111 @@ public class SessionService {
         sessionParticipantRepository.save(newParticipant);
     }
 
-    /**
-     * (Method 3) Get all active sessions for the feed.
-     * (MVP 6.1)
-     * NOW INCLUDES GENDER FILTERING AND PRIVACY/VISIBILITY LOGIC.
-     * OPTIMIZED: Uses JOIN FETCH to prevent N+1 queries
-     */
-    @Transactional(readOnly = true)
-    public List<Session> getActiveSessions(String userPhoneNumber, VerifiedGender genderFilter) {
+    // Leave Session Logic
+    public void leaveSession(UUID sessionId, String userPhoneNumber) {
+        User user = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
         
-        // 1. Get the user who is VIEWING the feed
+        Session session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", sessionId));
+
+        SessionParticipantId participantId = new SessionParticipantId();
+        participantId.setSessionId(sessionId);
+        participantId.setUserId(user.getUserId());
+
+        SessionParticipant participant = sessionParticipantRepository.findById(participantId)
+                .orElseThrow(() -> new IllegalStateException("You are not in this session."));
+
+        // Prevent leaving if session already ended
+        if (OffsetDateTime.now().isAfter(session.getEndTime())) {
+            throw new IllegalStateException("Cannot leave a session that has already ended.");
+        }
+
+        // Calculate cutoff time (1 hour before start)
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime penaltyCutoff = session.getStartTime().minusHours(1);
+
+        if (now.isAfter(penaltyCutoff)) {
+            // Case 1: Late Cancellation (< 1 hour before start)
+            // We mark them as 'left' but we count the penalty.
+            participant.setStatus(ParticipantStatus.left);
+            sessionParticipantRepository.save(participant);
+
+            // Apply Penalty
+            userService.incrementLateCancelCount(user.getUserId());
+            
+            log.info("User {} late cancelled session {}. Penalty applied.", user.getUserId(), sessionId);
+        } else {
+            // Case 2: Safe Cancellation (> 1 hour before start)
+            // We delete the entry so the spot opens up for someone else completely
+            sessionParticipantRepository.delete(participant);
+            log.info("User {} left session {} safely.", user.getUserId(), sessionId);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<SessionFeedDto> getActiveSessions(String userPhoneNumber, VerifiedGender genderFilter) {
         User viewer = userRepository.findByPhoneNumber(userPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
+        
+        // --- BLOCK LOGIC START ---
+        // Fetch all IDs that have a block relationship with the viewer
+        // Convert to HashSet for O(1) lookup optimization
+        Set<UUID> forbiddenUserIds = new HashSet<>(userBlockRepository.findAllForbiddenUserIds(viewer.getUserId()));
+        // --- BLOCK LOGIC END ---
 
         List<Session> sessions;
-
-        // 2. Apply the GENDER FILTER (existing logic) using optimized queries
         if (genderFilter != null) {
-            // Security Check: You can only filter by your own gender.
             if (viewer.getVerifiedGender() != genderFilter) {
                 throw new AccessDeniedException("You can only filter sessions by your own verified gender.");
             }
-            // Use optimized query with JOIN FETCH
             sessions = sessionRepository.findByStatusAndCreatorVerifiedGenderWithCreatorAndGym(SessionStatus.active, genderFilter);
         } else {
-            // Use optimized query with JOIN FETCH
             sessions = sessionRepository.findByStatusWithCreatorAndGym(SessionStatus.active);
         }
 
-        // 3. Apply PRIVACY FILTER (new logic)
-        return sessions.stream()
-                .filter(session -> isVisible(session.getCreator(), viewer))
+        List<Session> visibleSessions = sessions.stream()
+                .filter(session -> {
+                    // 1. Check Block Logic (Invisible if creator is blocked/blocking)
+                    // Optimization: .contains() on a Set is O(1)
+                    if (forbiddenUserIds.contains(session.getCreator().getUserId())) {
+                        return false; 
+                    }
+                    // 2. Existing Visibility Logic
+                    return isVisible(session.getCreator(), viewer);
+                })
                 .collect(Collectors.toList());
+        
+        return SessionMapper.toFeedDtoList(visibleSessions);
     }
 
-    /**
-     * (NEW METHOD) Get a single session by its ID.
-     * Applies all "View" gates (privacy, visibility, probation).
-     */
     @Transactional(readOnly = true)
-    public Session getSessionById(UUID sessionId, String userPhoneNumber) {
-        
-        // 1. Get the session with creator and gym (optimized)
+    public SessionFeedDto getSessionById(UUID sessionId, String userPhoneNumber) {
         Session session = sessionRepository.findByIdWithCreatorAndGym(sessionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", sessionId));
-
-        // 2. Get the user who is VIEWING the session
+                .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", sessionId)); 
+        
         User viewer = userRepository.findByPhoneNumber(userPhoneNumber)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
-
-        // 3. Apply PRIVACY FILTER (re-using existing helper)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber)); 
+        
         if (!isVisible(session.getCreator(), viewer)) {
-            // Hide its existence
-            throw new ResourceNotFoundException("Session", "sessionId", sessionId);
+            throw new ResourceNotFoundException("Session", "sessionId", sessionId); 
         }
 
-        // 4. Apply PROBATIONARY MODE FILTER (Gate 1 from joinSession)
         if (viewer.getVerificationStatus() == VerificationStatus.pending_review) {
             if (session.getCreator().getRole() != UserRole.ambassador) {
-                throw new AccessDeniedException("Verification pending. You can only view Ambassador sessions.");
+                throw new AccessDeniedException("Verification pending. You can only view Ambassador sessions."); 
             }
         }
 
-        return session;
+        return SessionMapper.toFeedDto(session);
     }
 
-
-    /**
-     * Helper method to check if a creator's profile is visible to a viewer.
-     */
     private boolean isVisible(User creator, User viewer) {
-        // If creator is visible to all, return true.
         if (creator.getProfileVisibility() == ProfileVisibility.all) {
             return true;
         }
 
-        // If creator is 'same_gender' only, check for match.
         if (creator.getProfileVisibility() == ProfileVisibility.same_gender) {
-            // Both must be verified AND their genders must match.
             return creator.getVerifiedGender() != VerifiedGender.not_verified &&
                    creator.getVerifiedGender() == viewer.getVerifiedGender();
         }
@@ -238,16 +278,12 @@ public class SessionService {
 
     @Transactional
     public void markAttendance(MarkAttendanceDto dto, String markerPhoneNumber) {
-        
-        // 1. Find user who is marking attendance
         User markerUser = userRepository.findByPhoneNumber(markerPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", markerPhoneNumber));
 
-        // 2. Find session
         Session session = sessionRepository.findById(dto.sessionId())
                 .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", dto.sessionId()));
 
-        // 3. Permission check
         boolean isCreator = session.getCreator().getUserId().equals(markerUser.getUserId());
         boolean isAdmin = markerUser.getRole() == UserRole.admin;
 
@@ -255,7 +291,6 @@ public class SessionService {
             throw new AccessDeniedException("Only the session creator or an admin can mark attendance.");
         }
 
-        // 4. Find SessionParticipant (the target object)
         SessionParticipantId participantId = new SessionParticipantId();
         participantId.setSessionId(dto.sessionId());
         participantId.setUserId(dto.participantUserId());
@@ -263,20 +298,40 @@ public class SessionService {
         SessionParticipant participant = sessionParticipantRepository.findById(participantId)
                 .orElseThrow(() -> new ResourceNotFoundException("SessionParticipant", "Id", participantId));
 
-        // 5. Update status
         participant.setStatus(dto.newStatus());
         sessionParticipantRepository.save(participant);
 
-        // 6. Trigger chain (MVP 5.4)
         if (dto.newStatus() == ParticipantStatus.no_show) {
-            // Calls logic in UserService
             userService.incrementNoShowCount(dto.participantUserId());
         } 
         else if (dto.newStatus() == ParticipantStatus.attended) {
-            // Check if it was a group session (MVP 3.5)
             if (session.getSessionType() == SessionType.group) {
                 userService.incrementGroupSessionCount(dto.participantUserId());
             }
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<SessionParticipantDto> getSessionParticipants(UUID sessionId) {
+        Session session = sessionRepository.findById(sessionId)
+            .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", sessionId));
+            
+        return session.getParticipants().stream()
+            .map(p -> new SessionParticipantDto(
+                com.sahbifit.api.user.UserMapper.toSummaryDto(p.getUser()),
+                p.getStatus(),
+                p.getJoinedAt()
+            ))
+            .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<SessionFeedDto> getMySessions(String userPhoneNumber) {
+        User user = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
+
+        List<Session> sessions = sessionRepository.findSessionsByParticipantUserId(user.getUserId());
+
+        return SessionMapper.toFeedDtoList(sessions);
     }
 }

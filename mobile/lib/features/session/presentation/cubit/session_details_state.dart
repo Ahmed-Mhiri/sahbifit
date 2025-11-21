@@ -9,6 +9,7 @@ sealed class SessionDetailsState with _$SessionDetailsState {
     required List<SessionParticipant> participants,
     required bool isJoined,
     @Default(false) bool isJoinLoading,
+    @Default(false) bool isLeaveLoading, // <--- ADDED
     String? errorMessage,
   }) = _Loaded;
   const factory SessionDetailsState.error(String message) = _Error;

@@ -1,48 +1,31 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sahbifit/features/session/domain/entities/session_participant.dart';
 import 'package:sahbifit/features/session/domain/enums/participant_status.dart';
-import 'package:sahbifit/features/user/data/models/user_model.dart';
+import 'package:sahbifit/features/user/data/models/user_summary_model.dart'; // Changed from UserModel
 
 part 'session_participant_model.freezed.dart';
 part 'session_participant_model.g.dart';
-
-// This model maps to the backend's SessionParticipantId.java
-
-@freezed
-abstract class SessionParticipantIdModel with _$SessionParticipantIdModel {
-  
-  const factory SessionParticipantIdModel({
-    required String sessionId,
-    required String userId,
-  }) = _SessionParticipantIdModel;
-
-  factory SessionParticipantIdModel.fromJson(Map<String, dynamic> json) =>
-      _$SessionParticipantIdModelFromJson(json);
-}
-
-// This model maps to the backend's SessionParticipant.java
 
 @freezed
 abstract class SessionParticipantModel with _$SessionParticipantModel {
   const SessionParticipantModel._();
 
-  
   const factory SessionParticipantModel({
-    required SessionParticipantIdModel id,
-    required UserModel user, // The user who joined
+    // Removed 'id' field - it is not in the API response
+    required UserSummaryModel user, // Changed from UserModel to UserSummaryModel
     required ParticipantStatus status,
-    required String joinedAt, // Received as ISO 8601 String
+    required String joinedAt,
   }) = _SessionParticipantModel;
 
   factory SessionParticipantModel.fromJson(Map<String, dynamic> json) =>
       _$SessionParticipantModelFromJson(json);
 
-  // Converts the data model to the domain entity
-  SessionParticipant toEntity() {
+  // We must pass sessionId here because it's not in the JSON object
+  SessionParticipant toEntity(String sessionId) {
     return SessionParticipant(
-      sessionId: id.sessionId,
-      userId: id.userId,
-      user: user.toEntity(),
+      sessionId: sessionId,
+      userId: user.userId, // Get ID from the user object
+      user: user.toEntity(), // Convert Summary to User Entity
       status: status,
       joinedAt: DateTime.parse(joinedAt),
     );

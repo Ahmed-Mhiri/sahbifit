@@ -1,4 +1,3 @@
-// Path: src/main/java/com/sahbifit/api/rating/RatingController.java
 package com.sahbifit.api.rating;
 
 import java.security.Principal;
@@ -17,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sahbifit.api.rating.dto.CreateRatingDto;
 import com.sahbifit.api.rating.dto.PendingRatingDto;
-import com.sahbifit.api.rating.model.Rating;
+import com.sahbifit.api.rating.dto.RatingDto; // <-- ADDED
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,10 +31,10 @@ public class RatingController {
      * (MVP 5.1) Creates a new rating for a user after a session.
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
-    public ResponseEntity<Rating> createRating(@RequestBody CreateRatingDto dto, Principal principal) {
+    @PreAuthorize("hasAnyRole('MMEMBER', 'AMBASSADOR')")
+    public ResponseEntity<RatingDto> createRating(@RequestBody CreateRatingDto dto, Principal principal) { // <-- CHANGED
         // principal.getName() contains the phone number of the logged-in user (the rater)
-        Rating newRating = ratingService.createRating(dto, principal.getName());
+        RatingDto newRating = ratingService.createRating(dto, principal.getName()); // <-- CHANGED
         return new ResponseEntity<>(newRating, HttpStatus.CREATED);
     }
 
@@ -44,8 +43,8 @@ public class RatingController {
      */
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR', 'ADMIN')") // Anyone can view profile ratings
-    public ResponseEntity<List<Rating>> getRatingsForUser(@PathVariable UUID userId) {
-        List<Rating> ratings = ratingService.getRatingsForUser(userId);
+    public ResponseEntity<List<RatingDto>> getRatingsForUser(@PathVariable UUID userId) { // <-- CHANGED
+        List<RatingDto> ratings = ratingService.getRatingsForUser(userId); // <-- CHANGED
         return ResponseEntity.ok(ratings);
     }
 

@@ -1,3 +1,4 @@
+// FILE: lib/features/user/presentation/widgets/profile_header.dart
 import 'package:flutter/material.dart';
 import 'package:sahbifit/core/config/app_theme.dart';
 import 'package:sahbifit/features/user/domain/entities/user.dart';
@@ -75,11 +76,12 @@ class ProfileHeader extends StatelessWidget {
               'No-Shows',
               user.noShowCount.toString(),
             ),
+            // --- UPDATED: Added Late Cancel Count ---
             _buildStatColumn(
               context,
-              Icons.star_rounded,
-              'Rating',
-              'N/A', // Assuming rating isn't part of User entity yet
+              Icons.timer_off_outlined,
+              'Late Cancels',
+              user.lateCancelCount.toString(),
             ),
           ],
         ),
@@ -90,12 +92,7 @@ class ProfileHeader extends StatelessWidget {
   }
 
   Widget _buildStatusBadges(BuildContext context, User user) {
-    // --- START: New Logic ---
-
-    // Define the business logic for being "Reliable"
     final bool isReliable = user.groupSessionCount >= 5 && user.noShowCount == 0;
-
-    // --- END: New Logic ---
 
     return Wrap(
       spacing: AppTheme.elementSpacing,
@@ -110,11 +107,8 @@ class ProfileHeader extends StatelessWidget {
 
         if (user.status == UserStatus.suspended)
           StatusBadge.unreliable()
-        // --- START: New Logic ---
-        // Only show "Reliable" if they aren't "Unreliable"
         else if (isReliable)
           StatusBadge.reliable(),
-        // --- END: New Logic ---
       ],
     );
   }

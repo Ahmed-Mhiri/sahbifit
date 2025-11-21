@@ -90,12 +90,13 @@ public class ChatActivationService {
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\SessionController.java
 ==================================================
-// Pfad: src/main/java/com/sahbifit/api/session/SessionController.java
 package com.sahbifit.api.session;
 
 import com.sahbifit.api.session.dto.CreateSessionDto;
 import com.sahbifit.api.session.dto.MarkAttendanceDto;
-import com.sahbifit.api.session.model.Session;
+// --- ADDED IMPORT ---
+import com.sahbifit.api.session.dto.SessionFeedDto;
+import com.sahbifit.api.session.dto.SessionParticipantDto;
 import com.sahbifit.api.verification.model.VerifiedGender;
 
 import jakarta.validation.Valid;
@@ -122,12 +123,27 @@ public class SessionController {
      */
     @GetMapping
     @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
-    public ResponseEntity<List<Session>> getActiveSessions(
+    // --- RETURN TYPE CHANGED ---
+    public ResponseEntity<List<SessionFeedDto>> getActiveSessions(
             Principal principal,
             @RequestParam(required = false) VerifiedGender genderFilter) {
         
-        List<Session> sessions = sessionService.getActiveSessions(principal.getName(), genderFilter);
+        List<SessionFeedDto> sessions = sessionService.getActiveSessions(principal.getName(), genderFilter);
         return ResponseEntity.ok(sessions);
+    }
+    // --- END OF CHANGE ---
+
+    /**
+     * (NEW ENDPOINT) (Mobile App) Get a single session by its ID.
+     */
+    @GetMapping("/{sessionId}")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
+    public ResponseEntity<SessionFeedDto> getSessionById(
+            @PathVariable UUID sessionId, 
+            Principal principal) {
+        
+        SessionFeedDto session = sessionService.getSessionById(sessionId, principal.getName());
+        return ResponseEntity.ok(session);
     }
 
     /**
@@ -135,8 +151,8 @@ public class SessionController {
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR')")
-    public ResponseEntity<Session> createSession(@RequestBody CreateSessionDto dto, Principal principal) {
-        Session newSession = sessionService.createSession(dto, principal.getName());
+    public ResponseEntity<SessionFeedDto> createSession(@RequestBody CreateSessionDto dto, Principal principal) {
+        SessionFeedDto newSession = sessionService.createSession(dto, principal.getName());
         return new ResponseEntity<>(newSession, HttpStatus.CREATED);
     }
 
@@ -157,6 +173,12 @@ public class SessionController {
         
         sessionService.markAttendance(markAttendanceDto, principal.getName());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{sessionId}/participants")
+    @PreAuthorize("hasAnyRole('MEMBER', 'AMBASSADOR', 'ADMIN')")
+    public ResponseEntity<List<SessionParticipantDto>> getSessionParticipants(@PathVariable UUID sessionId) {
+        return ResponseEntity.ok(sessionService.getSessionParticipants(sessionId));
     }
 }
 
@@ -244,8 +266,61 @@ public class SessionEventListener {
 }
 
 ==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\SessionMapper.java
+==================================================
+package com.sahbifit.api.session;
+
+import com.sahbifit.api.gym.GymMapper;
+import com.sahbifit.api.session.dto.SessionFeedDto;
+import com.sahbifit.api.session.model.Session;
+import com.sahbifit.api.user.UserMapper;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * Handles mapping between Session entities and Session DTOs.
+ */
+public class SessionMapper {
+
+    /**
+     * Converts a Session @Entity to a SessionFeedDto.
+     * This uses other mappers (UserMapper, GymMapper) to build
+     * a safe, nested DTO.
+     */
+    public static SessionFeedDto toFeedDto(Session session) {
+        if (session == null) {
+            return null;
+        }
+
+        return new SessionFeedDto(
+            session.getSessionId(),
+            session.getTitle(),
+            session.getStartTime(),
+            session.getEndTime(),
+            session.getSessionType(),
+            session.getParticipantCount(), // Uses the @Formula field
+            session.getMaxParticipants(),
+            UserMapper.toSummaryDto(session.getCreator()), // Use UserMapper
+            GymMapper.toDto(session.getGym()),             // Use GymMapper
+            session.isChatActive()
+        );
+    }
+
+    /**
+     * Helper to convert a list of entities to a list of DTOs.
+     */
+    public static List<SessionFeedDto> toFeedDtoList(List<Session> sessions) {
+        return sessions.stream()
+            .map(SessionMapper::toFeedDto)
+            .collect(Collectors.toList());
+    }
+}
+
+==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\SessionService.java
 ==================================================
+// Path: src/main/java/com/sahbifit/api/session/SessionService.java
 package com.sahbifit.api.session;
 
 import java.util.List;
@@ -262,6 +337,11 @@ import com.sahbifit.api.gym.model.Gym;
 import com.sahbifit.api.gym.repository.GymRepository;
 import com.sahbifit.api.session.dto.CreateSessionDto;
 import com.sahbifit.api.session.dto.MarkAttendanceDto;
+// --- ADDED IMPORTS ---
+import com.sahbifit.api.session.dto.SessionFeedDto;
+import com.sahbifit.api.session.dto.SessionParticipantDto;
+import com.sahbifit.api.session.SessionMapper;
+// --- END IMPORTS ---
 import com.sahbifit.api.session.model.ParticipantStatus;
 import com.sahbifit.api.session.model.Session;
 import com.sahbifit.api.session.model.SessionParticipant;
@@ -270,6 +350,7 @@ import com.sahbifit.api.session.model.SessionStatus;
 import com.sahbifit.api.session.model.SessionType;
 import com.sahbifit.api.session.repository.SessionParticipantRepository;
 import com.sahbifit.api.session.repository.SessionRepository;
+import com.sahbifit.api.user.UserMapper;
 import com.sahbifit.api.user.UserService;
 import com.sahbifit.api.user.model.ProfileVisibility;
 import com.sahbifit.api.user.model.User;
@@ -297,7 +378,8 @@ public class SessionService {
     /**
      * (Method 1) Create a new session, applying all "Create" gates.
      */
-    public Session createSession(CreateSessionDto dto, String userPhoneNumber) {
+    // Change the return type from Session to SessionFeedDto
+    public SessionFeedDto createSession(CreateSessionDto dto, String userPhoneNumber) {
         User user = userRepository.findByPhoneNumber(userPhoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber));
 
@@ -349,7 +431,8 @@ public class SessionService {
             // Log error, but don't fail the transaction
         }
 
-        return savedSession;
+        // Map the entity to a DTO before returning
+        return SessionMapper.toFeedDto(savedSession);
     }
 
     /**
@@ -375,7 +458,7 @@ public class SessionService {
         }
 
         // Gate 3 (Session Full?)
-        int participantCount = sessionParticipantRepository.countBySessionId(sessionId);
+        int participantCount = sessionParticipantRepository.countBySession_SessionId(sessionId);
         if (participantCount >= session.getMaxParticipants()) {
             throw new IllegalStateException("This session is already full.");
         }
@@ -405,7 +488,8 @@ public class SessionService {
      * OPTIMIZED: Uses JOIN FETCH to prevent N+1 queries
      */
     @Transactional(readOnly = true)
-    public List<Session> getActiveSessions(String userPhoneNumber, VerifiedGender genderFilter) {
+    // --- RETURN TYPE CHANGED ---
+    public List<SessionFeedDto> getActiveSessions(String userPhoneNumber, VerifiedGender genderFilter) {
         
         // 1. Get the user who is VIEWING the feed
         User viewer = userRepository.findByPhoneNumber(userPhoneNumber)
@@ -427,10 +511,48 @@ public class SessionService {
         }
 
         // 3. Apply PRIVACY FILTER (new logic)
-        return sessions.stream()
+        List<Session> visibleSessions = sessions.stream()
                 .filter(session -> isVisible(session.getCreator(), viewer))
                 .collect(Collectors.toList());
+        
+        // 4. Convert to DTOs
+        return SessionMapper.toFeedDtoList(visibleSessions);
     }
+    // --- END OF CHANGE ---
+
+    /**
+     * (NEW METHOD) Get a single session by its ID.
+     * Applies all "View" gates (privacy, visibility, probation).
+     */
+    @Transactional(readOnly = true)
+    // Change the return type from Session to SessionFeedDto
+    public SessionFeedDto getSessionById(UUID sessionId, String userPhoneNumber) {
+        
+        // 1. Get the session with creator and gym (optimized)
+        Session session = sessionRepository.findByIdWithCreatorAndGym(sessionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", sessionId)); //
+        
+        // 2. Get the user who is VIEWING the session
+        User viewer = userRepository.findByPhoneNumber(userPhoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "phoneNumber", userPhoneNumber)); //
+        
+        // 3. Apply PRIVACY FILTER
+        if (!isVisible(session.getCreator(), viewer)) {
+            // Hide its existence
+            throw new ResourceNotFoundException("Session", "sessionId", sessionId); //
+        }
+
+        // 4. Apply PROBATIONARY MODE FILTER
+        if (viewer.getVerificationStatus() == VerificationStatus.pending_review) {
+            if (session.getCreator().getRole() != UserRole.ambassador) {
+                throw new AccessDeniedException("Verification pending. You can only view Ambassador sessions."); //
+            }
+        }
+
+        // Map the filtered entity to a DTO before returning
+        return SessionMapper.toFeedDto(session);
+    }
+
 
     /**
      * Helper method to check if a creator's profile is visible to a viewer.
@@ -494,6 +616,21 @@ public class SessionService {
             }
         }
     }
+
+    @Transactional(readOnly = true)
+    public List<SessionParticipantDto> getSessionParticipants(UUID sessionId) {
+        Session session = sessionRepository.findById(sessionId)
+            .orElseThrow(() -> new ResourceNotFoundException("Session", "sessionId", sessionId));
+            
+        // Map entities to DTOs
+        return session.getParticipants().stream()
+            .map(p -> new SessionParticipantDto(
+                UserMapper.toSummaryDto(p.getUser()),
+                p.getStatus(),
+                p.getJoinedAt()
+            ))
+            .collect(Collectors.toList());
+    }
 }
 
 ==================================================
@@ -536,6 +673,83 @@ public record MarkAttendanceDto(
     @NotNull(message = "newStatus cannot be null")
     ParticipantStatus newStatus
 ) {}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\dto\SessionFeedDto.java
+==================================================
+package com.sahbifit.api.session.dto;
+
+import com.sahbifit.api.gym.dto.GymDto;
+import com.sahbifit.api.session.model.SessionType;
+import com.sahbifit.api.user.dto.UserSummaryDto;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+/**
+ * DTO for representing a Session in a public feed or list.
+ * It uses nested DTOs (UserSummaryDto, GymDto) to prevent loops.
+ */
+public record SessionFeedDto(
+    UUID sessionId,
+    String title,
+    OffsetDateTime startTime,
+    OffsetDateTime endTime,
+    SessionType sessionType,
+    int participantCount,
+    int maxParticipants,
+    
+    // Nested DTOs - Guaranteed safe from loops
+    UserSummaryDto creator,
+    GymDto gym,
+
+    // Chat status
+    boolean isChatActive
+) {}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\dto\SessionParticipantDto.java
+==================================================
+package com.sahbifit.api.session.dto;
+
+import com.sahbifit.api.session.model.ParticipantStatus;
+import com.sahbifit.api.user.dto.UserSummaryDto;
+import java.time.OffsetDateTime;
+
+public record SessionParticipantDto(
+    UserSummaryDto user,
+    ParticipantStatus status,
+    OffsetDateTime joinedAt
+) {}
+
+==================================================
+FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\dto\SessionSummaryDto.java
+==================================================
+package com.sahbifit.api.session.dto;
+
+import com.sahbifit.api.session.model.Session;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+/**
+ * A minimal, safe DTO for representing a Session,
+ * used inside other DTOs like RatingDto to prevent loops.
+ */
+public record SessionSummaryDto(
+    UUID sessionId,
+    String title,
+    OffsetDateTime startTime
+) {
+    public static SessionSummaryDto fromEntity(Session session) {
+        if (session == null) return null;
+        
+        return new SessionSummaryDto(
+            session.getSessionId(),
+            session.getTitle(),
+            session.getStartTime()
+        );
+    }
+}
 
 ==================================================
 FILE: C:\Users\Ahmed\Desktop\sahbifit\api\src\main\java\com\sahbifit\api\session\model\ParticipantStatus.java
@@ -858,6 +1072,7 @@ package com.sahbifit.api.session.repository;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional; // <-- ADDED
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -902,6 +1117,13 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
      */
     @Query("SELECT s FROM Session s WHERE s.endTime < :now AND s.isRatingNotified = false AND s.status = 'active'")
     List<Session> findCompletedSessionsPendingNotification(@Param("now") OffsetDateTime now);
+
+    /**
+     * Finds a single session by its ID, fetching creator and gym data in one query.
+     * This prevents N+1 queries.
+     */
+    @Query("SELECT s FROM Session s JOIN FETCH s.creator JOIN FETCH s.gym WHERE s.sessionId = :sessionId")
+    Optional<Session> findByIdWithCreatorAndGym(@Param("sessionId") UUID sessionId);
 
     // --- NEW METHODS FOR EPHEMERAL CHAT ---
 

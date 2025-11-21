@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sahbifit.api.admin.dto.ApproveVerificationRequest;
 import com.sahbifit.api.admin.dto.RejectVerificationRequest;
 import com.sahbifit.api.admin.dto.VerificationQueueDto;
-import com.sahbifit.api.report.model.Report;
+// import com.sahbifit.api.report.model.Report; // <-- REMOVED
+import com.sahbifit.api.report.dto.ReportDto;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -60,9 +61,9 @@ public class AdminController {
 
     // --- SECTION 2: REPORTS (New Endpoints) ---
     @GetMapping("/reports/pending")
-    public ResponseEntity<List<Report>> getPendingReports() {
+    public ResponseEntity<List<ReportDto>> getPendingReports() { // <-- CHANGED
         log.info("Admin fetching report queue");
-        List<Report> reports = adminService.getPendingReports();
+        List<ReportDto> reports = adminService.getPendingReports(); // <-- CHANGED
         log.info("Found {} reports in queue", reports.size());
         return ResponseEntity.ok(reports);
     }

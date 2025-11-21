@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sahbifit/core/config/app_theme.dart';
 import 'package:sahbifit/features/session/domain/entities/session_participant.dart';
 import 'package:sahbifit/features/session/domain/enums/participant_status.dart';
@@ -18,7 +19,7 @@ class SessionParticipantList extends StatelessWidget {
     if (participants.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(32.0), // Added const here for best practice
+          padding: const EdgeInsets.all(32.0),
           child: Text(
             'No one has joined yet. Be the first!',
             style: AppTheme.lockedFeatureText,
@@ -28,36 +29,59 @@ class SessionParticipantList extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
+    return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: participants.length,
+      separatorBuilder: (context, index) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final participant = participants[index];
+
         return ListTile(
+          contentPadding: EdgeInsets.zero, // Removes default padding to align with page
+          onTap: () {
+            // Navigate to user profile on tap
+            context.push('/user/${participant.userId}');
+          },
           leading: CircleAvatar(
-            // Placeholder for profile pic
             backgroundColor: AppTheme.lightGray,
-            child: Text(participant.user.firstName.substring(0, 1)),
+            // Load image if available, otherwise null (falls back to child)
+            backgroundImage: participant.user.profilePhotoUrl != null
+                ? NetworkImage(participant.user.profilePhotoUrl!)
+                : null,
+            child: participant.user.profilePhotoUrl == null
+                ? Text(
+                    participant.user.firstName.substring(0, 1).toUpperCase(),
+                    style: const TextStyle(color: AppTheme.darkGray),
+                  )
+                : null,
           ),
           title: Text(
             participant.user.firstName,
-            style: context.textTheme.titleMedium,
+            style: Theme.of(context).textTheme.titleMedium,
           ),
           subtitle: Text(
             'Status: ${participant.status.name}',
-            style: context.textTheme.bodySmall?.copyWith(
-              color: _getStatusColor(participant.status),
-            ),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: _getStatusColor(participant.status),
+                ),
           ),
-          trailing:
-              onMarkAttendance != null ? _buildAttendanceButtons(context, participant) : null,
+          // If onMarkAttendance is provided (Admin/Owner), show buttons.
+          // Otherwise, show a forward arrow to indicate navigation is possible.
+          trailing: onMarkAttendance != null
+              ? _buildAttendanceButtons(context, participant)
+              : const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 14,
+                  color: AppTheme.disabledGray,
+                ),
         );
       },
     );
   }
 
-  Widget _buildAttendanceButtons(BuildContext context, SessionParticipant participant) {
+  Widget _buildAttendanceButtons(
+      BuildContext context, SessionParticipant participant) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

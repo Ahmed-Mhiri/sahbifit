@@ -1,39 +1,23 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sahbifit/features/rating/domain/entities/rating.dart';
-import 'package:sahbifit/features/user/data/models/user_model.dart';
+import 'package:sahbifit/features/session/data/models/session_summary_model.dart';
+import 'package:sahbifit/features/user/data/models/user_summary_model.dart';
 
 part 'rating_model.freezed.dart';
 part 'rating_model.g.dart';
-
-// Helper model to represent the nested 'session' object
-// We only extract the ID, as seen in the Rating entity
-
-@freezed
-abstract class RatingSessionModel with _$RatingSessionModel {
-  
-  const factory RatingSessionModel({
-    required String sessionId,
-  }) = _RatingSessionModel;
-
-  factory RatingSessionModel.fromJson(Map<String, dynamic> json) =>
-      _$RatingSessionModelFromJson(json);
-}
-
-
 
 @freezed
 abstract class RatingModel with _$RatingModel {
   const RatingModel._();
 
-  
   const factory RatingModel({
     required String ratingId,
-    required RatingSessionModel session, // Nested session object
-    required UserModel ratingBy,
-    required UserModel ratingFor,
+    required UserSummaryModel ratingBy,
+    required UserSummaryModel ratingFor,
+    required SessionSummaryModel session,
     required int ratingValue,
     String? comment,
-    required String createdAt, // Receive as ISO 8601 String
+    required String createdAt,
   }) = _RatingModel;
 
   factory RatingModel.fromJson(Map<String, dynamic> json) =>
@@ -42,12 +26,12 @@ abstract class RatingModel with _$RatingModel {
   Rating toEntity() {
     return Rating(
       ratingId: ratingId,
-      sessionId: session.sessionId, // Extract the ID
+      sessionId: session.sessionId,
       ratingBy: ratingBy.toEntity(),
       ratingFor: ratingFor.toEntity(),
       ratingValue: ratingValue,
       comment: comment,
-      createdAt: DateTime.parse(createdAt), // Convert String to DateTime
+      createdAt: DateTime.parse(createdAt),
     );
   }
 }
